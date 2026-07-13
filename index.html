@@ -11,12 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Inter', sans-serif;
             background: linear-gradient(145deg, #f0f4ff 0%, #e6edf9 100%);
@@ -27,39 +22,56 @@
             padding: 20px;
             animation: bgMove 15s ease-in-out infinite alternate;
         }
-
         @keyframes bgMove {
             0% { background-position: 0% 0%; }
             100% { background-position: 100% 100%; }
         }
-
         .card {
             background: rgba(255, 255, 255, 0.85);
             backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
             border-radius: 40px;
             box-shadow: 0 25px 50px -12px rgba(0, 20, 50, 0.25), 0 8px 20px -8px rgba(0, 0, 0, 0.1);
             padding: 40px 35px;
-            max-width: 680px;
+            max-width: 720px;
             width: 100%;
             border: 1px solid rgba(255, 255, 255, 0.5);
             transform: translateY(30px);
             opacity: 0;
             animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
-
         @keyframes slideUp {
-            to {
-                transform: translateY(0);
-                opacity: 1;
-            }
+            to { transform: translateY(0); opacity: 1; }
         }
-
         .card:hover {
             transform: translateY(-4px);
             transition: transform 0.3s ease;
         }
-
+        .lang-switcher {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+        .lang-btn {
+            background: transparent;
+            border: 2px solid #e2e8f0;
+            border-radius: 30px;
+            padding: 6px 16px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #4b5b73;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .lang-btn:hover {
+            border-color: #3b82f6;
+            color: #3b82f6;
+        }
+        .lang-btn.active {
+            background: #3b82f6;
+            border-color: #3b82f6;
+            color: #fff;
+        }
         h1 {
             font-size: 28px;
             font-weight: 700;
@@ -70,18 +82,15 @@
             margin-bottom: 10px;
             animation: fadeIn 1s ease;
         }
-
         h1 i {
             color: #3b82f6;
             font-size: 32px;
             animation: pulseIcon 2s infinite;
         }
-
         @keyframes pulseIcon {
             0%, 100% { transform: scale(1); }
             50% { transform: scale(1.1); }
         }
-
         .subhead {
             color: #4b5b73;
             font-size: 15px;
@@ -94,19 +103,16 @@
             line-height: 1.5;
             animation: fadeIn 1.2s ease;
         }
-
         @keyframes fadeIn {
             0% { opacity: 0; transform: translateX(-10px); }
             100% { opacity: 1; transform: translateX(0); }
         }
-
         .form-group {
             margin-bottom: 22px;
             animation: fadeIn 0.6s ease forwards;
             opacity: 0;
             transition: all 0.2s ease;
         }
-
         .form-group:nth-child(1) { animation-delay: 0.1s; }
         .form-group:nth-child(2) { animation-delay: 0.2s; }
         .form-group:nth-child(3) { animation-delay: 0.3s; }
@@ -115,31 +121,24 @@
         .form-group:nth-child(6) { animation-delay: 0.6s; }
         .form-group:nth-child(7) { animation-delay: 0.7s; }
 
-        /* Анимация стикера при наведении на .form-group */
         .form-group:hover .sticker-emoji {
             animation: stickerPop 0.5s ease forwards;
         }
-
         @keyframes stickerPop {
             0% { transform: scale(1) rotate(0deg); }
             30% { transform: scale(1.4) rotate(-10deg); }
             60% { transform: scale(0.9) rotate(5deg); }
             100% { transform: scale(1.2) rotate(0deg); }
         }
-
-        /* Состояние покоя */
         .sticker-emoji {
             display: inline-block;
             font-size: 28px;
             transition: transform 0.3s ease;
             will-change: transform;
         }
-
-        /* Эффект для поля ввода при фокусе */
         .form-group:focus-within .sticker-emoji {
             animation: stickerFocus 0.6s ease forwards;
         }
-
         @keyframes stickerFocus {
             0% { transform: scale(1) rotate(0); }
             50% { transform: scale(1.5) rotate(-15deg); }
@@ -154,22 +153,17 @@
             margin-bottom: 6px;
             transition: color 0.3s;
         }
-
         label .required {
             color: #ef4444;
             margin-left: 4px;
         }
-
         label i {
             margin-right: 8px;
             color: #3b82f6;
             width: 20px;
             text-align: center;
         }
-
-        input,
-        select,
-        textarea {
+        input, select, textarea {
             width: 100%;
             padding: 12px 16px;
             border: 2px solid #e2e8f0;
@@ -181,26 +175,18 @@
             outline: none;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
         }
-
-        input:focus,
-        select:focus,
-        textarea:focus {
+        input:focus, select:focus, textarea:focus {
             border-color: #3b82f6;
             box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
             transform: scale(1.01);
         }
-
-        input:hover,
-        select:hover,
-        textarea:hover {
+        input:hover, select:hover, textarea:hover {
             border-color: #94a3b8;
         }
-
         textarea {
             resize: vertical;
             min-height: 80px;
         }
-
         .inline-group {
             display: flex;
             align-items: center;
@@ -212,11 +198,9 @@
             border: 2px solid #e2e8f0;
             transition: border-color 0.3s;
         }
-
         .inline-group:hover {
             border-color: #94a3b8;
         }
-
         .inline-group label {
             display: inline-flex;
             align-items: center;
@@ -227,11 +211,9 @@
             cursor: pointer;
             transition: color 0.2s;
         }
-
         .inline-group label:hover {
             color: #3b82f6;
         }
-
         .inline-group input[type="radio"] {
             width: 18px;
             height: 18px;
@@ -240,21 +222,17 @@
             cursor: pointer;
             transition: transform 0.2s;
         }
-
         .inline-group input[type="radio"]:hover {
             transform: scale(1.15);
         }
-
         #techDetailsGroup {
             margin-top: 8px;
             animation: fadeSlide 0.4s ease;
         }
-
         @keyframes fadeSlide {
             0% { opacity: 0; transform: translateY(-8px); }
             100% { opacity: 1; transform: translateY(0); }
         }
-
         .btn {
             background: linear-gradient(135deg, #3b82f6, #2563eb);
             color: white;
@@ -276,7 +254,6 @@
             position: relative;
             overflow: hidden;
         }
-
         .btn::after {
             content: '';
             position: absolute;
@@ -289,29 +266,23 @@
             transition: opacity 0.5s;
             pointer-events: none;
         }
-
         .btn:hover::after {
             opacity: 1;
         }
-
         .btn:hover {
             transform: translateY(-2px) scale(1.02);
             box-shadow: 0 14px 28px -10px rgba(59, 130, 246, 0.5);
             background: linear-gradient(135deg, #2563eb, #1d4ed8);
         }
-
         .btn:active {
             transform: scale(0.97);
         }
-
         .btn i {
             transition: transform 0.3s;
         }
-
         .btn:hover i {
             transform: rotate(-5deg) scale(1.1);
         }
-
         #status {
             margin-top: 24px;
             padding: 16px 20px;
@@ -328,158 +299,308 @@
             font-size: 15px;
             animation: fadeSlide 0.4s ease;
         }
-
         #status i {
             font-size: 24px;
             color: #059669;
             animation: checkmark 0.6s ease;
         }
-
         @keyframes checkmark {
             0% { transform: scale(0); }
             50% { transform: scale(1.3); }
             100% { transform: scale(1); }
         }
-
         @media (max-width: 500px) {
-            .card {
-                padding: 24px 18px;
-            }
-            h1 {
-                font-size: 22px;
-            }
-            .inline-group {
-                gap: 14px;
-                padding: 8px 12px;
-            }
-            .btn {
-                font-size: 15px;
-                padding: 14px 20px;
-            }
+            .card { padding: 24px 18px; }
+            h1 { font-size: 22px; }
+            .inline-group { gap: 14px; padding: 8px 12px; }
+            .btn { font-size: 15px; padding: 14px 20px; }
+            .lang-switcher { gap: 4px; }
+            .lang-btn { font-size: 12px; padding: 4px 12px; }
         }
     </style>
 </head>
 <body>
-    <div class="card">
-        <h1><i class="fas fa-clipboard-list"></i> Опросник</h1>
-        <div class="subhead">
-            <i class="fas fa-pencil-alt" style="margin-right: 8px; color: #3b82f6;"></i> 
-            Заполните все поля, чтобы сформировать отчёт в PDF
-        </div>
-        <form id="surveyForm">
-            <div class="form-group">
-                <label for="name">
-                    <i class="fas fa-user"></i>Ваше имя 
-                    <span class="sticker-emoji">👤</span>
-                    <span class="required">*</span>
-                </label>
-                <input type="text" id="name" placeholder="Иванов Иван" required />
-            </div>
-            <div class="form-group">
-                <label for="smu">
-                    <i class="fas fa-building"></i>Какое ваше СМУ? 
-                    <span class="sticker-emoji">🏢</span>
-                    <span class="required">*</span>
-                </label>
-                <input type="text" id="smu" placeholder="Например: СМУ-7" required />
-            </div>
-            <div class="form-group">
-                <label for="shift">
-                    <i class="fas fa-clock"></i>Какая смена? 
-                    <span class="sticker-emoji">🕒</span>
-                    <span class="required">*</span>
-                </label>
-                <select id="shift" required>
-                    <option value="Первая">Первая</option>
-                    <option value="Вторая">Вторая</option>
-                    <option value="Третья">Третья</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="phone">
-                    <i class="fas fa-phone-alt"></i>Номер телефона 
-                    <span class="sticker-emoji">📞</span>
-                    <span class="required">*</span>
-                </label>
-                <input type="tel" id="phone" placeholder="+7 999 123-45-67" required />
-            </div>
-            <div class="form-group">
-                <label for="materials">
-                    <i class="fas fa-cubes"></i>Сколько было затрачено материала и какого? 
-                    <span class="sticker-emoji">📦</span>
-                    <span class="required">*</span>
-                </label>
-                <textarea id="materials" rows="3" placeholder="Например: 5 кг цемента, 2 рулона обоев..." required></textarea>
-            </div>
-            <div class="form-group">
-                <label>
-                    <i class="fas fa-tractor"></i>Использовалась ли техника? 
-                    <span class="sticker-emoji">🚜</span>
-                    <span class="required">*</span>
-                </label>
-                <div class="inline-group">
-                    <label><input type="radio" name="tech" value="Да" onclick="toggleTech(true)" /> Да</label>
-                    <label><input type="radio" name="tech" value="Нет" onclick="toggleTech(false)" checked /> Нет</label>
-                </div>
-            </div>
-            <div class="form-group" id="techDetailsGroup" style="display: none;">
-                <label for="techDetails">
-                    <i class="fas fa-cog"></i>Если да, то какая техника использовалась?
-                    <span class="sticker-emoji">⚙️</span>
-                </label>
-                <textarea id="techDetails" rows="2" placeholder="Например: экскаватор, подъёмник..."></textarea>
-            </div>
-            <button type="button" class="btn" onclick="generatePDF()">
-                <i class="fas fa-file-pdf"></i> Скачать PDF
-            </button>
-        </form>
-        <div id="status">
-            <i class="fas fa-check-circle"></i> 
-            PDF успешно создан и скачан! Проверьте папку «Загрузки».
-        </div>
+
+<div class="card">
+    <div class="lang-switcher">
+        <button class="lang-btn" data-lang="ru" onclick="setLanguage('ru')">РУ</button>
+        <button class="lang-btn" data-lang="en" onclick="setLanguage('en')">EN</button>
+        <button class="lang-btn" data-lang="tt" onclick="setLanguage('tt')">TT</button>
     </div>
 
-    <script>
-        // Функция переключения видимости блока с техникой
-        function toggleTech(show) {
-            const group = document.getElementById('techDetailsGroup');
-            if (show) {
-                group.style.display = 'block';
-                // Небольшая задержка для плавности
-                setTimeout(() => { group.style.opacity = '1'; }, 10);
+    <h1><i class="fas fa-clipboard-list"></i> <span id="h1-text">Опросник</span></h1>
+    <div class="subhead" id="subhead-text">
+        <i class="fas fa-pencil-alt" style="margin-right: 8px; color: #3b82f6;"></i> 
+        <span>Заполните все поля, чтобы сформировать отчёт в PDF</span>
+    </div>
+
+    <form id="surveyForm">
+        <div class="form-group">
+            <label for="name">
+                <i class="fas fa-user"></i>
+                <span id="label-name">Ваше имя</span>
+                <span class="sticker-emoji">👤</span>
+                <span class="required">*</span>
+            </label>
+            <input type="text" id="name" placeholder="Иванов Иван" required />
+        </div>
+        <div class="form-group">
+            <label for="smu">
+                <i class="fas fa-building"></i>
+                <span id="label-smu">Какое ваше СМУ?</span>
+                <span class="sticker-emoji">🏢</span>
+                <span class="required">*</span>
+            </label>
+            <input type="text" id="smu" placeholder="Например: СМУ-7" required />
+        </div>
+        <div class="form-group">
+            <label for="shift">
+                <i class="fas fa-clock"></i>
+                <span id="label-shift">Какая смена?</span>
+                <span class="sticker-emoji">🕒</span>
+                <span class="required">*</span>
+            </label>
+            <select id="shift" required>
+                <option value="Первая" id="shift-1">Первая</option>
+                <option value="Вторая" id="shift-2">Вторая</option>
+                <option value="Третья" id="shift-3">Третья</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="phone">
+                <i class="fas fa-phone-alt"></i>
+                <span id="label-phone">Номер телефона</span>
+                <span class="sticker-emoji">📞</span>
+                <span class="required">*</span>
+            </label>
+            <input type="tel" id="phone" placeholder="+7 999 123-45-67" required />
+        </div>
+        <div class="form-group">
+            <label for="materials">
+                <i class="fas fa-cubes"></i>
+                <span id="label-materials">Сколько было затрачено материала и какого?</span>
+                <span class="sticker-emoji">📦</span>
+                <span class="required">*</span>
+            </label>
+            <textarea id="materials" rows="3" placeholder="Например: 5 кг цемента, 2 рулона обоев..." required></textarea>
+        </div>
+        <div class="form-group">
+            <label>
+                <i class="fas fa-tractor"></i>
+                <span id="label-tech-used">Использовалась ли техника?</span>
+                <span class="sticker-emoji">🚜</span>
+                <span class="required">*</span>
+            </label>
+            <div class="inline-group">
+                <label><input type="radio" name="tech" value="Да" onclick="toggleTech(true)" /> <span id="radio-yes">Да</span></label>
+                <label><input type="radio" name="tech" value="Нет" onclick="toggleTech(false)" checked /> <span id="radio-no">Нет</span></label>
+            </div>
+        </div>
+        <div class="form-group" id="techDetailsGroup" style="display: none; opacity: 0;">
+            <label for="techDetails">
+                <i class="fas fa-cog"></i>
+                <span id="label-tech-details">Если да, то какая техника использовалась?</span>
+                <span class="sticker-emoji">⚙️</span>
+            </label>
+            <textarea id="techDetails" rows="2" placeholder="Например: экскаватор, подъёмник..."></textarea>
+        </div>
+        <button type="button" class="btn" onclick="generatePDFWithTranslation()">
+            <i class="fas fa-file-pdf"></i> <span id="btn-pdf">Скачать PDF</span>
+        </button>
+    </form>
+
+    <div id="status">
+        <i class="fas fa-check-circle"></i> 
+        <span id="status-text">PDF успешно создан и скачан! Проверьте папку «Загрузки».</span>
+    </div>
+</div>
+
+<script>
+    // ---------- ПЕРЕВОДЫ ИНТЕРФЕЙСА ----------
+    const translations = {
+        ru: {
+            h1: 'Опросник',
+            subhead: 'Заполните все поля, чтобы сформировать отчёт в PDF',
+            label_name: 'Ваше имя',
+            label_smu: 'Какое ваше СМУ?',
+            label_shift: 'Какая смена?',
+            shift_1: 'Первая',
+            shift_2: 'Вторая',
+            shift_3: 'Третья',
+            label_phone: 'Номер телефона',
+            label_materials: 'Сколько было затрачено материала и какого?',
+            label_tech_used: 'Использовалась ли техника?',
+            radio_yes: 'Да',
+            radio_no: 'Нет',
+            label_tech_details: 'Если да, то какая техника использовалась?',
+            btn_pdf: 'Скачать PDF',
+            status: 'PDF успешно создан и скачан! Проверьте папку «Загрузки».',
+            alert_fill: 'Пожалуйста, заполните все обязательные поля (имя, СМУ, телефон, материалы).',
+            translating: 'Идёт перевод ответов на русский...',
+            pdf_note: 'Примечание: PDF-отчёт сформирован на русском языке для единообразия.'
+        },
+        en: {
+            h1: 'Survey',
+            subhead: 'Fill in all fields to generate a PDF report',
+            label_name: 'Your name',
+            label_smu: 'What is your SMU?',
+            label_shift: 'Which shift?',
+            shift_1: 'First',
+            shift_2: 'Second',
+            shift_3: 'Third',
+            label_phone: 'Phone number',
+            label_materials: 'How much material was used and what kind?',
+            label_tech_used: 'Was equipment used?',
+            radio_yes: 'Yes',
+            radio_no: 'No',
+            label_tech_details: 'If yes, what equipment was used?',
+            btn_pdf: 'Download PDF',
+            status: 'PDF successfully created and downloaded! Check the "Downloads" folder.',
+            alert_fill: 'Please fill in all required fields (name, SMU, phone, materials).',
+            translating: 'Translating answers to Russian...',
+            pdf_note: 'Note: The PDF report is generated in Russian for consistency, please do not worry.'
+        },
+        tt: {
+            h1: 'Сораулар',
+            subhead: 'PDF-отчёт төзер өчен барлык кырларны тутырыгыз',
+            label_name: 'Исемегез',
+            label_smu: 'СМУ ныгыз?',
+            label_shift: 'Нинди смена?',
+            shift_1: 'Беренче',
+            shift_2: 'Икенче',
+            shift_3: 'Өченче',
+            label_phone: 'Телефон номеры',
+            label_materials: 'Күпме материал кулланылды һәм нинди?',
+            label_tech_used: 'Техника кулланылдымы?',
+            radio_yes: 'Әйе',
+            radio_no: 'Юк',
+            label_tech_details: 'Әйе булса, нинди техника кулланылды?',
+            btn_pdf: 'PDF йөкләү',
+            status: 'PDF уңышлы төзелде һәм йөкләнде! "Йөкләүләр" папкасын тикшерегез.',
+            alert_fill: 'Зинһар, барлык мәҗбүри кырларны тутырыгыз (исем, СМУ, телефон, материаллар).',
+            translating: 'Җавапларны рус теленә тәрҗемә итү...',
+            pdf_note: 'Искәрмә: PDF-отчёт рус телендә төзелде, борчылмагыз.'
+        }
+    };
+
+    let currentLang = localStorage.getItem('lang') || 'ru';
+
+    // ---------- УСТАНОВКА ЯЗЫКА ИНТЕРФЕЙСА ----------
+    function setLanguage(lang) {
+        if (!translations[lang]) return;
+        currentLang = lang;
+        localStorage.setItem('lang', lang);
+
+        const t = translations[lang];
+
+        document.getElementById('h1-text').textContent = t.h1;
+        document.getElementById('subhead-text').innerHTML = t.subhead;
+        document.getElementById('label-name').textContent = t.label_name;
+        document.getElementById('label-smu').textContent = t.label_smu;
+        document.getElementById('label-shift').textContent = t.label_shift;
+        document.getElementById('shift-1').textContent = t.shift_1;
+        document.getElementById('shift-2').textContent = t.shift_2;
+        document.getElementById('shift-3').textContent = t.shift_3;
+        document.getElementById('label-phone').textContent = t.label_phone;
+        document.getElementById('label-materials').textContent = t.label_materials;
+        document.getElementById('label-tech-used').textContent = t.label_tech_used;
+        document.getElementById('radio-yes').textContent = t.radio_yes;
+        document.getElementById('radio-no').textContent = t.radio_no;
+        document.getElementById('label-tech-details').textContent = t.label_tech_details;
+        document.getElementById('btn-pdf').textContent = t.btn_pdf;
+        document.getElementById('status-text').textContent = t.status;
+
+        const placeholders = {
+            ru: { name: 'Иванов Иван', smu: 'Например: СМУ-7', phone: '+7 999 123-45-67', materials: 'Например: 5 кг цемента, 2 рулона обоев...', techDetails: 'Например: экскаватор, подъёмник...' },
+            en: { name: 'Ivan Ivanov', smu: 'E.g.: SMU-7', phone: '+7 999 123-45-67', materials: 'E.g.: 5 kg of cement, 2 rolls of wallpaper...', techDetails: 'E.g.: excavator, lift...' },
+            tt: { name: 'Иванов Иван', smu: 'Мәсәлән: СМУ-7', phone: '+7 999 123-45-67', materials: 'Мәсәлән: 5 кг цемент, 2 төп кәгазь...', techDetails: 'Мәсәлән: экскаватор, лифт...' }
+        };
+        const p = placeholders[lang] || placeholders.ru;
+        document.getElementById('name').placeholder = p.name;
+        document.getElementById('smu').placeholder = p.smu;
+        document.getElementById('phone').placeholder = p.phone;
+        document.getElementById('materials').placeholder = p.materials;
+        document.getElementById('techDetails').placeholder = p.techDetails;
+
+        document.querySelectorAll('.lang-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.lang === lang);
+        });
+    }
+
+    // ---------- ПЕРЕКЛЮЧЕНИЕ ВИДИМОСТИ ТЕХНИКИ ----------
+    function toggleTech(show) {
+        const group = document.getElementById('techDetailsGroup');
+        if (show) {
+            group.style.display = 'block';
+            setTimeout(() => { group.style.opacity = '1'; }, 10);
+        } else {
+            group.style.opacity = '0';
+            setTimeout(() => { group.style.display = 'none'; }, 300);
+        }
+    }
+
+    // ---------- ФУНКЦИЯ ПЕРЕВОДА ТЕКСТА (бесплатный API MyMemory) ----------
+    async function translateText(text, targetLang = 'ru') {
+        if (!text || text.trim() === '') return text;
+        // Проверяем, содержит ли текст кириллицу — если да, то не переводим
+        if (/[\u0400-\u04FF]/.test(text)) return text;
+
+        const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|${targetLang}`;
+        try {
+            const response = await fetch(url);
+            const data = await response.json();
+            if (data.responseData && data.responseData.translatedText) {
+                return data.responseData.translatedText;
             } else {
-                group.style.opacity = '0';
-                setTimeout(() => { group.style.display = 'none'; }, 300);
+                return text;
             }
+        } catch (error) {
+            console.warn('Ошибка перевода:', error);
+            return text;
+        }
+    }
+
+    // ---------- ГЕНЕРАЦИЯ PDF С ПЕРЕВОДОМ ОТВЕТОВ ----------
+    async function generatePDFWithTranslation() {
+        // Собираем данные
+        const name = document.getElementById('name').value.trim();
+        const smu = document.getElementById('smu').value.trim();
+        const shift = document.getElementById('shift').value;
+        const phone = document.getElementById('phone').value.trim();
+        const materials = document.getElementById('materials').value.trim();
+        const tech = document.querySelector('input[name="tech"]:checked').value;
+        let techDetails = document.getElementById('techDetails').value.trim();
+
+        // Проверка обязательных полей
+        if (!name || !smu || !phone || !materials) {
+            alert(translations[currentLang].alert_fill);
+            return;
         }
 
-        // Инициализация: если по умолчанию выбран "Нет", скрываем блок
-        document.addEventListener('DOMContentLoaded', function() {
-            const techGroup = document.getElementById('techDetailsGroup');
-            const noRadio = document.querySelector('input[name="tech"][value="Нет"]');
-            if (noRadio && noRadio.checked) {
-                techGroup.style.display = 'none';
-                techGroup.style.opacity = '0';
-            }
-        });
+        // Показываем статус "Перевод..."
+        const statusDiv = document.getElementById('status');
+        statusDiv.style.display = 'flex';
+        document.getElementById('status-text').textContent = translations[currentLang].translating;
+        statusDiv.style.background = '#fef3c7';
+        statusDiv.style.borderColor = '#fcd34d';
+        statusDiv.style.color = '#92400e';
 
-        // Генерация PDF
-        function generatePDF() {
-            const name = document.getElementById('name').value.trim();
-            const smu = document.getElementById('smu').value.trim();
-            const shift = document.getElementById('shift').value;
-            const phone = document.getElementById('phone').value.trim();
-            const materials = document.getElementById('materials').value.trim();
-            const tech = document.querySelector('input[name="tech"]:checked').value;
-            let techDetails = tech === 'Да' 
-                ? (document.getElementById('techDetails').value.trim() || 'Не указано') 
-                : 'Нет';
+        try {
+            // Переводим только текстовые поля (имя, СМУ, материалы, техника)
+            const [transName, transSmu, transMaterials, transTechDetails] = await Promise.all([
+                translateText(name),
+                translateText(smu),
+                translateText(materials),
+                translateText(techDetails)
+            ]);
 
-            if (!name || !smu || !phone || !materials) {
-                alert('Пожалуйста, заполните все обязательные поля (имя, СМУ, телефон, материалы).');
-                return;
-            }
+            // Формируем финальные значения для PDF
+            const finalName = transName || name;
+            const finalSmu = transSmu || smu;
+            const finalMaterials = transMaterials || materials;
+            const finalTechDetails = (tech === 'Да') ? (transTechDetails || techDetails || 'Не указано') : 'Нет';
 
+            // Генерация PDF
             const now = new Date();
             const dateStr = now.toLocaleString('ru-RU', {
                 day: '2-digit', month: '2-digit', year: 'numeric',
@@ -487,30 +608,36 @@
             });
             const fileName = `отчёт_${now.toISOString().slice(0, 19).replace(/[:-]/g, '')}.pdf`;
 
-            // Формируем содержимое PDF (без эмодзи, только текст)
+            const tRu = translations.ru;
+            // Добавляем поля для PDF, если их нет
+            if (!tRu.pdf_header) {
+                Object.assign(tRu, {
+                    pdf_header: 'ОТЧЁТ ПО ОПРОСУ',
+                    pdf_label_name: 'Имя',
+                    pdf_label_smu: 'СМУ',
+                    pdf_label_shift: 'Смена',
+                    pdf_label_phone: 'Телефон',
+                    pdf_label_materials: 'Затраченные материалы',
+                    pdf_label_tech_used: 'Техника использовалась',
+                    pdf_label_tech_details: 'Какая техника',
+                    pdf_footer: 'Создано автоматически',
+                    pdf_not_specified: 'Не указано'
+                });
+            }
+
             const fields = [
-                { label: 'Имя', value: name },
-                { label: 'СМУ', value: smu },
-                { label: 'Смена', value: shift },
-                { label: 'Телефон', value: phone },
-                { label: 'Затраченные материалы', value: materials },
-                { label: 'Техника использовалась', value: tech },
-                { label: 'Какая техника', value: techDetails }
+                { label: tRu.pdf_label_name, value: finalName },
+                { label: tRu.pdf_label_smu, value: finalSmu },
+                { label: tRu.pdf_label_shift, value: shift },
+                { label: tRu.pdf_label_phone, value: phone },
+                { label: tRu.pdf_label_materials, value: finalMaterials },
+                { label: tRu.pdf_label_tech_used, value: tech },
+                { label: tRu.pdf_label_tech_details, value: finalTechDetails }
             ];
 
             let content = [
-                {
-                    text: 'ОТЧЁТ ПО ОПРОСУ',
-                    style: 'header',
-                    alignment: 'center',
-                    margin: [0, 0, 0, 5]
-                },
-                {
-                    text: dateStr,
-                    style: 'date',
-                    alignment: 'center',
-                    margin: [0, 0, 0, 20]
-                }
+                { text: tRu.pdf_header, style: 'header', alignment: 'center', margin: [0, 0, 0, 5] },
+                { text: dateStr, style: 'date', alignment: 'center', margin: [0, 0, 0, 20] }
             ];
 
             fields.forEach((item, index) => {
@@ -520,7 +647,6 @@
                         margin: [0, 10, 0, 10]
                     });
                 }
-
                 content.push({
                     stack: [
                         { text: item.label, style: 'label' },
@@ -530,58 +656,64 @@
                 });
             });
 
+            // Добавляем пояснение на языке интерфейса (перед подвалом)
+            const noteText = translations[currentLang].pdf_note || '';
+            if (noteText) {
+                content.push({
+                    text: noteText,
+                    style: 'note',
+                    alignment: 'center',
+                    margin: [0, 20, 0, 10]
+                });
+            }
+
             content.push({
-                text: 'Создано автоматически • ' + new Date().toLocaleDateString('ru-RU'),
+                text: tRu.pdf_footer + ' • ' + new Date().toLocaleDateString('ru-RU'),
                 style: 'footer',
                 alignment: 'center',
-                margin: [0, 30, 0, 0]
+                margin: [0, 10, 0, 0]
             });
 
             const docDefinition = {
                 content: content,
                 styles: {
-                    header: {
-                        fontSize: 22,
-                        bold: true,
-                        color: '#1e293b'
-                    },
-                    date: {
-                        fontSize: 13,
-                        color: '#64748b'
-                    },
-                    label: {
-                        fontSize: 13,
-                        bold: true,
-                        color: '#3b82f6',
-                        margin: [0, 2, 0, 2]
-                    },
-                    value: {
-                        fontSize: 15,
-                        color: '#0f172a',
-                        margin: [0, 0, 0, 4]
-                    },
-                    footer: {
-                        fontSize: 10,
-                        color: '#94a3b8',
-                        italics: true
-                    }
+                    header: { fontSize: 22, bold: true, color: '#1e293b' },
+                    date: { fontSize: 13, color: '#64748b' },
+                    label: { fontSize: 13, bold: true, color: '#3b82f6', margin: [0, 2, 0, 2] },
+                    value: { fontSize: 15, color: '#0f172a', margin: [0, 0, 0, 4] },
+                    note: { fontSize: 11, color: '#64748b', italics: true, alignment: 'center' },
+                    footer: { fontSize: 10, color: '#94a3b8', italics: true, alignment: 'center' }
                 },
-                defaultStyle: {
-                    font: 'Roboto'
-                },
+                defaultStyle: { font: 'Roboto' },
                 pageMargins: [40, 60, 40, 60]
             };
 
-            try {
-                pdfMake.createPdf(docDefinition).download(fileName);
-                const statusDiv = document.getElementById('status');
-                statusDiv.style.display = 'flex';
-                setTimeout(() => { statusDiv.style.display = 'none'; }, 6000);
-            } catch (error) {
-                console.error('Ошибка при создании PDF:', error);
-                alert('Произошла ошибка при создании PDF. Пожалуйста, проверьте консоль.');
-            }
+            pdfMake.createPdf(docDefinition).download(fileName);
+
+            // Обновляем статус на успех
+            statusDiv.style.background = '#d1fae5';
+            statusDiv.style.borderColor = '#6ee7b7';
+            statusDiv.style.color = '#065f46';
+            document.getElementById('status-text').textContent = translations.ru.status;
+            setTimeout(() => { statusDiv.style.display = 'none'; }, 6000);
+
+        } catch (error) {
+            console.error('Ошибка:', error);
+            alert('Произошла ошибка при переводе или создании PDF. Пожалуйста, проверьте консоль.');
+            statusDiv.style.display = 'none';
         }
-    </script>
+    }
+
+    // ---------- ИНИЦИАЛИЗАЦИЯ ----------
+    document.addEventListener('DOMContentLoaded', function() {
+        setLanguage(currentLang);
+        const noRadio = document.querySelector('input[name="tech"][value="Нет"]');
+        if (noRadio && noRadio.checked) {
+            const group = document.getElementById('techDetailsGroup');
+            group.style.display = 'none';
+            group.style.opacity = '0';
+        }
+    });
+</script>
 </body>
 </html>
