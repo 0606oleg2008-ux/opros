@@ -8,6 +8,7 @@
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
+        /* (все стили остаются без изменений) */
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Roboto, sans-serif; }
         body { background: #f0f4f9; padding: 20px; }
         .container { max-width: 1400px; margin: 0 auto; background: #fff; border-radius: 24px; box-shadow: 0 8px 30px rgba(0,0,0,0.08); padding: 25px 30px 35px; }
@@ -548,14 +549,15 @@
     });
 
     // ============================================================
-    //   IndexedDB для хранения файлов
+    //   IndexedDB для хранения файлов (исправлено: версия 2)
     // ============================================================
     const DB_NAME = 'ShiftFilesDB';
     const STORE_NAME = 'files';
 
     function openDB() {
         return new Promise((resolve, reject) => {
-            const request = indexedDB.open(DB_NAME, 1);
+            // Используем версию 2, чтобы гарантированно создать хранилище
+            const request = indexedDB.open(DB_NAME, 2);
             request.onupgradeneeded = function(e) {
                 const db = e.target.result;
                 if (!db.objectStoreNames.contains(STORE_NAME)) {
@@ -802,6 +804,7 @@
         updateAll();
         updateShiftUI();
         document.getElementById('closeShiftForm').style.display = 'none';
+        alert('Смена успешно закрыта! Файлы сохранены.');
     });
 
     // ============================================================
@@ -877,7 +880,6 @@
             tbody.appendChild(tr);
         });
 
-        // Обработчики кнопок просмотра файлов
         document.querySelectorAll('#shiftBody .view-btn').forEach(btn => {
             btn.addEventListener('click', function() {
                 const idx = parseInt(this.dataset.idx);
@@ -891,7 +893,6 @@
             });
         });
 
-        // Обработчики удаления
         document.querySelectorAll('#shiftBody .del-btn').forEach(btn => {
             btn.addEventListener('click', function() {
                 const idx = parseInt(this.dataset.idx);
@@ -913,7 +914,7 @@
     }
 
     // ============================================================
-    //   МОДАЛЬНОЕ ОКНО ПРОСМОТРА ФАЙЛОВ (улучшенное)
+    //   МОДАЛЬНОЕ ОКНО ПРОСМОТРА ФАЙЛОВ
     // ============================================================
     const fileModal = document.getElementById('fileModal');
     const fileGrid = document.getElementById('fileGrid');
@@ -943,7 +944,6 @@
                 } else if (f.type && f.type.startsWith('video/')) {
                     content = `<video controls src="${f.data}" preload="metadata"></video>`;
                 } else {
-                    // Попытка отобразить как изображение, если тип не распознан
                     content = `<img src="${f.data}" alt="${f.name}" loading="lazy" onerror="this.outerHTML='<div>Невозможно отобразить файл</div>'">`;
                 }
                 item.innerHTML = `
