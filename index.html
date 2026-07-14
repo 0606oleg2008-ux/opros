@@ -3,224 +3,480 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Стройконтроль – Суворовские бастионы</title>
+    <title>Строительный контроль</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Roboto, sans-serif; }
-        body { background: #f0f4f9; padding: 20px; }
-        .container { max-width: 1400px; margin: 0 auto; background: #fff; border-radius: 24px; box-shadow: 0 8px 30px rgba(0,0,0,0.08); padding: 25px 30px 35px; }
-        h1 { font-size: 26px; font-weight: 600; color: #1a2634; }
-        .sub { color: #5e6f7e; margin-bottom: 25px; font-weight: 500; }
-        .header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; border-bottom: 2px solid #eef2f6; padding-bottom: 18px; margin-bottom: 25px; }
-        .user-info { display: flex; align-items: center; gap: 15px; }
-        .user-info .name { font-weight: 600; color: #1a7f4a; }
-        .user-info .btn-logout { background: #eef2f6; border: none; padding: 5px 15px; border-radius: 30px; cursor: pointer; font-weight: 500; color: #2e3e4e; }
-        .user-info .btn-logout:hover { background: #dce3eb; }
+        /* ===== ВСЕ СТИЛИ (такие же, как в предыдущей версии) ===== */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
+        body {
+            background: linear-gradient(145deg, #e8edf5 0%, #d5dde8 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255,255,255,0.85);
+            backdrop-filter: blur(10px);
+            border-radius: 32px;
+            box-shadow: 0 20px 60px rgba(0,20,40,0.12), 0 8px 24px rgba(0,0,0,0.04);
+            padding: 25px 30px 35px;
+            border: 1px solid rgba(255,255,255,0.6);
+        }
+        h1 { font-size: 28px; font-weight: 700; color: #0a1e2f; letter-spacing: -0.5px; }
+        .sub { color: #4a6378; font-weight: 500; margin-bottom: 20px; }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            border-bottom: 2px solid rgba(0,40,70,0.06);
+            padding-bottom: 16px;
+            margin-bottom: 20px;
+        }
+        .user-info .name { font-weight: 600; color: #0f6e4a; background: #e2f0e6; padding: 4px 16px; border-radius: 30px; }
+        .user-info .btn-logout {
+            background: transparent;
+            border: 1px solid #bcc9d6;
+            padding: 5px 18px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: 500;
+            color: #2a4055;
+            transition: 0.2s;
+        }
+        .user-info .btn-logout:hover { background: #e2e8f0; border-color: #8a9cb0; }
 
-        .tabs { display: flex; gap: 8px; border-bottom: 2px solid #e6ecf2; margin-bottom: 25px; flex-wrap: wrap; }
-        .tab-btn { padding: 10px 22px; background: transparent; border: none; font-size: 15px; font-weight: 600; color: #5e6f7e; cursor: pointer; border-bottom: 3px solid transparent; transition: 0.2s; }
-        .tab-btn.active { color: #1a7f4a; border-bottom-color: #1a7f4a; }
-        .tab-content { display: none; }
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
+            background: #f5f9ff;
+            border-radius: 16px;
+            padding: 14px 20px;
+            margin-bottom: 24px;
+            border: 1px solid #e6ecf2;
+        }
+        .dashboard-item { text-align: center; }
+        .dashboard-item .dash-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.3px; color: #4a6378; font-weight: 600; }
+        .dashboard-item .dash-value { font-size: 22px; font-weight: 700; color: #0a1e2f; margin-top: 2px; }
+
+        .tabs {
+            display: flex;
+            gap: 6px;
+            border-bottom: 2px solid rgba(0,40,70,0.06);
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+        .tab-btn {
+            padding: 12px 24px;
+            background: transparent;
+            border: none;
+            font-size: 15px;
+            font-weight: 600;
+            color: #4a6378;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: 0.25s ease;
+            border-radius: 12px 12px 0 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .tab-btn:hover { background: rgba(26,127,74,0.06); color: #0f6e4a; }
+        .tab-btn.active { color: #0f6e4a; border-bottom-color: #0f6e4a; background: rgba(26,127,74,0.06); }
+        .tab-btn .badge-count { background: #dce3eb; color: #1a3347; font-size: 11px; font-weight: 700; padding: 0 8px; border-radius: 30px; line-height: 18px; }
+        .tab-btn.active .badge-count { background: #0f6e4a; color: #fff; }
+
+        .tab-content { display: none; animation: fadeIn 0.3s ease; }
         .tab-content.active { display: block; }
+        @keyframes fadeIn { 0% { opacity: 0; transform: translateY(6px); } 100% { opacity: 1; transform: translateY(0); } }
 
-        .input-table { width: 100%; border-collapse: collapse; font-size: 14px; margin-top: 10px; }
-        .input-table th { background: #f7f9fc; padding: 10px 8px; text-align: left; border-bottom: 2px solid #dce3eb; font-weight: 600; color: #2e3e4e; }
-        .input-table td { padding: 6px 8px; border-bottom: 1px solid #e6ecf2; vertical-align: middle; }
-        .input-table input, .input-table select { width: 100%; padding: 6px 8px; border: 1px solid #dce3eb; border-radius: 6px; font-size: 13px; background: #fafcfe; }
-        .input-table input:focus, .input-table select:focus { border-color: #1a7f4a; outline: none; box-shadow: 0 0 0 2px rgba(26,127,74,0.15); }
+        .input-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            font-size: 14px;
+            margin-top: 12px;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+        }
+        .input-table th {
+            background: #f2f6fc;
+            padding: 12px 10px;
+            text-align: left;
+            font-weight: 600;
+            color: #1a3347;
+            border-bottom: 2px solid #dce3eb;
+        }
+        .input-table td {
+            padding: 8px 10px;
+            border-bottom: 1px solid #eef2f6;
+            vertical-align: middle;
+        }
+        .input-table tr:last-child td { border-bottom: none; }
+        .input-table input, .input-table select {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid #dce3eb;
+            border-radius: 8px;
+            font-size: 13px;
+            background: #fafcfe;
+            transition: 0.2s;
+        }
+        .input-table input:focus, .input-table select:focus { border-color: #0f6e4a; outline: none; box-shadow: 0 0 0 3px rgba(26,127,74,0.12); }
         .input-table .del-btn { background: none; border: none; color: #b33636; font-size: 18px; cursor: pointer; }
         .input-table .del-btn:hover { transform: scale(1.2); }
         .input-table .view-btn { background: none; border: none; color: #2b6f9b; font-size: 18px; cursor: pointer; }
         .input-table .view-btn:hover { transform: scale(1.1); }
 
-        .btn-group { margin: 18px 0 10px; display: flex; gap: 12px; flex-wrap: wrap; }
-        .btn { padding: 8px 22px; border: none; border-radius: 30px; font-weight: 600; font-size: 14px; background: #eef2f6; color: #1a2634; cursor: pointer; transition: 0.2s; }
-        .btn-primary { background: #1a7f4a; color: #fff; }
-        .btn-primary:hover { background: #146a3d; }
-        .btn-success { background: #2b6f9b; color: #fff; }
-        .btn-success:hover { background: #1f5a7d; }
-        .btn-outline { background: transparent; border: 2px solid #1a7f4a; color: #1a7f4a; }
-        .btn-outline:hover { background: #1a7f4a; color: #fff; }
-        .btn-danger { background: #c9453b; color: #fff; }
-        .btn-danger:hover { background: #b33636; }
-        .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        .btn-group { margin: 20px 0 12px; display: flex; gap: 12px; flex-wrap: wrap; }
+        .btn {
+            padding: 10px 26px;
+            border: none;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-primary { background: #0f6e4a; color: #fff; box-shadow: 0 4px 12px rgba(15,110,74,0.25); }
+        .btn-primary:hover { background: #0a5438; transform: translateY(-2px); box-shadow: 0 6px 16px rgba(15,110,74,0.35); }
+        .btn-success { background: #1f5a7d; color: #fff; box-shadow: 0 4px 12px rgba(31,90,125,0.25); }
+        .btn-success:hover { background: #15405a; transform: translateY(-2px); }
+        .btn-outline { background: transparent; border: 2px solid #0f6e4a; color: #0f6e4a; }
+        .btn-outline:hover { background: #0f6e4a; color: #fff; }
+        .btn-danger { background: #c9453b; color: #fff; box-shadow: 0 4px 12px rgba(201,69,59,0.25); }
+        .btn-danger:hover { background: #b33636; transform: translateY(-2px); }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
 
-        .report-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 20px; margin: 20px 0 30px; }
-        .stat-card { background: #f9fbfd; border-radius: 16px; padding: 18px 20px; box-shadow: inset 0 0 0 1px #e6ecf2; }
-        .stat-card .label { font-size: 13px; text-transform: uppercase; color: #6a7b8c; font-weight: 600; }
-        .stat-card .value { font-size: 30px; font-weight: 700; color: #0b1a2a; margin-top: 4px; }
-        .stat-card .badge { display: inline-block; padding: 4px 14px; border-radius: 30px; font-size: 14px; font-weight: 600; background: #e2f0e6; color: #0f6e3f; }
+        .report-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 20px 0 30px;
+        }
+        .stat-card {
+            background: linear-gradient(145deg, #f8faff, #edf2f9);
+            border-radius: 20px;
+            padding: 20px 24px;
+            box-shadow: 0 8px 24px rgba(0,20,40,0.06), 0 2px 6px rgba(0,0,0,0.02);
+            border: 1px solid rgba(255,255,255,0.7);
+            transition: 0.25s ease;
+        }
+        .stat-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(0,20,40,0.10); }
+        .stat-card .label { font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: #4a6378; font-weight: 600; }
+        .stat-card .value { font-size: 34px; font-weight: 700; color: #0a1e2f; margin-top: 4px; }
+        .stat-card .badge { display: inline-block; padding: 4px 16px; border-radius: 30px; font-size: 14px; font-weight: 600; background: #ddf0e3; color: #0f6e3f; }
         .stat-card .badge.warning { background: #fff3d6; color: #a86b1a; }
         .stat-card .badge.danger { background: #fce4e4; color: #b33636; }
 
-        .chart-row { display: flex; flex-wrap: wrap; gap: 30px; margin: 30px 0 20px; }
-        .chart-box { flex: 1 1 300px; min-width: 250px; background: #fafcfe; border-radius: 16px; padding: 16px; box-shadow: inset 0 0 0 1px #e6ecf2; }
-        .chart-box h3 { font-size: 16px; font-weight: 500; margin-bottom: 10px; color: #2e3e4e; }
-        .chart-box canvas { width: 100% !important; height: auto !important; max-height: 220px; }
+        .shift-stats {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px 30px;
+            background: #f5f9ff;
+            padding: 16px 24px;
+            border-radius: 16px;
+            margin: 10px 0 20px;
+            border: 1px solid #e6ecf2;
+        }
+        .shift-stats div { font-size: 14px; color: #1a3347; }
+        .shift-stats strong { font-weight: 600; color: #0a1e2f; }
 
-        .report-table { width: 100%; border-collapse: collapse; font-size: 14px; margin: 20px 0; }
-        .report-table th { background: #f7f9fc; padding: 12px 10px; text-align: left; border-bottom: 2px solid #dce3eb; font-weight: 600; color: #2e3e4e; }
-        .report-table td { padding: 12px 10px; border-bottom: 1px solid #e6ecf2; vertical-align: middle; }
+        .chart-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            margin: 30px 0 20px;
+        }
+        .chart-box {
+            flex: 1 1 280px;
+            background: #f8faff;
+            border-radius: 20px;
+            padding: 18px 20px;
+            border: 1px solid #eef2f8;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+        }
+        .chart-box h3 { font-size: 16px; font-weight: 500; margin-bottom: 12px; color: #1a3347; }
 
-        .progress-bar { background: #e6ecf2; height: 10px; border-radius: 10px; overflow: hidden; min-width: 120px; }
-        .progress-bar .fill { height: 100%; border-radius: 10px; transition: width 0.4s; }
-        .fill.plan { background: #3b6f9b; opacity: 0.35; }
-        .fill.fact { background: #1a7f4a; }
+        .report-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            font-size: 14px;
+            margin: 20px 0;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+        }
+        .report-table th {
+            background: #f2f6fc;
+            padding: 14px 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #1a3347;
+            border-bottom: 2px solid #dce3eb;
+        }
+        .report-table td {
+            padding: 14px 12px;
+            border-bottom: 1px solid #eef2f6;
+            vertical-align: middle;
+        }
+        .report-table tr:last-child td { border-bottom: none; }
+        .report-table tr:hover td { background: #f8faff; }
+
+        .progress-bar {
+            background: #e6ecf2;
+            height: 10px;
+            border-radius: 10px;
+            overflow: hidden;
+            min-width: 100px;
+        }
+        .progress-bar .fill {
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.4s;
+        }
+        .fill.plan { background: #3b6f9b; opacity: 0.4; }
+        .fill.fact { background: #0f6e4a; }
         .fill.fact.behind { background: #c9453b; }
-        .fill.fact.ahead { background: #1a7f4a; }
-        .status-tag { font-size: 12px; font-weight: 600; padding: 3px 12px; border-radius: 30px; background: #eef2f6; color: #2e3e4e; display: inline-block; }
+        .fill.fact.ahead { background: #0f6e4a; }
+
+        .status-tag {
+            font-size: 12px;
+            font-weight: 600;
+            padding: 4px 14px;
+            border-radius: 30px;
+            display: inline-block;
+            background: #eef2f6;
+            color: #2a4055;
+        }
         .status-tag.ok { background: #ddf0e3; color: #0f6e3f; }
         .status-tag.warn { background: #fff3d6; color: #a86b1a; }
         .status-tag.fail { background: #fce4e4; color: #b33636; }
 
         .gantt-container { margin: 20px 0; overflow-x: auto; }
-        .gantt-legend { display: flex; gap: 20px; margin-bottom: 15px; font-size: 14px; }
-        .gantt-legend span { display: inline-flex; align-items: center; gap: 6px; }
+        .gantt-legend {
+            display: flex;
+            gap: 24px;
+            margin-bottom: 16px;
+            font-size: 14px;
+            flex-wrap: wrap;
+        }
         .gantt-legend .color-box { width: 20px; height: 12px; border-radius: 4px; display: inline-block; }
         .gantt-grid { position: relative; min-width: 700px; }
-        .gantt-row { display: flex; align-items: center; border-bottom: 1px solid #eef2f6; min-height: 44px; }
-        .gantt-row .label { width: 180px; min-width: 180px; padding-right: 15px; font-weight: 500; font-size: 13px; color: #1a2634; }
-        .gantt-row .timeline { flex: 1; position: relative; height: 32px; background: #f9fbfd; border-radius: 6px; margin: 4px 0; }
-        .gantt-bar { position: absolute; top: 4px; height: 24px; border-radius: 6px; opacity: 0.85; display: flex; align-items: center; justify-content: center; font-size: 11px; color: #fff; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 6px; cursor: default; }
-        .gantt-bar.plan { background: #3b6f9b; opacity: 0.5; top: 0; height: 14px; }
-        .gantt-bar.fact { background: #1a7f4a; top: 14px; height: 14px; }
+        .gantt-row {
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid #eef2f6;
+            min-height: 44px;
+        }
+        .gantt-row .label {
+            width: 180px;
+            min-width: 180px;
+            padding-right: 16px;
+            font-weight: 500;
+            font-size: 13px;
+            color: #1a3347;
+        }
+        .gantt-row .timeline {
+            flex: 1;
+            position: relative;
+            height: 32px;
+            background: #f5f9ff;
+            border-radius: 8px;
+            margin: 4px 0;
+        }
+        .gantt-bar {
+            position: absolute;
+            top: 4px;
+            height: 24px;
+            border-radius: 6px;
+            opacity: 0.85;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            color: #fff;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            padding: 0 6px;
+        }
+        .gantt-bar.plan { background: #3b6f9b; opacity: 0.4; top: 0; height: 14px; }
+        .gantt-bar.fact { background: #0f6e4a; top: 14px; height: 14px; }
         .gantt-bar.fact.behind { background: #c9453b; }
-        .gantt-bar.fact.ahead { background: #1a7f4a; }
-        .gantt-month-labels { display: flex; margin-left: 180px; padding: 6px 0; font-size: 12px; color: #5e6f7e; }
+        .gantt-bar.fact.ahead { background: #0f6e4a; }
+        .gantt-month-labels {
+            display: flex;
+            margin-left: 180px;
+            padding: 6px 0;
+            font-size: 12px;
+            color: #4a6378;
+        }
         .gantt-month-labels div { flex: 1; text-align: center; border-right: 1px solid #e6ecf2; }
         .gantt-month-labels div:last-child { border-right: none; }
 
-        .export-group { display: flex; gap: 14px; justify-content: flex-end; margin-top: 25px; padding-top: 20px; border-top: 1px solid #e6ecf2; }
+        .export-group {
+            display: flex;
+            gap: 14px;
+            justify-content: flex-end;
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px solid #e6ecf2;
+        }
 
         .shift-status {
-            background: #f9fbfd;
-            padding: 16px 20px;
+            background: #f5f9ff;
+            padding: 16px 24px;
             border-radius: 16px;
             margin-bottom: 20px;
             display: flex;
             align-items: center;
             flex-wrap: wrap;
             gap: 20px;
+            border: 1px solid #e6ecf2;
         }
         .shift-status .status-text { font-weight: 600; font-size: 16px; }
-        .shift-status .status-text .open { color: #1a7f4a; }
-        .shift-status .status-text .closed { color: #5e6f7e; }
+        .shift-status .status-text .open { color: #0f6e4a; }
+        .shift-status .status-text .closed { color: #4a6378; }
         .shift-status .status-text .none { color: #c9453b; }
 
         .shift-action-form {
-            background: #f9fbfd;
-            padding: 16px 20px;
+            background: #f5f9ff;
+            padding: 16px 24px;
             border-radius: 16px;
             margin-bottom: 20px;
             display: none;
             flex-wrap: wrap;
             gap: 12px;
             align-items: end;
+            border: 1px solid #e6ecf2;
         }
         .shift-action-form .field { display: flex; flex-direction: column; gap: 4px; }
-        .shift-action-form .field label { font-size: 13px; font-weight: 500; color: #2e3e4e; }
-        .shift-action-form .field input, .shift-action-form .field select { padding: 6px 10px; border: 1px solid #dce3eb; border-radius: 6px; font-size: 13px; background: #fff; width: 160px; }
+        .shift-action-form .field label { font-size: 13px; font-weight: 500; color: #1a3347; }
+        .shift-action-form .field input, .shift-action-form .field select {
+            padding: 8px 12px;
+            border: 1px solid #dce3eb;
+            border-radius: 8px;
+            font-size: 13px;
+            background: #fff;
+            width: 160px;
+        }
         .shift-action-form .field input[type="number"] { width: 100px; }
         .shift-action-form .field input[type="file"] { padding: 6px 0; border: none; }
         .shift-action-form .field input[type="text"] { width: 180px; }
-
-        .shift-stats { display: flex; flex-wrap: wrap; gap: 20px; background: #f9fbfd; padding: 16px; border-radius: 16px; margin: 8px 0; }
-
-        .file-list { font-size: 12px; color: #2e3e4e; max-width: 150px; word-break: break-all; }
+        @media (max-width: 768px) {
+            .shift-action-form .field input, .shift-action-form .field select { width: 100%; }
+            .shift-action-form .field input[type="number"], .shift-action-form .field input[type="text"] { width: 100%; }
+        }
 
         .modal-overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.4);
+            background: rgba(0,20,40,0.5);
+            backdrop-filter: blur(6px);
             display: flex; align-items: center; justify-content: center;
             z-index: 1000;
-            backdrop-filter: blur(4px);
         }
         .modal-overlay.hidden { display: none; }
         .modal-box {
             background: #fff;
             padding: 40px 35px;
-            border-radius: 24px;
-            max-width: 400px;
+            border-radius: 28px;
+            max-width: 420px;
             width: 90%;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+            box-shadow: 0 30px 80px rgba(0,0,0,0.2);
             text-align: center;
         }
-        .modal-box h2 { margin-bottom: 10px; color: #1a2634; }
-        .modal-box p { color: #5e6f7e; margin-bottom: 20px; }
-        .modal-box input { width: 100%; padding: 12px 15px; border: 1px solid #dce3eb; border-radius: 10px; font-size: 16px; margin-bottom: 15px; }
-        .modal-box input:focus { border-color: #1a7f4a; outline: none; box-shadow: 0 0 0 3px rgba(26,127,74,0.15); }
-        .modal-box .btn { width: 100%; padding: 12px; font-size: 16px; }
+        .modal-box h2 { margin-bottom: 10px; color: #0a1e2f; }
+        .modal-box p { color: #4a6378; margin-bottom: 20px; line-height: 1.6; }
+        .modal-box .btn-group { justify-content: center; margin: 0; }
+        .modal-box input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1px solid #dce3eb;
+            border-radius: 12px;
+            font-size: 16px;
+            margin-bottom: 16px;
+            transition: 0.2s;
+        }
+        .modal-box input:focus { border-color: #0f6e4a; outline: none; box-shadow: 0 0 0 4px rgba(15,110,74,0.12); }
+        .modal-box .btn { width: 100%; padding: 14px; font-size: 16px; }
         .modal-box .error { color: #c9453b; font-size: 14px; margin-top: 5px; display: none; }
 
         .file-modal-overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.7);
+            background: rgba(0,20,40,0.7);
+            backdrop-filter: blur(8px);
             display: none;
             align-items: center;
             justify-content: center;
-            z-index: 2000;
-            backdrop-filter: blur(4px);
+            z-index: 3000;
         }
         .file-modal-overlay.active { display: flex; }
         .file-modal-box {
             background: #fff;
             padding: 30px;
-            border-radius: 24px;
+            border-radius: 28px;
             max-width: 90%;
             width: 800px;
             max-height: 90vh;
             overflow-y: auto;
             text-align: center;
             position: relative;
+            box-shadow: 0 30px 80px rgba(0,0,0,0.3);
         }
         .file-modal-box .close-btn {
             position: absolute;
-            top: 10px;
+            top: 12px;
             right: 20px;
             font-size: 30px;
             cursor: pointer;
-            color: #5e6f7e;
+            color: #4a6378;
             background: none;
             border: none;
+            transition: 0.2s;
         }
-        .file-modal-box .close-btn:hover { color: #c9453b; }
+        .file-modal-box .close-btn:hover { color: #c9453b; transform: rotate(90deg); }
         .file-modal-box .file-grid {
             display: flex;
             flex-wrap: wrap;
-            gap: 15px;
+            gap: 20px;
             justify-content: center;
             margin-top: 15px;
         }
         .file-modal-box .file-item {
-            max-width: 300px;
+            max-width: 280px;
             border: 1px solid #e6ecf2;
-            border-radius: 12px;
-            padding: 10px;
-            background: #f9fbfd;
-            transition: transform 0.2s;
+            border-radius: 16px;
+            padding: 12px;
+            background: #f8faff;
+            transition: 0.2s;
         }
-        .file-modal-box .file-item:hover {
-            transform: scale(1.02);
-        }
+        .file-modal-box .file-item:hover { transform: scale(1.02); box-shadow: 0 8px 24px rgba(0,0,0,0.06); }
         .file-modal-box .file-item img,
         .file-modal-box .file-item video {
             max-width: 100%;
-            max-height: 300px;
-            border-radius: 8px;
+            max-height: 280px;
+            border-radius: 12px;
         }
-        .file-modal-box .file-item img {
-            cursor: pointer;
-        }
+        .file-modal-box .file-item img { cursor: pointer; }
         .file-modal-box .file-item .file-name {
             font-size: 12px;
-            color: #5e6f7e;
-            margin-top: 5px;
+            color: #4a6378;
+            margin-top: 6px;
+            word-break: break-word;
         }
-        /* Стиль для увеличения фото внутри модального окна */
         .modal-img.fullscreen {
             position: fixed !important;
             top: 50% !important;
@@ -230,56 +486,195 @@
             max-height: 90vh !important;
             z-index: 9999 !important;
             object-fit: contain !important;
-            background: rgba(0,0,0,0.8) !important;
-            padding: 10px !important;
-            border-radius: 8px !important;
-            box-shadow: 0 0 30px rgba(0,0,0,0.5) !important;
+            background: rgba(0,0,0,0.85) !important;
+            padding: 16px !important;
+            border-radius: 16px !important;
+            box-shadow: 0 0 60px rgba(0,0,0,0.5) !important;
             cursor: zoom-out !important;
         }
         .modal-img {
             transition: all 0.3s ease !important;
             max-width: 100%;
-            max-height: 300px;
+            max-height: 280px;
         }
-
         .loader {
             border: 4px solid #f3f3f3;
-            border-top: 4px solid #1a7f4a;
+            border-top: 4px solid #0f6e4a;
             border-radius: 50%;
             width: 40px;
             height: 40px;
             animation: spin 1s linear infinite;
             margin: 20px auto;
         }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* ===== СТИЛИ ДЛЯ ОБУЧЕНИЯ (box-shadow затемнение) ===== */
+        .onboarding-highlight {
+            position: relative;
+            z-index: 9999 !important;
+            box-shadow: 0 0 0 4px #0f6e4a, 0 0 0 9999px rgba(0, 20, 40, 0.75) !important;
+            border-radius: 8px;
+            transition: box-shadow 0.3s;
+            pointer-events: auto !important;
+        }
+        .onboarding-tooltip {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #fff;
+            border-radius: 24px;
+            padding: 24px 30px;
+            max-width: 520px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            z-index: 10000;
+            text-align: center;
+            pointer-events: auto;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        .onboarding-tooltip .step-counter {
+            font-size: 13px;
+            color: #4a6378;
+            margin-bottom: 4px;
+        }
+        .onboarding-tooltip h3 {
+            font-size: 20px;
+            color: #0a1e2f;
+            margin-bottom: 8px;
+        }
+        .onboarding-tooltip p {
+            font-size: 15px;
+            color: #2a4055;
+            line-height: 1.6;
+            margin-bottom: 16px;
+        }
+        .onboarding-tooltip .btn-group {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .onboarding-tooltip .btn {
+            min-width: 100px;
+            justify-content: center;
+        }
+        .onboarding-tooltip .btn-outline {
+            border-color: #bcc9d6;
+            color: #4a6378;
+            background: transparent;
+        }
+        .onboarding-tooltip .btn-outline:hover {
+            background: #eef2f6;
+            color: #0a1e2f;
+            border-color: #8a9cb0;
         }
 
-        #pdfContent { background: #fff; padding: 10px; }
-        #pdfContent .report-summary,
-        #pdfContent .chart-row,
-        #pdfContent .report-table { page-break-inside: avoid; }
-        #pdfContent .report-table td,
-        #pdfContent .report-table th { border: 1px solid #dce3eb; }
+        .onboarding-feature-box {
+            background: #f0f7ff;
+            border-radius: 12px;
+            padding: 12px 16px;
+            margin: 12px 0 16px;
+            border-left: 4px solid #0f6e4a;
+            text-align: left;
+        }
+        .onboarding-feature-box h4 {
+            font-size: 14px;
+            color: #0a1e2f;
+            margin-bottom: 4px;
+        }
+        .onboarding-feature-box ul {
+            margin: 0;
+            padding-left: 18px;
+            font-size: 13px;
+            color: #1a3347;
+        }
+        .onboarding-feature-box ul li {
+            margin-bottom: 2px;
+        }
 
-        @media print {
-            body { background: #fff; padding: 0.5cm; }
-            .container { box-shadow: none; border: none; padding: 0; }
-            .tabs, .tab-btn, .btn-group, .export-group, .no-print { display: none !important; }
-            .tab-content { display: block !important; }
-            .report-summary { break-inside: avoid; }
-            .chart-row { break-inside: avoid; }
-            .report-table { break-inside: auto; }
-            .stat-card .badge { background: #e2f0e6 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-            .progress-bar .fill { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-            .gantt-bar { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        .restart-tour-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 100;
+            background: #0f6e4a;
+            color: #fff;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 16px rgba(15,110,74,0.3);
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .restart-tour-btn:hover {
+            transform: scale(1.1);
+            background: #0a5438;
+        }
+
+        .onboarding-reminder {
+            position: fixed;
+            bottom: 90px;
+            right: 20px;
+            background: #fff;
+            border-radius: 16px;
+            padding: 16px 20px;
+            max-width: 320px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+            z-index: 50;
+            border-left: 4px solid #0f6e4a;
+            display: none;
+            animation: slideIn 0.3s ease;
+        }
+        .onboarding-reminder.active {
+            display: block;
+        }
+        .onboarding-reminder p {
+            font-size: 14px;
+            color: #1a3347;
+            margin: 0 0 8px 0;
+        }
+        .onboarding-reminder .btn {
+            padding: 4px 16px;
+            font-size: 13px;
+        }
+        @keyframes slideIn {
+            0% { opacity: 0; transform: translateY(20px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 768px) {
+            .onboarding-tooltip {
+                padding: 20px 18px;
+                max-width: 95%;
+                bottom: 20px;
+            }
+            .onboarding-tooltip h3 { font-size: 18px; }
+            .onboarding-tooltip p { font-size: 14px; }
+            .restart-tour-btn {
+                width: 44px;
+                height: 44px;
+                font-size: 20px;
+                bottom: 16px;
+                right: 16px;
+            }
+            .onboarding-reminder {
+                bottom: 80px;
+                right: 16px;
+                max-width: 280px;
+                padding: 14px 16px;
+            }
         }
     </style>
 </head>
 <body>
 
-<!-- Модальное окно входа -->
+<!-- ===== МОДАЛЬНОЕ ОКНО ВХОДА ===== -->
 <div class="modal-overlay" id="loginModal">
     <div class="modal-box">
         <h2>👷 Вход в систему</h2>
@@ -294,7 +689,7 @@
     </div>
 </div>
 
-<!-- Модальное окно просмотра файлов -->
+<!-- ===== МОДАЛЬНОЕ ОКНО ПРОСМОТРА ФАЙЛОВ ===== -->
 <div class="file-modal-overlay" id="fileModal">
     <div class="file-modal-box">
         <button class="close-btn" id="fileModalClose">&times;</button>
@@ -304,11 +699,12 @@
     </div>
 </div>
 
-<div class="container">
+<!-- ===== ОСНОВНОЙ КОНТЕЙНЕР ===== -->
+<div class="container" id="mainContainer">
     <div class="header">
         <div>
-            <h1>🏛 Суворовские бастионы</h1>
-            <div class="sub">Строительный контроль – ввод данных, отчёт и график</div>
+            <h1>🏗️ Строительный контроль</h1>
+            <div class="sub">Управление этапами, сменами и отчётность</div>
         </div>
         <div class="user-info" id="userInfo">
             <span class="name" id="displayUser">—</span>
@@ -316,26 +712,45 @@
         </div>
     </div>
 
-    <div class="tabs">
-        <button class="tab-btn active" data-tab="input">📝 Этапы</button>
-        <button class="tab-btn" data-tab="shift">👷 Сменный учёт</button>
+    <!-- ===== СВОДНАЯ ПАНЕЛЬ ===== -->
+    <div class="dashboard" id="dashboard">
+        <div class="dashboard-item">
+            <div class="dash-label">Общая готовность</div>
+            <div class="dash-value" id="dashOverall">0%</div>
+        </div>
+        <div class="dashboard-item">
+            <div class="dash-label">Этапов</div>
+            <div class="dash-value" id="dashStages">0</div>
+        </div>
+        <div class="dashboard-item">
+            <div class="dash-label">Закрытых смен</div>
+            <div class="dash-value" id="dashShifts">0</div>
+        </div>
+    </div>
+
+    <!-- ===== ВКЛАДКИ ===== -->
+    <div class="tabs" id="tabHeaders">
+        <button class="tab-btn active" data-tab="input">📝 Этапы <span class="badge-count" id="badgeStages">0</span></button>
+        <button class="tab-btn" data-tab="shift">👷 Сменный учёт <span class="badge-count" id="badgeShifts">0</span></button>
         <button class="tab-btn" data-tab="report">📊 Отчёт</button>
         <button class="tab-btn" data-tab="gantt">📅 График работ</button>
     </div>
 
-    <!-- Вкладка "Этапы" -->
+    <!-- ===== ВКЛАДКА "ЭТАПЫ" ===== -->
     <div id="tab-input" class="tab-content active">
         <p style="color:#5e6f7e; margin-bottom:12px;">Добавьте или отредактируйте этапы. Все изменения сохраняются автоматически.</p>
         <div style="overflow-x:auto;">
             <table class="input-table" id="inputTable">
                 <thead>
                     <tr>
-                        <th style="width:22%">Название этапа</th>
-                        <th style="width:16%">План старт</th>
-                        <th style="width:16%">План финиш</th>
-                        <th style="width:16%">Факт старт</th>
-                        <th style="width:16%">Факт финиш</th>
-                        <th style="width:12%">Прогресс, %</th>
+                        <th style="width:14%">Название этапа</th>
+                        <th style="width:12%">Объект</th>
+                        <th style="width:10%">Дом/корпус</th>
+                        <th style="width:12%">План старт</th>
+                        <th style="width:12%">План финиш</th>
+                        <th style="width:12%">Факт старт</th>
+                        <th style="width:12%">Факт финиш</th>
+                        <th style="width:10%">Прогресс, %</th>
                         <th style="width:4%"></th>
                     </tr>
                 </thead>
@@ -349,7 +764,7 @@
         </div>
     </div>
 
-    <!-- Вкладка "Сменный учёт" -->
+    <!-- ===== ВКЛАДКА "СМЕННЫЙ УЧЁТ" ===== -->
     <div id="tab-shift" class="tab-content">
         <h3 style="font-weight:500; margin-bottom:12px;">Управление сменой</h3>
 
@@ -366,6 +781,14 @@
             <div class="field">
                 <label>Этап</label>
                 <select id="openStage"><option value="">Выберите этап</option></select>
+            </div>
+            <div class="field">
+                <label>Номер смены</label>
+                <input type="text" id="openShiftNumber" placeholder="например, 1, 2, ночная">
+            </div>
+            <div class="field">
+                <label>СМУ</label>
+                <input type="text" id="openSMU" placeholder="например, СМУ-5">
             </div>
             <div class="field">
                 <label>Человек</label>
@@ -402,6 +825,8 @@
                         <th>Дата</th>
                         <th>ФИО</th>
                         <th>Этап</th>
+                        <th>Смена</th>
+                        <th>СМУ</th>
                         <th>Человек</th>
                         <th>Открыта</th>
                         <th>Закрыта</th>
@@ -418,54 +843,53 @@
         </div>
     </div>
 
-    <!-- Вкладка "Отчёт" -->
+    <!-- ===== ВКЛАДКА "ОТЧЁТ" ===== -->
     <div id="tab-report" class="tab-content">
         <div id="reportContent">
-            <div id="pdfContent">
-                <div class="report-summary" id="reportSummary"></div>
-                <div style="margin: 20px 0 10px;">
-                    <h3 style="font-weight:500;">👷 Сменная статистика</h3>
-                    <div id="shiftStats" class="shift-stats"></div>
+            <div class="report-summary" id="reportSummary"></div>
+            <div style="margin: 20px 0 10px;">
+                <h3 style="font-weight:500;">👷 Сменная статистика</h3>
+                <div id="shiftStats" class="shift-stats"></div>
+            </div>
+            <div class="chart-row">
+                <div class="chart-box">
+                    <h3>Общая готовность</h3>
+                    <canvas id="pieChart"></canvas>
                 </div>
-                <div class="chart-row">
-                    <div class="chart-box">
-                        <h3>Общая готовность</h3>
-                        <canvas id="pieChart"></canvas>
-                    </div>
-                    <div class="chart-box">
-                        <h3>План vs Факт (прогресс по этапам)</h3>
-                        <canvas id="barChart"></canvas>
-                    </div>
+                <div class="chart-box">
+                    <h3>План vs Факт (прогресс по этапам)</h3>
+                    <canvas id="barChart"></canvas>
                 </div>
-                <h3 style="margin:25px 0 10px; font-weight:500;">Детальный план-факт</h3>
-                <div style="overflow-x:auto;">
-                    <table class="report-table" id="reportTable">
-                        <thead>
-                            <tr>
-                                <th>Этап</th>
-                                <th>План</th>
-                                <th>Факт</th>
-                                <th>Ход работ</th>
-                                <th>Статус</th>
-                            </tr>
-                        </thead>
-                        <tbody id="reportBody"></tbody>
-                    </table>
-                </div>
+            </div>
+            <h3 style="margin:25px 0 10px; font-weight:500;">Детальный план-факт</h3>
+            <div style="overflow-x:auto;">
+                <table class="report-table" id="reportTable">
+                    <thead>
+                        <tr>
+                            <th>Этап</th>
+                            <th>Объект</th>
+                            <th>Дом</th>
+                            <th>План</th>
+                            <th>Факт</th>
+                            <th>Ход работ</th>
+                            <th>Статус</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reportBody"></tbody>
+                </table>
             </div>
             <div class="export-group no-print">
                 <button class="btn btn-primary" id="exportPdfBtn">📄 Экспорт PDF</button>
-                <button class="btn btn-success" id="exportExcelBtn">📊 Экспорт Excel</button>
             </div>
         </div>
     </div>
 
-    <!-- Вкладка "График работ" -->
+    <!-- ===== ВКЛАДКА "ГРАФИК РАБОТ" ===== -->
     <div id="tab-gantt" class="tab-content">
         <div style="margin: 10px 0 20px;">
             <div class="gantt-legend">
                 <span><span class="color-box" style="background:#3b6f9b; opacity:0.5;"></span> План</span>
-                <span><span class="color-box" style="background:#1a7f4a;"></span> Факт (в графике / опережение)</span>
+                <span><span class="color-box" style="background:#0f6e4a;"></span> Факт (в графике / опережение)</span>
                 <span><span class="color-box" style="background:#c9453b;"></span> Факт (отставание)</span>
             </div>
         </div>
@@ -473,6 +897,31 @@
         <p style="color:#6a7b8c; font-size:13px; margin-top:10px;">* Полосы отображают план и факт по датам. Если фактические даты не заданы, показан только план.</p>
     </div>
 </div>
+
+<!-- ===== ОБУЧЕНИЕ (тултип) ===== -->
+<div class="onboarding-tooltip" id="onboardingTooltip" style="display:none;">
+    <div class="step-counter" id="onboardingStepCounter">Шаг 1 из 9</div>
+    <h3 id="onboardingTitle">Добро пожаловать!</h3>
+    <p id="onboardingDesc">Это система «Строительный контроль». Она поможет вам управлять этапами строительства, вести учёт смен и формировать отчёты.</p>
+    <div id="onboardingFeatureBox" class="onboarding-feature-box" style="display:none;">
+        <h4>✨ Дополнительные возможности</h4>
+        <ul id="onboardingFeatureList"></ul>
+    </div>
+    <div class="btn-group">
+        <button class="btn btn-outline" id="onboardingSkipBtn">Пропустить</button>
+        <button class="btn btn-outline" id="onboardingPrevBtn" style="display:none;">← Назад</button>
+        <button class="btn btn-primary" id="onboardingNextBtn">Далее →</button>
+    </div>
+</div>
+
+<!-- ===== НАПОМИНАНИЕ (тост) ===== -->
+<div class="onboarding-reminder" id="onboardingReminder">
+    <p>❓ Если вам что-то непонятно, вы можете запустить обучение, нажав на кнопку с вопросительным знаком справа внизу.</p>
+    <button class="btn btn-primary" id="reminderStartBtn" style="padding: 4px 16px; font-size:13px;">Запустить обучение</button>
+</div>
+
+<!-- ===== КНОПКА РУЧНОГО ЗАПУСКА ===== -->
+<button class="restart-tour-btn" id="restartTourBtn" title="Запустить обучение">❓</button>
 
 <script>
     // ============================================================
@@ -482,6 +931,26 @@
     const ADMIN_NAME = 'Леухин Олег Павлович';
     const ADMIN_PASSWORD = 'OlegMolodoy()!';
 
+    // ===== ФУНКЦИИ РАБОТЫ С ФЛАГОМ ОБУЧЕНИЯ (ПО ПОЛЬЗОВАТЕЛЮ) =====
+    function getOnboardingKey(user) {
+        return 'onboardingDone_' + user;
+    }
+
+    function isOnboardingDoneForUser(user) {
+        return localStorage.getItem(getOnboardingKey(user)) === 'true';
+    }
+
+    function setOnboardingDoneForUser(user) {
+        localStorage.setItem(getOnboardingKey(user), 'true');
+    }
+
+    function resetOnboardingForUser(user) {
+        localStorage.removeItem(getOnboardingKey(user));
+    }
+
+    // ============================================================
+    //   ВХОД / ВЫХОД
+    // ============================================================
     function setUser(name) {
         currentUser = name.trim();
         sessionStorage.setItem('currentUser', currentUser);
@@ -489,11 +958,46 @@
         document.getElementById('loginModal').classList.add('hidden');
         loadData();
         renderInputTable();
-        // После загрузки данных синхронизируем файлы и перерисовываем
         syncFilesWithIndexedDB().then(() => {
             renderShifts();
             updateAll();
             updateShiftUI();
+            updateDashboard();
+            updateTabBadges();
+
+            // ===== ЗАПУСК ОБУЧЕНИЯ (если не пройдено для этого пользователя) =====
+            if (!isOnboardingDoneForUser(currentUser)) {
+                console.log('Обучение не пройдено для пользователя', currentUser, '– запускаем.');
+                // Попытка 1
+                setTimeout(function() {
+                    try {
+                        if (!isOnboardingActive) {
+                            startOnboarding();
+                        }
+                    } catch (e) {
+                        console.error('Ошибка запуска обучения (попытка 1):', e);
+                    }
+                }, 600);
+                // Попытка 2
+                setTimeout(function() {
+                    try {
+                        if (!isOnboardingActive) {
+                            startOnboarding();
+                        }
+                    } catch (e) {
+                        console.error('Ошибка запуска обучения (попытка 2):', e);
+                    }
+                }, 1200);
+                // Напоминание через 5 секунд, если обучение так и не запустилось
+                setTimeout(function() {
+                    if (!isOnboardingActive && !isOnboardingDoneForUser(currentUser)) {
+                        document.getElementById('onboardingReminder').classList.add('active');
+                        console.log('Показано напоминание об обучении.');
+                    }
+                }, 5000);
+            } else {
+                console.log('Обучение уже пройдено для пользователя', currentUser);
+            }
         });
     }
 
@@ -512,6 +1016,14 @@
         document.getElementById('shiftStats').innerHTML = '<p style="color:#6a7b8c;">Нет записей о сменах.</p>';
         document.getElementById('openShiftForm').style.display = 'none';
         document.getElementById('closeShiftForm').style.display = 'none';
+        updateDashboard();
+        updateTabBadges();
+        // Скрываем напоминание
+        document.getElementById('onboardingReminder').classList.remove('active');
+        // Закрываем обучение, если оно активно
+        if (isOnboardingActive) {
+            finishOnboarding();
+        }
     }
 
     window.addEventListener('DOMContentLoaded', function() {
@@ -580,7 +1092,7 @@
     });
 
     // ============================================================
-    //   IndexedDB для хранения файлов
+    //   INDEXEDDB, ХРАНИЛИЩЕ, ФИЛЬТРАЦИЯ (без изменений)
     // ============================================================
     const DB_NAME = 'ShiftFilesDB';
     const STORE_NAME = 'files';
@@ -642,41 +1154,42 @@
         });
     }
 
-    // ============================================================
-    //   СИНХРОНИЗАЦИЯ ФАЙЛОВ ПРИ ЗАГРУЗКЕ
-    // ============================================================
     async function syncFilesWithIndexedDB() {
-        // Проходим по всем сменам и проверяем наличие файлов в IndexedDB
         for (let sh of shifts) {
             try {
                 const files = await getFilesForShift(sh.id);
                 if (files && files.length > 0) {
-                    // Если файлы есть, но в объекте смены они не записаны – дописываем
                     if (!sh.files || sh.files.length === 0) {
                         sh.files = files.map(f => ({ name: f.name, size: 0, type: f.type }));
-                        console.log(`[sync] Обновлена смена ${sh.id}, добавлены файлы:`, sh.files);
                     }
                 } else {
-                    // Если в IndexedDB нет файлов, но в объекте они есть – очищаем (на случай, если были удалены)
                     if (sh.files && sh.files.length > 0) {
                         sh.files = [];
-                        console.log(`[sync] Очищена смена ${sh.id}, файлы не найдены в IndexedDB.`);
                     }
                 }
             } catch (e) {
-                console.warn(`[sync] Ошибка для смены ${sh.id}:`, e);
+                console.warn('[sync] Ошибка для смены', sh.id, e);
             }
         }
-        saveShifts(); // сохраняем обновлённые данные
+        saveShifts();
     }
 
-    // ============================================================
-    //   ХРАНИЛИЩЕ ДАННЫХ (localStorage)
-    // ============================================================
     const STORAGE_KEY = 'suvarov_stages';
     const SHIFT_KEY = 'suvarov_shifts';
     let stages = [];
     let shifts = [];
+
+    const STAGE_NAMES = [
+        'Котлован',
+        'Фундамент',
+        'Стены подвала',
+        'Стены 1-го этажа',
+        'Перекрытия',
+        'Кровля',
+        'Инженерные сети',
+        'Отделка',
+        'Благоустройство'
+    ];
 
     function loadData() {
         const saved = localStorage.getItem(STORAGE_KEY);
@@ -685,14 +1198,14 @@
         }
         if (!stages || stages.length === 0) {
             stages = [
-                { name: 'Котлован', planStart: '2026-04-01', planEnd: '2026-04-20', factStart: '2026-04-01', factEnd: '2026-04-18', progress: 100 },
-                { name: 'Фундамент', planStart: '2026-04-21', planEnd: '2026-05-15', factStart: '2026-04-21', factEnd: '', progress: 75 },
-                { name: 'Стены подвала', planStart: '2026-05-10', planEnd: '2026-05-30', factStart: '2026-05-12', factEnd: '', progress: 30 },
-                { name: 'Стены 1-го этажа', planStart: '2026-05-20', planEnd: '2026-06-15', factStart: '2026-06-01', factEnd: '', progress: 10 },
-                { name: 'Перекрытия', planStart: '2026-06-10', planEnd: '2026-06-30', factStart: '', factEnd: '', progress: 0 },
-                { name: 'Кровля', planStart: '2026-07-01', planEnd: '2026-07-25', factStart: '', factEnd: '', progress: 0 },
-                { name: 'Инженерные сети', planStart: '2026-06-20', planEnd: '2026-08-10', factStart: '2026-06-22', factEnd: '', progress: 45 },
-                { name: 'Отделка', planStart: '2026-08-01', planEnd: '2026-09-30', factStart: '', factEnd: '', progress: 0 }
+                { name: 'Котлован', objectName: '', building: '', planStart: '2026-04-01', planEnd: '2026-04-20', factStart: '2026-04-01', factEnd: '2026-04-18', progress: 100 },
+                { name: 'Фундамент', objectName: '', building: '', planStart: '2026-04-21', planEnd: '2026-05-15', factStart: '2026-04-21', factEnd: '', progress: 75 },
+                { name: 'Стены подвала', objectName: '', building: '', planStart: '2026-05-10', planEnd: '2026-05-30', factStart: '2026-05-12', factEnd: '', progress: 30 },
+                { name: 'Стены 1-го этажа', objectName: '', building: '', planStart: '2026-05-20', planEnd: '2026-06-15', factStart: '2026-06-01', factEnd: '', progress: 10 },
+                { name: 'Перекрытия', objectName: '', building: '', planStart: '2026-06-10', planEnd: '2026-06-30', factStart: '', factEnd: '', progress: 0 },
+                { name: 'Кровля', objectName: '', building: '', planStart: '2026-07-01', planEnd: '2026-07-25', factStart: '', factEnd: '', progress: 0 },
+                { name: 'Инженерные сети', objectName: '', building: '', planStart: '2026-06-20', planEnd: '2026-08-10', factStart: '2026-06-22', factEnd: '', progress: 45 },
+                { name: 'Отделка', objectName: '', building: '', planStart: '2026-08-01', planEnd: '2026-09-30', factStart: '', factEnd: '', progress: 0 }
             ];
             saveStages();
         }
@@ -715,9 +1228,6 @@
     function saveStages() { localStorage.setItem(STORAGE_KEY, JSON.stringify(stages)); }
     function saveShifts() { localStorage.setItem(SHIFT_KEY, JSON.stringify(shifts)); }
 
-    // ============================================================
-    //   ФИЛЬТРАЦИЯ СМЕН
-    // ============================================================
     function getFilteredShifts() {
         if (!currentUser) return [];
         if (currentUser === ADMIN_NAME) return shifts.slice();
@@ -729,9 +1239,6 @@
         return all.find(sh => sh.closeTime === null) || null;
     }
 
-    // ============================================================
-    //   ОБНОВЛЕНИЕ UI СМЕНЫ
-    // ============================================================
     function updateShiftUI() {
         const openShift = getCurrentOpenShift();
         const statusText = document.getElementById('statusText');
@@ -755,7 +1262,7 @@
     }
 
     // ============================================================
-    //   ОТКРЫТИЕ СМЕНЫ
+    //   ОТКРЫТИЕ / ЗАКРЫТИЕ СМЕНЫ (без изменений)
     // ============================================================
     document.getElementById('btnOpenShift').addEventListener('click', function() {
         if (getCurrentOpenShift()) {
@@ -772,6 +1279,8 @@
             opt.textContent = st.name;
             select.appendChild(opt);
         });
+        document.getElementById('openShiftNumber').value = '';
+        document.getElementById('openSMU').value = '';
         document.getElementById('openPeople').value = 1;
         document.getElementById('openNote').value = '';
     });
@@ -782,6 +1291,8 @@
 
     document.getElementById('confirmOpenBtn').addEventListener('click', function() {
         const stage = document.getElementById('openStage').value;
+        const shiftNumber = document.getElementById('openShiftNumber').value.trim() || '—';
+        const smu = document.getElementById('openSMU').value.trim() || '—';
         const people = parseInt(document.getElementById('openPeople').value) || 1;
         const note = document.getElementById('openNote').value.trim() || '';
         if (!stage) { alert('Выберите этап'); return; }
@@ -794,6 +1305,8 @@
             openTime: new Date().toISOString(),
             closeTime: null,
             stage: stage,
+            shiftNumber: shiftNumber,
+            smu: smu,
             people: people,
             note: note,
             files: []
@@ -806,9 +1319,6 @@
         document.getElementById('openShiftForm').style.display = 'none';
     });
 
-    // ============================================================
-    //   ЗАКРЫТИЕ СМЕНЫ
-    // ============================================================
     document.getElementById('btnCloseShift').addEventListener('click', function() {
         const openShift = getCurrentOpenShift();
         if (!openShift) { alert('Нет открытой смены.'); return; }
@@ -868,8 +1378,15 @@
         tbody.innerHTML = '';
         stages.forEach((st, index) => {
             const tr = document.createElement('tr');
+            const datalistId = 'stageNames_' + index;
+            let optionsHtml = STAGE_NAMES.map(name => `<option value="${name}">`).join('');
             tr.innerHTML = `
-                <td><input type="text" class="inp-name" value="${st.name}" data-idx="${index}"></td>
+                <td>
+                    <input type="text" class="inp-name" value="${st.name}" data-idx="${index}" list="${datalistId}">
+                    <datalist id="${datalistId}">${optionsHtml}</datalist>
+                </td>
+                <td><input type="text" class="inp-objectName" value="${st.objectName || ''}" data-idx="${index}" placeholder="Объект"></td>
+                <td><input type="text" class="inp-building" value="${st.building || ''}" data-idx="${index}" placeholder="Дом/корпус"></td>
                 <td><input type="date" class="inp-planStart" value="${st.planStart || ''}" data-idx="${index}"></td>
                 <td><input type="date" class="inp-planEnd" value="${st.planEnd || ''}" data-idx="${index}"></td>
                 <td><input type="date" class="inp-factStart" value="${st.factStart || ''}" data-idx="${index}"></td>
@@ -888,6 +1405,8 @@
                 if (field === 'progress') value = parseFloat(value) || 0;
                 stages[idx][field] = value;
                 saveStages();
+                updateDashboard();
+                updateTabBadges();
             });
         });
 
@@ -898,12 +1417,14 @@
                 saveStages();
                 renderInputTable();
                 updateAll();
+                updateDashboard();
+                updateTabBadges();
             });
         });
     }
 
     // ============================================================
-    //   РЕНДЕРИНГ ЖУРНАЛА СМЕН (с кнопкой просмотра)
+    //   РЕНДЕРИНГ ЖУРНАЛА СМЕН
     // ============================================================
     function renderShifts() {
         const filtered = getFilteredShifts();
@@ -921,6 +1442,8 @@
                 <td>${sh.date || '—'}</td>
                 <td>${sh.fio || sh.user || ''}</td>
                 <td>${sh.stage || '—'}</td>
+                <td>${sh.shiftNumber || '—'}</td>
+                <td>${sh.smu || '—'}</td>
                 <td>${sh.people || ''}</td>
                 <td>${openStr}</td>
                 <td>${closeStr}</td>
@@ -962,13 +1485,15 @@
                     renderShifts();
                     updateAll();
                     updateShiftUI();
+                    updateDashboard();
+                    updateTabBadges();
                 }
             });
         });
     }
 
     // ============================================================
-    //   МОДАЛЬНОЕ ОКНО ПРОСМОТРА ФАЙЛОВ (с увеличением фото)
+    //   МОДАЛЬНОЕ ОКНО ПРОСМОТРА ФАЙЛОВ (без изменений)
     // ============================================================
     const fileModal = document.getElementById('fileModal');
     const fileGrid = document.getElementById('fileGrid');
@@ -997,10 +1522,10 @@
                     content = `<img src="${f.data}" alt="${f.name}" loading="lazy" 
                                class="modal-img" 
                                onclick="this.classList.toggle('fullscreen')" 
-                               style="cursor:pointer; transition: transform 0.3s; max-width:100%; max-height:300px;"
+                               style="cursor:pointer; transition: transform 0.3s; max-width:100%; max-height:280px;"
                                title="Кликните для увеличения">`;
                 } else if (f.type && f.type.startsWith('video/')) {
-                    content = `<video controls src="${f.data}" preload="metadata" style="max-width:100%; max-height:300px;"></video>`;
+                    content = `<video controls src="${f.data}" preload="metadata" style="max-width:100%; max-height:280px;"></video>`;
                 } else {
                     content = `<div>Невозможно отобразить файл</div>`;
                 }
@@ -1011,7 +1536,6 @@
                 fileGrid.appendChild(item);
             });
 
-            // Добавляем CSS для полноэкранного режима, если его ещё нет
             if (!document.getElementById('fullscreen-style')) {
                 const style = document.createElement('style');
                 style.id = 'fullscreen-style';
@@ -1025,16 +1549,16 @@
                         max-height: 90vh !important;
                         z-index: 9999 !important;
                         object-fit: contain !important;
-                        background: rgba(0,0,0,0.8) !important;
-                        padding: 10px !important;
-                        border-radius: 8px !important;
-                        box-shadow: 0 0 30px rgba(0,0,0,0.5) !important;
+                        background: rgba(0,0,0,0.85) !important;
+                        padding: 16px !important;
+                        border-radius: 16px !important;
+                        box-shadow: 0 0 60px rgba(0,0,0,0.5) !important;
                         cursor: zoom-out !important;
                     }
                     .modal-img {
                         transition: all 0.3s ease !important;
                         max-width: 100%;
-                        max-height: 300px;
+                        max-height: 280px;
                     }
                 `;
                 document.head.appendChild(style);
@@ -1053,9 +1577,6 @@
         if (e.target === this) fileModal.classList.remove('active');
     });
 
-    // ============================================================
-    //   ОЧИСТКА СМЕН (только админ)
-    // ============================================================
     document.getElementById('clearShiftsBtn').addEventListener('click', function() {
         if (currentUser !== ADMIN_NAME) {
             alert('Только администратор может очистить все смены.');
@@ -1077,21 +1598,44 @@
             renderShifts();
             updateAll();
             updateShiftUI();
+            updateDashboard();
+            updateTabBadges();
         }
     });
 
     // ============================================================
-    //   ОБНОВЛЕНИЕ ВСЕГО
+    //   ДАШБОРД И СЧЁТЧИКИ
+    // ============================================================
+    function updateDashboard() {
+        const overall = stages.length ? Math.round(stages.reduce((s, st) => s + st.progress, 0) / stages.length) : 0;
+        const totalStages = stages.length;
+        const filtered = getFilteredShifts();
+        const closed = filtered.filter(sh => sh.closeTime !== null);
+        const totalShifts = closed.length;
+
+        document.getElementById('dashOverall').innerHTML = overall + '%';
+        document.getElementById('dashStages').textContent = totalStages;
+        document.getElementById('dashShifts').textContent = totalShifts;
+    }
+
+    function updateTabBadges() {
+        document.getElementById('badgeStages').textContent = stages.length;
+        const filtered = getFilteredShifts();
+        const closed = filtered.filter(sh => sh.closeTime !== null);
+        document.getElementById('badgeShifts').textContent = closed.length;
+    }
+
+    // ============================================================
+    //   ОБНОВЛЕНИЕ ОТЧЁТА, ДИАГРАММ, ГАНТА, PDF (без человеко-дней)
     // ============================================================
     function updateAll() {
         updateReport();
         renderGantt();
         updateShiftStats();
+        updateDashboard();
+        updateTabBadges();
     }
 
-    // ============================================================
-    //   ОТЧЁТ
-    // ============================================================
     function updateReport() {
         document.querySelectorAll('#inputBody input').forEach(inp => {
             const idx = parseInt(inp.dataset.idx);
@@ -1194,6 +1738,8 @@
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td><strong>${st.name}</strong></td>
+                <td>${st.objectName || '—'}</td>
+                <td>${st.building || '—'}</td>
                 <td style="font-size:13px;">${planLabel}</td>
                 <td style="font-size:13px;">${factLabel}</td>
                 <td>
@@ -1212,11 +1758,10 @@
 
         renderCharts(overall);
         updateShiftStats();
+        updateDashboard();
+        updateTabBadges();
     }
 
-    // ============================================================
-    //   СМЕННАЯ СТАТИСТИКА (только закрытые смены)
-    // ============================================================
     function updateShiftStats() {
         const container = document.getElementById('shiftStats');
         if (!container) return;
@@ -1226,20 +1771,20 @@
             container.innerHTML = '<p style="color:#6a7b8c;">Нет закрытых смен.</p>';
             return;
         }
-        const totalPeople = closed.reduce((sum, sh) => sum + sh.people, 0);
         const uniqueFio = [...new Set(closed.map(sh => sh.fio || sh.user).filter(Boolean))];
         const uniqueStages = [...new Set(closed.map(sh => sh.stage).filter(Boolean))];
+        const uniqueShifts = [...new Set(closed.map(sh => sh.shiftNumber).filter(Boolean))];
+        const uniqueSMU = [...new Set(closed.map(sh => sh.smu).filter(Boolean))];
 
         let html = `<div><strong>Всего закрытых смен:</strong> ${closed.length}</div>
-                    <div><strong>Человеко-дней:</strong> ${totalPeople}</div>
                     <div><strong>Сотрудники:</strong> ${uniqueFio.join(', ') || '—'}</div>
-                    <div><strong>Этапы:</strong> ${uniqueStages.join(', ') || '—'}</div>`;
+                    <div><strong>Этапы:</strong> ${uniqueStages.join(', ') || '—'}</div>
+                    <div><strong>Смены:</strong> ${uniqueShifts.join(', ') || '—'}</div>
+                    <div><strong>СМУ:</strong> ${uniqueSMU.join(', ') || '—'}</div>`;
         container.innerHTML = html;
     }
 
-    // ============================================================
-    //   ДИАГРАММЫ
-    // ============================================================
+    // ===== ДИАГРАММЫ =====
     let pieChartInstance = null, barChartInstance = null;
 
     function renderCharts(overall) {
@@ -1249,7 +1794,7 @@
             type: 'doughnut',
             data: {
                 labels: ['Выполнено', 'Осталось'],
-                datasets: [{ data: [overall, 100 - overall], backgroundColor: ['#1a7f4a', '#e6ecf2'], borderWidth: 0 }]
+                datasets: [{ data: [overall, 100 - overall], backgroundColor: ['#0f6e4a', '#e6ecf2'], borderWidth: 0 }]
             },
             options: { cutout: '70%', plugins: { legend: { display: false }, tooltip: { callbacks: { label: (ctx) => `${ctx.parsed}%` } } }, responsive: true, maintainAspectRatio: true }
         });
@@ -1257,11 +1802,11 @@
         const barCtx = document.getElementById('barChart').getContext('2d');
         if (barChartInstance) barChartInstance.destroy();
         const labels = stages.map(st => st.name.length > 12 ? st.name.slice(0,10)+'…' : st.name);
+        const now = new Date(); now.setHours(0,0,0,0);
         const planData = stages.map(st => {
             const pStart = st.planStart ? new Date(st.planStart + 'T00:00:00') : null;
             const pEnd = st.planEnd ? new Date(st.planEnd + 'T00:00:00') : null;
             if (!pStart || !pEnd) return 0;
-            const now = new Date(); now.setHours(0,0,0,0);
             const dur = (pEnd - pStart) / (1000*60*60*24);
             if (now < pStart) return 0;
             if (now > pEnd) return 100;
@@ -1274,8 +1819,8 @@
             data: {
                 labels: labels,
                 datasets: [
-                    { label: 'План (по графику)', data: planData, backgroundColor: 'rgba(59, 111, 155, 0.5)', borderColor: '#3b6f9b', borderWidth: 1 },
-                    { label: 'Факт (выполнено)', data: factData, backgroundColor: factData.map((v, i) => v >= planData[i] ? '#1a7f4a' : '#c9453b'), borderColor: factData.map((v, i) => v >= planData[i] ? '#1a7f4a' : '#c9453b'), borderWidth: 1 }
+                    { label: 'План (по графику)', data: planData, backgroundColor: 'rgba(59,111,155,0.4)', borderColor: '#3b6f9b', borderWidth: 1 },
+                    { label: 'Факт (выполнено)', data: factData, backgroundColor: factData.map((v, i) => v >= planData[i] ? '#0f6e4a' : '#c9453b'), borderColor: factData.map((v, i) => v >= planData[i] ? '#0f6e4a' : '#c9453b'), borderWidth: 1 }
                 ]
             },
             options: {
@@ -1287,9 +1832,7 @@
         });
     }
 
-    // ============================================================
-    //   ГАНТ
-    // ============================================================
+    // ===== ГАНТ =====
     function renderGantt() {
         const container = document.getElementById('ganttContainer');
         container.innerHTML = '';
@@ -1380,102 +1923,413 @@
         container.innerHTML = html;
     }
 
-    // ============================================================
-    //   ЭКСПОРТ PDF
-    // ============================================================
+    // ===== ЭКСПОРТ PDF =====
     document.getElementById('exportPdfBtn').addEventListener('click', function() {
-        const element = document.getElementById('pdfContent');
         const btn = this;
         btn.textContent = '⏳ Генерация PDF...';
         btn.disabled = true;
 
-        const opt = {
-            margin:        [10, 10, 10, 10],
-            filename:     'Suvarov_Report.pdf',
-            image:        { type: 'jpeg', quality: 0.98 },
-            html2canvas:  { scale: 2, useCORS: true, letterRendering: true, logging: false },
-            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
-            pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
-        };
+        try {
+            const overall = stages.length ? Math.round(stages.reduce((s, st) => s + st.progress, 0) / stages.length) : 0;
+            const now = new Date();
+            now.setHours(0,0,0,0);
+            let totalDelay = 0, hasRisk = false;
+            stages.forEach(st => {
+                const pEnd = st.planEnd ? new Date(st.planEnd + 'T00:00:00') : null;
+                const fEnd = st.factEnd ? new Date(st.factEnd + 'T00:00:00') : null;
+                if (fEnd && pEnd && fEnd > pEnd) totalDelay += Math.round((fEnd - pEnd) / (1000*60*60*24));
+                if (!fEnd && pEnd && now > pEnd && st.progress < 100) {
+                    totalDelay += Math.round((now - pEnd) / (1000*60*60*24));
+                    hasRisk = true;
+                }
+            });
+            let statusText = 'В графике ✅';
+            let statusColor = '#008000';
+            if (totalDelay > 0) { statusText = `Отставание ${totalDelay} дн.`; statusColor = '#c9453b'; }
+            else if (hasRisk) { statusText = 'Есть риски'; statusColor = '#c9a53b'; }
 
-        html2pdf().set(opt).from(element).save().then(() => {
-            btn.textContent = '📄 Экспорт PDF';
-            btn.disabled = false;
-        }).catch(err => {
-            console.error('PDF generation error:', err);
-            alert('Ошибка при создании PDF. Попробуйте снова.');
-            btn.textContent = '📄 Экспорт PDF';
-            btn.disabled = false;
-        });
-    });
+            let maxDate = null;
+            stages.forEach(st => {
+                const pEnd = st.planEnd ? new Date(st.planEnd + 'T00:00:00') : null;
+                const fEnd = st.factEnd ? new Date(st.factEnd + 'T00:00:00') : null;
+                if (pEnd && (!maxDate || pEnd > maxDate)) maxDate = pEnd;
+                if (fEnd && (!maxDate || fEnd > maxDate)) maxDate = fEnd;
+            });
+            const forecast = maxDate ? maxDate.toLocaleDateString('ru-RU') : '—';
 
-    // ============================================================
-    //   ЭКСПОРТ EXCEL
-    // ============================================================
-    document.getElementById('exportExcelBtn').addEventListener('click', function() {
-        const wb = XLSX.utils.book_new();
-        const summary = [
-            ['Сводка по объекту "Суворовские бастионы"'],
-            ['Дата отчёта', new Date().toLocaleDateString('ru-RU')],
-            ['Общая готовность', document.querySelector('.stat-card .value')?.textContent || ''],
-            ['Статус', document.querySelector('.badge')?.textContent || ''],
-            ['Плановый срок сдачи', document.querySelectorAll('.stat-card .value')[2]?.textContent || ''],
-            []
-        ];
-        const ws1 = XLSX.utils.aoa_to_sheet(summary);
-        XLSX.utils.book_append_sheet(wb, ws1, 'Сводка');
+            const filtered = getFilteredShifts();
+            const closed = filtered.filter(sh => sh.closeTime !== null);
 
-        const rows = [['Этап', 'План старт', 'План финиш', 'Факт старт', 'Факт финиш', 'Прогресс, %']];
-        stages.forEach(st => rows.push([st.name, st.planStart || '', st.planEnd || '', st.factStart || '', st.factEnd || '', st.progress]));
-        const ws2 = XLSX.utils.aoa_to_sheet(rows);
-        XLSX.utils.book_append_sheet(wb, ws2, 'Этапы');
+            const tablePlanFact = stages.map(st => {
+                const pStart = st.planStart ? new Date(st.planStart + 'T00:00:00') : null;
+                const pEnd = st.planEnd ? new Date(st.planEnd + 'T00:00:00') : null;
+                const fStart = st.factStart ? new Date(st.factStart + 'T00:00:00') : null;
+                const fEnd = st.factEnd ? new Date(st.factEnd + 'T00:00:00') : null;
+                let planProgress = 0;
+                if (pStart && pEnd) {
+                    const dur = (pEnd - pStart) / (1000*60*60*24);
+                    if (now < pStart) planProgress = 0;
+                    else if (now > pEnd) planProgress = 100;
+                    else planProgress = Math.round(((now - pStart) / (1000*60*60*24)) / dur * 100);
+                }
+                const factProgress = Math.min(st.progress, 100);
+                const compare = factProgress - planProgress;
+                let status = '';
+                if (factProgress >= 100) status = 'Завершён';
+                else if (compare >= 5) status = 'Опережение';
+                else if (compare <= -5) status = 'Отставание';
+                else status = 'В графике';
+                if (factProgress === 0 && !fStart) status = 'Не начат';
 
-        const compareRows = [['Этап', 'План (прогресс по графику), %', 'Факт, %', 'Статус']];
-        const now = new Date(); now.setHours(0,0,0,0);
-        stages.forEach(st => {
-            const pStart = st.planStart ? new Date(st.planStart + 'T00:00:00') : null;
-            const pEnd = st.planEnd ? new Date(st.planEnd + 'T00:00:00') : null;
-            let planPct = 0;
-            if (pStart && pEnd) {
-                const dur = (pEnd - pStart) / (1000*60*60*24);
-                if (now < pStart) planPct = 0;
-                else if (now > pEnd) planPct = 100;
-                else planPct = Math.round(((now - pStart) / (1000*60*60*24)) / dur * 100);
-            }
-            const factPct = Math.min(st.progress, 100);
-            let status = '';
-            if (factPct >= 100) status = 'Завершён';
-            else if (factPct >= planPct + 5) status = 'Опережение';
-            else if (factPct <= planPct - 5) status = 'Отставание';
-            else status = 'В графике';
-            compareRows.push([st.name, planPct, factPct, status]);
-        });
-        const ws3 = XLSX.utils.aoa_to_sheet(compareRows);
-        XLSX.utils.book_append_sheet(wb, ws3, 'План-Факт');
+                const planLabel = `${pStart ? pStart.toLocaleDateString('ru-RU') : '—'} – ${pEnd ? pEnd.toLocaleDateString('ru-RU') : '—'}`;
+                const factLabel = fStart ? `${fStart.toLocaleDateString('ru-RU')} – ${fEnd ? fEnd.toLocaleDateString('ru-RU') : '...'}` : '—';
 
-        const filtered = getFilteredShifts();
-        if (filtered.length > 0) {
-            const shiftRows = [['Дата', 'ФИО', 'Этап', 'Человек', 'Открыта (дата+время)', 'Закрыта (дата+время)', 'Файлы', 'Примечание']];
-            filtered.forEach(sh => {
+                return [
+                    st.name,
+                    st.objectName || '—',
+                    st.building || '—',
+                    planLabel,
+                    factLabel,
+                    factProgress + '%',
+                    status
+                ];
+            });
+
+            const shiftRows = closed.map(sh => {
                 const openStr = sh.openTime ? new Date(sh.openTime).toLocaleString('ru-RU') : '—';
                 const closeStr = sh.closeTime ? new Date(sh.closeTime).toLocaleString('ru-RU') : '—';
-                const filesStr = sh.files && sh.files.length ? sh.files.map(f => f.name).join('; ') : '—';
-                shiftRows.push([
+                return [
                     sh.date || '—',
                     sh.fio || sh.user || '',
                     sh.stage || '—',
-                    sh.people || '',
+                    sh.shiftNumber || '—',
+                    sh.smu || '—',
+                    String(sh.people || ''),
                     openStr,
                     closeStr,
-                    filesStr,
                     sh.note || ''
-                ]);
+                ];
             });
-            const ws4 = XLSX.utils.aoa_to_sheet(shiftRows);
-            XLSX.utils.book_append_sheet(wb, ws4, 'Смены');
+
+            const docDefinition = {
+                pageOrientation: 'portrait',
+                pageMargins: [30, 30, 30, 30],
+                defaultStyle: {
+                    font: 'Roboto',
+                    fontSize: 10,
+                    color: '#1a2634'
+                },
+                content: [
+                    { text: 'Отчёт по строительному контролю', style: 'header' },
+                    { text: 'Дата формирования: ' + new Date().toLocaleString('ru-RU'), style: 'subheader' },
+                    {
+                        columns: [
+                            { text: 'ОБЩАЯ ГОТОВНОСТЬ\n' + overall + '%', style: 'statCard', alignment: 'center' },
+                            { text: 'ТЕКУЩИЙ СТАТУС\n' + statusText, style: 'statCard', alignment: 'center', color: statusColor },
+                            { text: 'ПЛАНОВЫЙ СРОК СДАЧИ\n' + forecast, style: 'statCard', alignment: 'center' }
+                        ],
+                        columnGap: 10,
+                        margin: [0, 15, 0, 20]
+                    },
+                    {
+                        text: '👷 Сменная статистика',
+                        style: 'sectionHeader',
+                        margin: [0, 10, 0, 5]
+                    },
+                    closed.length === 0 ?
+                        { text: 'Нет закрытых смен.', style: 'plainText' } :
+                        {
+                            columns: [
+                                { text: `Всего смен: ${closed.length}`, width: 'auto' },
+                                { text: `Сотрудники: ${[...new Set(closed.map(sh => sh.fio || sh.user).filter(Boolean))].join(', ') || '—'}`, width: 'auto' },
+                                { text: `Этапы: ${[...new Set(closed.map(sh => sh.stage).filter(Boolean))].join(', ') || '—'}`, width: 'auto' },
+                                { text: `Смены: ${[...new Set(closed.map(sh => sh.shiftNumber).filter(Boolean))].join(', ') || '—'}`, width: 'auto' },
+                                { text: `СМУ: ${[...new Set(closed.map(sh => sh.smu).filter(Boolean))].join(', ') || '—'}`, width: 'auto' }
+                            ],
+                            columnGap: 10,
+                            margin: [0, 0, 0, 10]
+                        },
+                    {
+                        text: '📋 Детальный план-факт',
+                        style: 'sectionHeader',
+                        margin: [0, 15, 0, 5]
+                    },
+                    {
+                        table: {
+                            headerRows: 1,
+                            widths: ['auto', 'auto', 'auto', 'auto', 'auto', 'auto', 'auto'],
+                            body: [
+                                ['Этап', 'Объект', 'Дом', 'План', 'Факт', 'Прогресс', 'Статус'],
+                                ...tablePlanFact.map(row => [
+                                    { text: row[0], bold: true },
+                                    row[1], row[2], row[3], row[4],
+                                    { text: row[5], alignment: 'center' },
+                                    { text: row[6], alignment: 'center', color: row[6].includes('Отставание') ? '#c9453b' : (row[6].includes('Завершён') ? '#008000' : '#1a2634') }
+                                ])
+                            ]
+                        },
+                        layout: 'lightHorizontalLines',
+                        margin: [0, 0, 0, 15]
+                    },
+                    {
+                        text: '📋 Журнал смен',
+                        style: 'sectionHeader',
+                        margin: [0, 10, 0, 5]
+                    },
+                    closed.length === 0 ?
+                        { text: 'Нет закрытых смен.', style: 'plainText' } :
+                        {
+                            table: {
+                                headerRows: 1,
+                                widths: ['auto', 'auto', 'auto', 'auto', 'auto', 'auto', 'auto', 'auto', 'auto'],
+                                body: [
+                                    ['Дата', 'ФИО', 'Этап', 'Смена', 'СМУ', 'Человек', 'Открыта', 'Закрыта', 'Примечание'],
+                                    ...shiftRows
+                                ]
+                            },
+                            layout: 'lightHorizontalLines'
+                        }
+                ],
+                styles: {
+                    header: { fontSize: 20, bold: true, alignment: 'center', margin: [0, 0, 0, 5] },
+                    subheader: { fontSize: 11, color: '#5e6f7e', alignment: 'center', margin: [0, 0, 0, 15] },
+                    statCard: { fontSize: 12, bold: false, margin: [0, 5, 0, 5] },
+                    sectionHeader: { fontSize: 14, bold: true, color: '#1a2634' },
+                    plainText: { fontSize: 10, color: '#5e6f7e' }
+                }
+            };
+
+            pdfMake.createPdf(docDefinition).download('StroyControl_Report.pdf');
+
+            btn.textContent = '📄 Экспорт PDF';
+            btn.disabled = false;
+
+        } catch (error) {
+            console.error('Ошибка при генерации PDF:', error);
+            alert('Произошла ошибка при создании PDF. Проверьте консоль.');
+            btn.textContent = '📄 Экспорт PDF';
+            btn.disabled = false;
+        }
+    });
+
+    // ============================================================
+    //   ОБУЧЕНИЕ (С ЗАТЕНЕНИЕМ ЧЕРЕЗ BOX-SHADOW И ПРИВЯЗКОЙ К ПОЛЬЗОВАТЕЛЮ)
+    // ============================================================
+    const onboardingSteps = [
+        {
+            title: '👋 Добро пожаловать!',
+            desc: 'Это система «Строительный контроль». Она поможет вам управлять этапами строительства, вести учёт смен и формировать отчёты.',
+            element: null,
+            feature: null
+        },
+        {
+            title: '📊 Сводная панель',
+            desc: 'Сверху вы видите ключевые показатели: общую готовность, количество этапов и закрытых смен.',
+            element: '.dashboard',
+            feature: null
+        },
+        {
+            title: '📝 Вкладка «Этапы»',
+            desc: 'Здесь создаются и редактируются этапы работ. Нажмите на вкладку, чтобы перейти.',
+            element: '.tab-btn[data-tab="input"]',
+            feature: null,
+            tab: 'input'
+        },
+        {
+            title: '📋 Таблица этапов',
+            desc: 'В таблице вы видите все этапы. Каждый можно отредактировать или удалить. Добавляйте новые этапы кнопкой «➕ Добавить этап».',
+            element: '#inputTable',
+            feature: {
+                title: '✨ Дополнительные функции этапов',
+                items: [
+                    'Название этапа можно выбрать из списка или ввести своё',
+                    'Укажите объект и дом/корпус для каждого этапа',
+                    'Все изменения сохраняются автоматически'
+                ]
+            },
+            tab: 'input'
+        },
+        {
+            title: '👷 Вкладка «Сменный учёт»',
+            desc: 'Перейдите на вкладку, чтобы управлять сменами.',
+            element: '.tab-btn[data-tab="shift"]',
+            feature: null,
+            tab: 'shift'
+        },
+        {
+            title: '🟢 Управление сменой',
+            desc: 'Кнопка «Открыть смену» начинает новую смену. После завершения нажмите «Закрыть смену» и приложите файлы.',
+            element: '#shiftStatus',
+            feature: {
+                title: '✨ Возможности сменного учёта',
+                items: [
+                    'Указывайте номер смены и СМУ',
+                    'При закрытии прикрепляйте фото или видео',
+                    'Все файлы сохраняются в браузере'
+                ]
+            },
+            tab: 'shift'
+        },
+        {
+            title: '📊 Вкладка «Отчёт»',
+            desc: 'Здесь вы видите сводку по готовности, сменную статистику, диаграммы и план-факт.',
+            element: '.tab-btn[data-tab="report"]',
+            feature: null,
+            tab: 'report'
+        },
+        {
+            title: '📄 Экспорт PDF',
+            desc: 'Нажмите эту кнопку, чтобы скачать полный отчёт в формате PDF со всеми таблицами и графиками.',
+            element: '#exportPdfBtn',
+            feature: {
+                title: '✨ Что входит в PDF-отчёт',
+                items: [
+                    'Сводка по готовности и статусу',
+                    'Сменная статистика',
+                    'Детальный план-факт по этапам',
+                    'Журнал всех закрытых смен'
+                ]
+            },
+            tab: 'report'
+        },
+        {
+            title: '📅 Вкладка «График работ»',
+            desc: 'Гант-диаграмма показывает план и факт по этапам. Отставание выделяется красным.',
+            element: '.tab-btn[data-tab="gantt"]',
+            feature: null,
+            tab: 'gantt'
+        }
+    ];
+
+    let currentOnboardingStep = 0;
+    let previousHighlight = null;
+    let isOnboardingActive = false;
+
+    function startOnboarding() {
+        console.log('startOnboarding вызван для пользователя', currentUser);
+        if (isOnboardingActive) return;
+        // Если для этого пользователя уже пройдено – не запускаем
+        if (isOnboardingDoneForUser(currentUser)) {
+            console.log('Обучение уже пройдено для', currentUser);
+            return;
+        }
+        isOnboardingActive = true;
+        currentOnboardingStep = 0;
+        document.getElementById('onboardingTooltip').style.display = 'block';
+        showOnboardingStep();
+        console.log('Обучение запущено, шаг 0');
+        // Скрываем напоминание
+        document.getElementById('onboardingReminder').classList.remove('active');
+    }
+
+    function showOnboardingStep() {
+        const step = onboardingSteps[currentOnboardingStep];
+        document.getElementById('onboardingStepCounter').textContent = `Шаг ${currentOnboardingStep + 1} из ${onboardingSteps.length}`;
+        document.getElementById('onboardingTitle').textContent = step.title;
+        document.getElementById('onboardingDesc').textContent = step.desc;
+
+        const featureBox = document.getElementById('onboardingFeatureBox');
+        const featureList = document.getElementById('onboardingFeatureList');
+        if (step.feature) {
+            featureBox.style.display = 'block';
+            featureList.innerHTML = step.feature.items.map(item => `<li>${item}</li>`).join('');
+            document.querySelector('#onboardingFeatureBox h4').textContent = step.feature.title;
+        } else {
+            featureBox.style.display = 'none';
         }
 
-        XLSX.writeFile(wb, 'Suvarov_Report.xlsx');
+        document.getElementById('onboardingPrevBtn').style.display = currentOnboardingStep === 0 ? 'none' : 'inline-flex';
+        const nextBtn = document.getElementById('onboardingNextBtn');
+        if (currentOnboardingStep === onboardingSteps.length - 1) {
+            nextBtn.textContent = '✅ Завершить';
+        } else {
+            nextBtn.textContent = 'Далее →';
+        }
+
+        clearHighlight();
+        if (step.element) {
+            const el = document.querySelector(step.element);
+            if (el) {
+                el.classList.add('onboarding-highlight');
+                previousHighlight = el;
+                el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                if (step.tab) {
+                    const tabBtn = document.querySelector(`.tab-btn[data-tab="${step.tab}"]`);
+                    if (tabBtn) tabBtn.click();
+                }
+            } else {
+                console.warn('Элемент не найден:', step.element);
+            }
+        }
+    }
+
+    function clearHighlight() {
+        if (previousHighlight) {
+            previousHighlight.classList.remove('onboarding-highlight');
+            previousHighlight = null;
+        }
+    }
+
+    function nextOnboardingStep() {
+        if (currentOnboardingStep < onboardingSteps.length - 1) {
+            currentOnboardingStep++;
+            showOnboardingStep();
+        } else {
+            finishOnboarding();
+        }
+    }
+
+    function prevOnboardingStep() {
+        if (currentOnboardingStep > 0) {
+            currentOnboardingStep--;
+            showOnboardingStep();
+        }
+    }
+
+    function finishOnboarding() {
+        document.getElementById('onboardingTooltip').style.display = 'none';
+        clearHighlight();
+        if (currentUser) {
+            setOnboardingDoneForUser(currentUser);
+            console.log('Обучение завершено для', currentUser);
+        }
+        isOnboardingActive = false;
+        document.getElementById('onboardingReminder').classList.remove('active');
+    }
+
+    // Обработчики кнопок обучения
+    document.getElementById('onboardingNextBtn').addEventListener('click', nextOnboardingStep);
+    document.getElementById('onboardingPrevBtn').addEventListener('click', prevOnboardingStep);
+    document.getElementById('onboardingSkipBtn').addEventListener('click', finishOnboarding);
+
+    // Кнопка ручного запуска
+    document.getElementById('restartTourBtn').addEventListener('click', function() {
+        if (currentUser) {
+            // Сбрасываем флаг для текущего пользователя
+            resetOnboardingForUser(currentUser);
+            // Если обучение активно – завершаем
+            if (isOnboardingActive) {
+                finishOnboarding();
+            }
+            document.getElementById('onboardingReminder').classList.remove('active');
+            setTimeout(startOnboarding, 300);
+        } else {
+            alert('Сначала войдите в систему.');
+        }
+    });
+
+    // Кнопка запуска из напоминания
+    document.getElementById('reminderStartBtn').addEventListener('click', function() {
+        if (currentUser) {
+            resetOnboardingForUser(currentUser);
+            if (isOnboardingActive) {
+                finishOnboarding();
+            }
+            document.getElementById('onboardingReminder').classList.remove('active');
+            setTimeout(startOnboarding, 300);
+        } else {
+            alert('Сначала войдите в систему.');
+        }
     });
 
     // ============================================================
@@ -1488,16 +2342,23 @@
             document.getElementById('tab-'+tabId).classList.add('active');
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             this.classList.add('active');
-            if (tabId === 'report') updateReport();
+            if (tabId === 'report') {
+                updateReport();
+            }
             if (tabId === 'gantt') renderGantt();
             if (tabId === 'shift') {
                 renderShifts();
                 updateShiftStats();
                 updateShiftUI();
             }
+            updateDashboard();
+            updateTabBadges();
         });
     });
 
+    // ============================================================
+    //   ДОПОЛНИТЕЛЬНЫЕ ОБРАБОТЧИКИ
+    // ============================================================
     document.getElementById('updateReportBtn').addEventListener('click', function() {
         document.querySelectorAll('#inputBody input').forEach(inp => {
             const idx = parseInt(inp.dataset.idx);
@@ -1513,27 +2374,31 @@
     });
 
     document.getElementById('addRowBtn').addEventListener('click', function() {
-        stages.push({ name: 'Новый этап', planStart: '', planEnd: '', factStart: '', factEnd: '', progress: 0 });
+        stages.push({ name: '', objectName: '', building: '', planStart: '', planEnd: '', factStart: '', factEnd: '', progress: 0 });
         saveStages();
         renderInputTable();
         updateAll();
+        updateDashboard();
+        updateTabBadges();
     });
 
     document.getElementById('resetDataBtn').addEventListener('click', function() {
         if (confirm('Сбросить все этапы к начальным данным?')) {
             stages = [
-                { name: 'Котлован', planStart: '2026-04-01', planEnd: '2026-04-20', factStart: '2026-04-01', factEnd: '2026-04-18', progress: 100 },
-                { name: 'Фундамент', planStart: '2026-04-21', planEnd: '2026-05-15', factStart: '2026-04-21', factEnd: '', progress: 75 },
-                { name: 'Стены подвала', planStart: '2026-05-10', planEnd: '2026-05-30', factStart: '2026-05-12', factEnd: '', progress: 30 },
-                { name: 'Стены 1-го этажа', planStart: '2026-05-20', planEnd: '2026-06-15', factStart: '2026-06-01', factEnd: '', progress: 10 },
-                { name: 'Перекрытия', planStart: '2026-06-10', planEnd: '2026-06-30', factStart: '', factEnd: '', progress: 0 },
-                { name: 'Кровля', planStart: '2026-07-01', planEnd: '2026-07-25', factStart: '', factEnd: '', progress: 0 },
-                { name: 'Инженерные сети', planStart: '2026-06-20', planEnd: '2026-08-10', factStart: '2026-06-22', factEnd: '', progress: 45 },
-                { name: 'Отделка', planStart: '2026-08-01', planEnd: '2026-09-30', factStart: '', factEnd: '', progress: 0 }
+                { name: 'Котлован', objectName: '', building: '', planStart: '2026-04-01', planEnd: '2026-04-20', factStart: '2026-04-01', factEnd: '2026-04-18', progress: 100 },
+                { name: 'Фундамент', objectName: '', building: '', planStart: '2026-04-21', planEnd: '2026-05-15', factStart: '2026-04-21', factEnd: '', progress: 75 },
+                { name: 'Стены подвала', objectName: '', building: '', planStart: '2026-05-10', planEnd: '2026-05-30', factStart: '2026-05-12', factEnd: '', progress: 30 },
+                { name: 'Стены 1-го этажа', objectName: '', building: '', planStart: '2026-05-20', planEnd: '2026-06-15', factStart: '2026-06-01', factEnd: '', progress: 10 },
+                { name: 'Перекрытия', objectName: '', building: '', planStart: '2026-06-10', planEnd: '2026-06-30', factStart: '', factEnd: '', progress: 0 },
+                { name: 'Кровля', objectName: '', building: '', planStart: '2026-07-01', planEnd: '2026-07-25', factStart: '', factEnd: '', progress: 0 },
+                { name: 'Инженерные сети', objectName: '', building: '', planStart: '2026-06-20', planEnd: '2026-08-10', factStart: '2026-06-22', factEnd: '', progress: 45 },
+                { name: 'Отделка', objectName: '', building: '', planStart: '2026-08-01', planEnd: '2026-09-30', factStart: '', factEnd: '', progress: 0 }
             ];
             saveStages();
             renderInputTable();
             updateAll();
+            updateDashboard();
+            updateTabBadges();
         }
     });
 
