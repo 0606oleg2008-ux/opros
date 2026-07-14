@@ -8,7 +8,6 @@
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
-        /* (все стили остаются без изменений) */
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Roboto, sans-serif; }
         body { background: #f0f4f9; padding: 20px; }
         .container { max-width: 1400px; margin: 0 auto; background: #fff; border-radius: 24px; box-shadow: 0 8px 30px rgba(0,0,0,0.08); padding: 25px 30px 35px; }
@@ -362,7 +361,7 @@
                 <label>Примечание (что сделано)</label>
                 <input type="text" id="closeNote" placeholder="например, завершили заливку">
             </div>
-            <button class="btn btn-primary" id="confirmCloseBtn" disabled>✅ Подтвердить закрытие</button>
+            <button class="btn btn-primary" id="confirmCloseBtn">✅ Подтвердить закрытие</button>
             <button class="btn btn-outline" id="cancelCloseBtn">Отмена</button>
         </div>
 
@@ -549,14 +548,13 @@
     });
 
     // ============================================================
-    //   IndexedDB для хранения файлов (исправлено: версия 2)
+    //   IndexedDB для хранения файлов (ИСПРАВЛЕНО!)
     // ============================================================
     const DB_NAME = 'ShiftFilesDB';
     const STORE_NAME = 'files';
 
     function openDB() {
         return new Promise((resolve, reject) => {
-            // Используем версию 2, чтобы гарантированно создать хранилище
             const request = indexedDB.open(DB_NAME, 2);
             request.onupgradeneeded = function(e) {
                 const db = e.target.result;
@@ -569,11 +567,11 @@
         });
     }
 
+    // ==== ИСПРАВЛЕННАЯ ФУНКЦИЯ СОХРАНЕНИЯ ====
     async function saveFilesForShift(shiftId, files) {
         if (!files || files.length === 0) return;
-        const db = await openDB();
-        const tx = db.transaction(STORE_NAME, 'readwrite');
-        const store = tx.objectStore(STORE_NAME);
+
+        // 1. Сначала читаем все файлы в dataURL
         const fileData = [];
         for (let f of files) {
             const dataURL = await new Promise((resolve) => {
@@ -583,7 +581,13 @@
             });
             fileData.push({ name: f.name, type: f.type, data: dataURL });
         }
+
+        // 2. Теперь открываем транзакцию и сохраняем
+        const db = await openDB();
+        const tx = db.transaction(STORE_NAME, 'readwrite');
+        const store = tx.objectStore(STORE_NAME);
         store.put({ shiftId: shiftId, files: fileData });
+
         return new Promise((resolve, reject) => {
             tx.oncomplete = () => resolve();
             tx.onerror = (e) => reject(e.target.error);
@@ -738,7 +742,7 @@
             stage: stage,
             people: people,
             note: note,
-            files: [] // имена файлов будут добавлены при закрытии
+            files: []
         };
         shifts.push(newShift);
         saveShifts();
@@ -748,68 +752,40 @@
         document.getElementById('openShiftForm').style.display = 'none';
     });
 
-// ============================================================
-//   ЗАКРЫТИЕ СМЕНЫ (исправленная версия)
-// ============================================================
-document.getElementById('btnCloseShift').addEventListener('click', function() {
-    const openShift = getCurrentOpenShift();
-    if (!openShift) { alert('Нет открытой смены.'); return; }
-    document.getElementById('closeShiftForm').style.display = 'flex';
-    document.getElementById('openShiftForm').style.display = 'none';
-    document.getElementById('closeFiles').value = '';
-    document.getElementById('closeNote').value = '';
-    // Кнопка теперь всегда активна, валидация будет при клике
-    document.getElementById('confirmCloseBtn').disabled = false;
-});
+    // ============================================================
+    //   ЗАКРЫТИЕ СМЕНЫ
+    // ============================================================
+    document.getElementById('btnCloseShift').addEventListener('click', function() {
+        const openShift = getCurrentOpenShift();
+        if (!openShift) { alert('Нет открытой смены.'); return; }
+        document.getElementById('closeShiftForm').style.display = 'flex';
+        document.getElementById('openShiftForm').style.display = 'none';
+        document.getElementById('closeFiles').value = '';
+        document.getElementById('closeNote').value = '';
+        document.getElementById('confirmCloseBtn').disabled = false;
+    });
 
-document.getElementById('cancelCloseBtn').addEventListener('click', function() {
-    document.getElementById('closeShiftForm').style.display = 'none';
-});
+    document.getElementById('cancelCloseBtn').addEventListener('click', function() {
+        document.getElementById('closeShiftForm').style.display = 'none';
+    });
 
-document.getElementById('confirmCloseBtn').addEventListener('click', async function() {
-    const openShift = getCurrentOpenShift();
-    if (!openShift) { alert('Нет открытой смены.'); return; }
+    document.getElementById('confirmCloseBtn').addEventListener('click', async function() {
+        const openShift = getCurrentOpenShift();
+        if (!openShift) { alert('Нет открытой смены.'); return; }
 
-    const filesInput = document.getElementById('closeFiles');
-    if (filesInput.files.length === 0) {
-        alert('❌ Выберите хотя бы один файл (фото или видео) для закрытия смены.');
-        return; // не даём продолжить
-    }
+        const filesInput = document.getElementById('closeFiles');
+        if (filesInput.files.length === 0) {
+            alert('❌ Выберите хотя бы один файл (фото или видео) для закрытия смены.');
+            return;
+        }
 
-    try {
-        await saveFilesForShift(openShift.id, filesInput.files);
-    } catch(e) {
-        alert('Ошибка при сохранении файлов: ' + e.message);
-        return;
-    }
-
-    const idx = shifts.indexOf(openShift);
-    if (idx === -1) { alert('Ошибка: смена не найдена.'); return; }
-
-    shifts[idx].closeTime = new Date().toISOString();
-    const fileNames = [];
-    for (let f of filesInput.files) {
-        fileNames.push({ name: f.name, size: f.size, type: f.type });
-    }
-    shifts[idx].files = fileNames;
-    const note = document.getElementById('closeNote').value.trim();
-    if (note) shifts[idx].note = note;
-
-    saveShifts();
-    renderShifts();
-    updateAll();
-    updateShiftUI();
-    document.getElementById('closeShiftForm').style.display = 'none';
-    alert('✅ Смена успешно закрыта! Файлы сохранены.');
-});
-            // Сохраняем файлы в IndexedDB
+        try {
             await saveFilesForShift(openShift.id, filesInput.files);
         } catch(e) {
             alert('Ошибка при сохранении файлов: ' + e.message);
             return;
         }
 
-        // Обновляем запись смены
         const idx = shifts.indexOf(openShift);
         if (idx === -1) { alert('Ошибка: смена не найдена.'); return; }
 
@@ -827,7 +803,7 @@ document.getElementById('confirmCloseBtn').addEventListener('click', async funct
         updateAll();
         updateShiftUI();
         document.getElementById('closeShiftForm').style.display = 'none';
-        alert('Смена успешно закрыта! Файлы сохранены.');
+        alert('✅ Смена успешно закрыта! Файлы сохранены.');
     });
 
     // ============================================================
