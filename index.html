@@ -31,7 +31,9 @@
         .input-table input, .input-table select { width: 100%; padding: 6px 8px; border: 1px solid #dce3eb; border-radius: 6px; font-size: 13px; background: #fafcfe; }
         .input-table input:focus, .input-table select:focus { border-color: #1a7f4a; outline: none; box-shadow: 0 0 0 2px rgba(26,127,74,0.15); }
         .input-table .del-btn { background: none; border: none; color: #b33636; font-size: 18px; cursor: pointer; }
+        .input-table .del-btn:hover { transform: scale(1.2); }
         .input-table .view-btn { background: none; border: none; color: #2b6f9b; font-size: 18px; cursor: pointer; }
+        .input-table .view-btn:hover { transform: scale(1.1); }
 
         .btn-group { margin: 18px 0 10px; display: flex; gap: 12px; flex-wrap: wrap; }
         .btn { padding: 8px 22px; border: none; border-radius: 30px; font-weight: 600; font-size: 14px; background: #eef2f6; color: #1a2634; cursor: pointer; transition: 0.2s; }
@@ -49,6 +51,9 @@
         .stat-card { background: #f9fbfd; border-radius: 16px; padding: 18px 20px; box-shadow: inset 0 0 0 1px #e6ecf2; }
         .stat-card .label { font-size: 13px; text-transform: uppercase; color: #6a7b8c; font-weight: 600; }
         .stat-card .value { font-size: 30px; font-weight: 700; color: #0b1a2a; margin-top: 4px; }
+        .stat-card .badge { display: inline-block; padding: 4px 14px; border-radius: 30px; font-size: 14px; font-weight: 600; background: #e2f0e6; color: #0f6e3f; }
+        .stat-card .badge.warning { background: #fff3d6; color: #a86b1a; }
+        .stat-card .badge.danger { background: #fce4e4; color: #b33636; }
 
         .chart-row { display: flex; flex-wrap: wrap; gap: 30px; margin: 30px 0 20px; }
         .chart-box { flex: 1 1 300px; min-width: 250px; background: #fafcfe; border-radius: 16px; padding: 16px; box-shadow: inset 0 0 0 1px #e6ecf2; }
@@ -63,6 +68,8 @@
         .progress-bar .fill { height: 100%; border-radius: 10px; transition: width 0.4s; }
         .fill.plan { background: #3b6f9b; opacity: 0.35; }
         .fill.fact { background: #1a7f4a; }
+        .fill.fact.behind { background: #c9453b; }
+        .fill.fact.ahead { background: #1a7f4a; }
         .status-tag { font-size: 12px; font-weight: 600; padding: 3px 12px; border-radius: 30px; background: #eef2f6; color: #2e3e4e; display: inline-block; }
         .status-tag.ok { background: #ddf0e3; color: #0f6e3f; }
         .status-tag.warn { background: #fff3d6; color: #a86b1a; }
@@ -87,7 +94,6 @@
 
         .export-group { display: flex; gap: 14px; justify-content: flex-end; margin-top: 25px; padding-top: 20px; border-top: 1px solid #e6ecf2; }
 
-        /* Сменный учёт */
         .shift-status {
             background: #f9fbfd;
             padding: 16px 20px;
@@ -124,7 +130,6 @@
 
         .file-list { font-size: 12px; color: #2e3e4e; max-width: 150px; word-break: break-all; }
 
-        /* Модальное окно входа */
         .modal-overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -146,4 +151,1306 @@
         .modal-box h2 { margin-bottom: 10px; color: #1a2634; }
         .modal-box p { color: #5e6f7e; margin-bottom: 20px; }
         .modal-box input { width: 100%; padding: 12px 15px; border: 1px solid #dce3eb; border-radius: 10px; font-size: 16px; margin-bottom: 15px; }
-        .modal-box input:focus { border-color: #1a7f4a; outline: none; box-shadow: 0 0 0 3px rgba(26,127,7
+        .modal-box input:focus { border-color: #1a7f4a; outline: none; box-shadow: 0 0 0 3px rgba(26,127,74,0.15); }
+        .modal-box .btn { width: 100%; padding: 12px; font-size: 16px; }
+        .modal-box .error { color: #c9453b; font-size: 14px; margin-top: 5px; display: none; }
+
+        .file-modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            backdrop-filter: blur(4px);
+        }
+        .file-modal-overlay.active { display: flex; }
+        .file-modal-box {
+            background: #fff;
+            padding: 30px;
+            border-radius: 24px;
+            max-width: 90%;
+            width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+            text-align: center;
+            position: relative;
+        }
+        .file-modal-box .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            font-size: 30px;
+            cursor: pointer;
+            color: #5e6f7e;
+            background: none;
+            border: none;
+        }
+        .file-modal-box .close-btn:hover { color: #c9453b; }
+        .file-modal-box .file-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 15px;
+        }
+        .file-modal-box .file-item {
+            max-width: 300px;
+            border: 1px solid #e6ecf2;
+            border-radius: 12px;
+            padding: 10px;
+            background: #f9fbfd;
+        }
+        .file-modal-box .file-item img,
+        .file-modal-box .file-item video {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 8px;
+        }
+        .file-modal-box .file-item .file-name {
+            font-size: 12px;
+            color: #5e6f7e;
+            margin-top: 5px;
+        }
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #1a7f4a;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        #pdfContent { background: #fff; padding: 10px; }
+        #pdfContent .report-summary,
+        #pdfContent .chart-row,
+        #pdfContent .report-table { page-break-inside: avoid; }
+        #pdfContent .report-table td,
+        #pdfContent .report-table th { border: 1px solid #dce3eb; }
+
+        @media print {
+            body { background: #fff; padding: 0.5cm; }
+            .container { box-shadow: none; border: none; padding: 0; }
+            .tabs, .tab-btn, .btn-group, .export-group, .no-print { display: none !important; }
+            .tab-content { display: block !important; }
+            .report-summary { break-inside: avoid; }
+            .chart-row { break-inside: avoid; }
+            .report-table { break-inside: auto; }
+            .stat-card .badge { background: #e2f0e6 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .progress-bar .fill { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .gantt-bar { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Модальное окно входа -->
+<div class="modal-overlay" id="loginModal">
+    <div class="modal-box">
+        <h2>👷 Вход в систему</h2>
+        <p>Введите ваше ФИО</p>
+        <input type="text" id="loginName" placeholder="Иванов И.И." autofocus>
+        <div id="passwordField" style="display:none; margin-top:0;">
+            <p style="font-size:14px; color:#2e3e4e; text-align:left;">Введите пароль администратора:</p>
+            <input type="password" id="loginPassword" placeholder="Пароль">
+            <div id="loginError" class="error">Неверный пароль</div>
+        </div>
+        <button class="btn btn-primary" id="loginBtn">Войти</button>
+    </div>
+</div>
+
+<!-- Модальное окно просмотра файлов -->
+<div class="file-modal-overlay" id="fileModal">
+    <div class="file-modal-box">
+        <button class="close-btn" id="fileModalClose">&times;</button>
+        <h3 id="fileModalTitle">Файлы смены</h3>
+        <div id="fileModalLoader" class="loader" style="display:none;"></div>
+        <div class="file-grid" id="fileGrid"></div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="header">
+        <div>
+            <h1>🏛 Суворовские бастионы</h1>
+            <div class="sub">Строительный контроль – ввод данных, отчёт и график</div>
+        </div>
+        <div class="user-info" id="userInfo">
+            <span class="name" id="displayUser">—</span>
+            <button class="btn-logout" id="logoutBtn">Выйти</button>
+        </div>
+    </div>
+
+    <div class="tabs">
+        <button class="tab-btn active" data-tab="input">📝 Этапы</button>
+        <button class="tab-btn" data-tab="shift">👷 Сменный учёт</button>
+        <button class="tab-btn" data-tab="report">📊 Отчёт</button>
+        <button class="tab-btn" data-tab="gantt">📅 График работ</button>
+    </div>
+
+    <!-- Вкладка "Этапы" -->
+    <div id="tab-input" class="tab-content active">
+        <p style="color:#5e6f7e; margin-bottom:12px;">Добавьте или отредактируйте этапы. Все изменения сохраняются автоматически.</p>
+        <div style="overflow-x:auto;">
+            <table class="input-table" id="inputTable">
+                <thead>
+                    <tr>
+                        <th style="width:22%">Название этапа</th>
+                        <th style="width:16%">План старт</th>
+                        <th style="width:16%">План финиш</th>
+                        <th style="width:16%">Факт старт</th>
+                        <th style="width:16%">Факт финиш</th>
+                        <th style="width:12%">Прогресс, %</th>
+                        <th style="width:4%"></th>
+                    </tr>
+                </thead>
+                <tbody id="inputBody"></tbody>
+            </table>
+        </div>
+        <div class="btn-group">
+            <button class="btn btn-primary" id="addRowBtn">➕ Добавить этап</button>
+            <button class="btn btn-success" id="updateReportBtn">🔄 Обновить отчёт и график</button>
+            <button class="btn btn-outline" id="resetDataBtn">🗑 Сбросить все данные</button>
+        </div>
+    </div>
+
+    <!-- Вкладка "Сменный учёт" -->
+    <div id="tab-shift" class="tab-content">
+        <h3 style="font-weight:500; margin-bottom:12px;">Управление сменой</h3>
+
+        <div class="shift-status" id="shiftStatus">
+            <span class="status-text" id="statusText">Статус: <span class="none">Смена не открыта</span></span>
+            <div>
+                <button class="btn btn-success" id="btnOpenShift">🟢 Открыть смену</button>
+                <button class="btn btn-danger" id="btnCloseShift" disabled>🔴 Закрыть смену</button>
+            </div>
+        </div>
+
+        <!-- Форма открытия смены -->
+        <div class="shift-action-form" id="openShiftForm">
+            <div class="field">
+                <label>Этап</label>
+                <select id="openStage"><option value="">Выберите этап</option></select>
+            </div>
+            <div class="field">
+                <label>Человек</label>
+                <input type="number" id="openPeople" value="1" min="1">
+            </div>
+            <div class="field">
+                <label>Примечание (что планируется)</label>
+                <input type="text" id="openNote" placeholder="например, заливка фундамента">
+            </div>
+            <button class="btn btn-primary" id="confirmOpenBtn">✅ Подтвердить открытие</button>
+            <button class="btn btn-outline" id="cancelOpenBtn">Отмена</button>
+        </div>
+
+        <!-- Форма закрытия смены -->
+        <div class="shift-action-form" id="closeShiftForm">
+            <div class="field">
+                <label>Файлы (фото/видео) *</label>
+                <input type="file" id="closeFiles" multiple accept="image/*,video/*">
+                <div style="font-size:12px; color:#6a7b8c; margin-top:2px;">Выберите хотя бы один файл</div>
+            </div>
+            <div class="field">
+                <label>Примечание (что сделано)</label>
+                <input type="text" id="closeNote" placeholder="например, завершили заливку">
+            </div>
+            <button class="btn btn-primary" id="confirmCloseBtn" disabled>✅ Подтвердить закрытие</button>
+            <button class="btn btn-outline" id="cancelCloseBtn">Отмена</button>
+        </div>
+
+        <h3 style="font-weight:500; margin:25px 0 10px;">Журнал смен</h3>
+        <div style="overflow-x:auto;">
+            <table class="input-table" id="shiftTable">
+                <thead>
+                    <tr>
+                        <th>Дата</th>
+                        <th>ФИО</th>
+                        <th>Этап</th>
+                        <th>Человек</th>
+                        <th>Открыта</th>
+                        <th>Закрыта</th>
+                        <th>Файлы</th>
+                        <th>Примечание</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody id="shiftBody"></tbody>
+            </table>
+        </div>
+        <div class="btn-group">
+            <button class="btn btn-outline" id="clearShiftsBtn">🗑 Очистить все смены</button>
+        </div>
+    </div>
+
+    <!-- Вкладка "Отчёт" -->
+    <div id="tab-report" class="tab-content">
+        <div id="reportContent">
+            <div id="pdfContent">
+                <div class="report-summary" id="reportSummary"></div>
+                <div style="margin: 20px 0 10px;">
+                    <h3 style="font-weight:500;">👷 Сменная статистика</h3>
+                    <div id="shiftStats" class="shift-stats"></div>
+                </div>
+                <div class="chart-row">
+                    <div class="chart-box">
+                        <h3>Общая готовность</h3>
+                        <canvas id="pieChart"></canvas>
+                    </div>
+                    <div class="chart-box">
+                        <h3>План vs Факт (прогресс по этапам)</h3>
+                        <canvas id="barChart"></canvas>
+                    </div>
+                </div>
+                <h3 style="margin:25px 0 10px; font-weight:500;">Детальный план-факт</h3>
+                <div style="overflow-x:auto;">
+                    <table class="report-table" id="reportTable">
+                        <thead>
+                            <tr>
+                                <th>Этап</th>
+                                <th>План</th>
+                                <th>Факт</th>
+                                <th>Ход работ</th>
+                                <th>Статус</th>
+                            </tr>
+                        </thead>
+                        <tbody id="reportBody"></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="export-group no-print">
+                <button class="btn btn-primary" id="exportPdfBtn">📄 Экспорт PDF</button>
+                <button class="btn btn-success" id="exportExcelBtn">📊 Экспорт Excel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Вкладка "График работ" -->
+    <div id="tab-gantt" class="tab-content">
+        <div style="margin: 10px 0 20px;">
+            <div class="gantt-legend">
+                <span><span class="color-box" style="background:#3b6f9b; opacity:0.5;"></span> План</span>
+                <span><span class="color-box" style="background:#1a7f4a;"></span> Факт (в графике / опережение)</span>
+                <span><span class="color-box" style="background:#c9453b;"></span> Факт (отставание)</span>
+            </div>
+        </div>
+        <div class="gantt-container" id="ganttContainer"></div>
+        <p style="color:#6a7b8c; font-size:13px; margin-top:10px;">* Полосы отображают план и факт по датам. Если фактические даты не заданы, показан только план.</p>
+    </div>
+</div>
+
+<script>
+    // ============================================================
+    //   УПРАВЛЕНИЕ ПОЛЬЗОВАТЕЛЕМ
+    // ============================================================
+    let currentUser = null;
+    const ADMIN_NAME = 'Леухин Олег Павлович';
+    const ADMIN_PASSWORD = 'OlegMolodoy()!';
+
+    function setUser(name) {
+        currentUser = name.trim();
+        sessionStorage.setItem('currentUser', currentUser);
+        document.getElementById('displayUser').textContent = currentUser;
+        document.getElementById('loginModal').classList.add('hidden');
+        loadData();
+        renderInputTable();
+        renderShifts();
+        updateAll();
+        updateShiftUI();
+    }
+
+    function logout() {
+        sessionStorage.removeItem('currentUser');
+        currentUser = null;
+        document.getElementById('loginModal').classList.remove('hidden');
+        document.getElementById('loginName').value = '';
+        document.getElementById('loginPassword').value = '';
+        document.getElementById('passwordField').style.display = 'none';
+        document.getElementById('loginBtn').textContent = 'Войти';
+        document.getElementById('loginError').style.display = 'none';
+        document.getElementById('loginName').focus();
+        document.getElementById('displayUser').textContent = '—';
+        document.getElementById('shiftBody').innerHTML = '';
+        document.getElementById('shiftStats').innerHTML = '<p style="color:#6a7b8c;">Нет записей о сменах.</p>';
+        document.getElementById('openShiftForm').style.display = 'none';
+        document.getElementById('closeShiftForm').style.display = 'none';
+    }
+
+    window.addEventListener('DOMContentLoaded', function() {
+        const savedUser = sessionStorage.getItem('currentUser');
+        if (savedUser) {
+            sessionStorage.removeItem('currentUser');
+            document.getElementById('loginModal').classList.remove('hidden');
+            document.getElementById('loginName').focus();
+        } else {
+            document.getElementById('loginModal').classList.remove('hidden');
+            document.getElementById('loginName').focus();
+        }
+    });
+
+    const loginNameInput = document.getElementById('loginName');
+    const loginPasswordInput = document.getElementById('loginPassword');
+    const loginBtn = document.getElementById('loginBtn');
+    const passwordField = document.getElementById('passwordField');
+    const loginError = document.getElementById('loginError');
+
+    loginNameInput.addEventListener('input', function() {
+        const name = this.value.trim();
+        if (name === ADMIN_NAME) {
+            passwordField.style.display = 'block';
+            loginBtn.textContent = 'Подтвердить';
+            loginError.style.display = 'none';
+            setTimeout(() => loginPasswordInput.focus(), 100);
+        } else {
+            passwordField.style.display = 'none';
+            loginBtn.textContent = 'Войти';
+            loginError.style.display = 'none';
+        }
+    });
+
+    function handleLogin() {
+        const name = loginNameInput.value.trim();
+        if (!name) { alert('Введите ваше ФИО'); return; }
+        if (name === ADMIN_NAME) {
+            const password = loginPasswordInput.value;
+            if (password === ADMIN_PASSWORD) {
+                setUser(name);
+            } else {
+                loginError.style.display = 'block';
+                loginPasswordInput.value = '';
+                loginPasswordInput.focus();
+            }
+        } else {
+            setUser(name);
+        }
+    }
+
+    loginBtn.addEventListener('click', handleLogin);
+    loginNameInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            if (this.value.trim() === ADMIN_NAME) {
+                if (passwordField.style.display !== 'none') loginPasswordInput.focus();
+                else handleLogin();
+            } else {
+                handleLogin();
+            }
+        }
+    });
+    loginPasswordInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') { e.preventDefault(); handleLogin(); }
+    });
+
+    // ============================================================
+    //   IndexedDB для хранения файлов
+    // ============================================================
+    const DB_NAME = 'ShiftFilesDB';
+    const STORE_NAME = 'files';
+
+    function openDB() {
+        return new Promise((resolve, reject) => {
+            const request = indexedDB.open(DB_NAME, 1);
+            request.onupgradeneeded = function(e) {
+                const db = e.target.result;
+                if (!db.objectStoreNames.contains(STORE_NAME)) {
+                    db.createObjectStore(STORE_NAME, { keyPath: 'shiftId' });
+                }
+            };
+            request.onsuccess = function(e) { resolve(e.target.result); };
+            request.onerror = function(e) { reject(e.target.error); };
+        });
+    }
+
+    async function saveFilesForShift(shiftId, files) {
+        if (!files || files.length === 0) return;
+        const db = await openDB();
+        const tx = db.transaction(STORE_NAME, 'readwrite');
+        const store = tx.objectStore(STORE_NAME);
+        const fileData = [];
+        for (let f of files) {
+            const dataURL = await new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = (e) => resolve(e.target.result);
+                reader.readAsDataURL(f);
+            });
+            fileData.push({ name: f.name, type: f.type, data: dataURL });
+        }
+        store.put({ shiftId: shiftId, files: fileData });
+        return new Promise((resolve, reject) => {
+            tx.oncomplete = () => resolve();
+            tx.onerror = (e) => reject(e.target.error);
+        });
+    }
+
+    async function getFilesForShift(shiftId) {
+        const db = await openDB();
+        const tx = db.transaction(STORE_NAME, 'readonly');
+        const store = tx.objectStore(STORE_NAME);
+        const request = store.get(shiftId);
+        return new Promise((resolve, reject) => {
+            request.onsuccess = () => resolve(request.result ? request.result.files : []);
+            request.onerror = (e) => reject(e.target.error);
+        });
+    }
+
+    async function deleteFilesForShift(shiftId) {
+        const db = await openDB();
+        const tx = db.transaction(STORE_NAME, 'readwrite');
+        const store = tx.objectStore(STORE_NAME);
+        store.delete(shiftId);
+        return new Promise((resolve, reject) => {
+            tx.oncomplete = () => resolve();
+            tx.onerror = (e) => reject(e.target.error);
+        });
+    }
+
+    // ============================================================
+    //   ХРАНИЛИЩЕ ДАННЫХ (localStorage)
+    // ============================================================
+    const STORAGE_KEY = 'suvarov_stages';
+    const SHIFT_KEY = 'suvarov_shifts';
+    let stages = [];
+    let shifts = [];
+
+    function loadData() {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+            try { stages = JSON.parse(saved); } catch(e) { stages = []; }
+        }
+        if (!stages || stages.length === 0) {
+            stages = [
+                { name: 'Котлован', planStart: '2026-04-01', planEnd: '2026-04-20', factStart: '2026-04-01', factEnd: '2026-04-18', progress: 100 },
+                { name: 'Фундамент', planStart: '2026-04-21', planEnd: '2026-05-15', factStart: '2026-04-21', factEnd: '', progress: 75 },
+                { name: 'Стены подвала', planStart: '2026-05-10', planEnd: '2026-05-30', factStart: '2026-05-12', factEnd: '', progress: 30 },
+                { name: 'Стены 1-го этажа', planStart: '2026-05-20', planEnd: '2026-06-15', factStart: '2026-06-01', factEnd: '', progress: 10 },
+                { name: 'Перекрытия', planStart: '2026-06-10', planEnd: '2026-06-30', factStart: '', factEnd: '', progress: 0 },
+                { name: 'Кровля', planStart: '2026-07-01', planEnd: '2026-07-25', factStart: '', factEnd: '', progress: 0 },
+                { name: 'Инженерные сети', planStart: '2026-06-20', planEnd: '2026-08-10', factStart: '2026-06-22', factEnd: '', progress: 45 },
+                { name: 'Отделка', planStart: '2026-08-01', planEnd: '2026-09-30', factStart: '', factEnd: '', progress: 0 }
+            ];
+            saveStages();
+        }
+        const savedShifts = localStorage.getItem(SHIFT_KEY);
+        if (savedShifts) {
+            try {
+                const parsed = JSON.parse(savedShifts);
+                if (parsed.length > 0 && !parsed[0].hasOwnProperty('openTime')) {
+                    shifts = [];
+                } else {
+                    shifts = parsed;
+                }
+            } catch(e) { shifts = []; }
+        } else {
+            shifts = [];
+        }
+        saveShifts();
+    }
+
+    function saveStages() { localStorage.setItem(STORAGE_KEY, JSON.stringify(stages)); }
+    function saveShifts() { localStorage.setItem(SHIFT_KEY, JSON.stringify(shifts)); }
+
+    // ============================================================
+    //   ФИЛЬТРАЦИЯ СМЕН
+    // ============================================================
+    function getFilteredShifts() {
+        if (!currentUser) return [];
+        if (currentUser === ADMIN_NAME) return shifts.slice();
+        return shifts.filter(sh => sh.user === currentUser);
+    }
+
+    function getCurrentOpenShift() {
+        const all = getFilteredShifts();
+        return all.find(sh => sh.closeTime === null) || null;
+    }
+
+    // ============================================================
+    //   ОБНОВЛЕНИЕ UI СМЕНЫ
+    // ============================================================
+    function updateShiftUI() {
+        const openShift = getCurrentOpenShift();
+        const statusText = document.getElementById('statusText');
+        const btnOpen = document.getElementById('btnOpenShift');
+        const btnClose = document.getElementById('btnCloseShift');
+
+        if (openShift) {
+            const openDate = new Date(openShift.openTime);
+            statusText.innerHTML = `Статус: <span class="open">Смена открыта ${openDate.toLocaleString('ru-RU')}</span>`;
+            btnOpen.disabled = true;
+            btnClose.disabled = false;
+            document.getElementById('openShiftForm').style.display = 'none';
+            document.getElementById('closeShiftForm').style.display = 'none';
+        } else {
+            statusText.innerHTML = `Статус: <span class="none">Смена не открыта</span>`;
+            btnOpen.disabled = false;
+            btnClose.disabled = true;
+            document.getElementById('openShiftForm').style.display = 'none';
+            document.getElementById('closeShiftForm').style.display = 'none';
+        }
+    }
+
+    // ============================================================
+    //   ОТКРЫТИЕ СМЕНЫ
+    // ============================================================
+    document.getElementById('btnOpenShift').addEventListener('click', function() {
+        if (getCurrentOpenShift()) {
+            alert('У вас уже есть открытая смена. Закройте её перед открытием новой.');
+            return;
+        }
+        document.getElementById('openShiftForm').style.display = 'flex';
+        document.getElementById('closeShiftForm').style.display = 'none';
+        const select = document.getElementById('openStage');
+        select.innerHTML = '<option value="">Выберите этап</option>';
+        stages.forEach(st => {
+            const opt = document.createElement('option');
+            opt.value = st.name;
+            opt.textContent = st.name;
+            select.appendChild(opt);
+        });
+        document.getElementById('openPeople').value = 1;
+        document.getElementById('openNote').value = '';
+    });
+
+    document.getElementById('cancelOpenBtn').addEventListener('click', function() {
+        document.getElementById('openShiftForm').style.display = 'none';
+    });
+
+    document.getElementById('confirmOpenBtn').addEventListener('click', function() {
+        const stage = document.getElementById('openStage').value;
+        const people = parseInt(document.getElementById('openPeople').value) || 1;
+        const note = document.getElementById('openNote').value.trim() || '';
+        if (!stage) { alert('Выберите этап'); return; }
+        if (people < 1) { alert('Количество человек должно быть не менее 1'); return; }
+
+        const newShift = {
+            id: Date.now(),
+            user: currentUser,
+            date: new Date().toISOString().slice(0,10),
+            openTime: new Date().toISOString(),
+            closeTime: null,
+            stage: stage,
+            people: people,
+            note: note,
+            files: [] // имена файлов будут добавлены при закрытии
+        };
+        shifts.push(newShift);
+        saveShifts();
+        renderShifts();
+        updateAll();
+        updateShiftUI();
+        document.getElementById('openShiftForm').style.display = 'none';
+    });
+
+    // ============================================================
+    //   ЗАКРЫТИЕ СМЕНЫ
+    // ============================================================
+    document.getElementById('btnCloseShift').addEventListener('click', function() {
+        const openShift = getCurrentOpenShift();
+        if (!openShift) { alert('Нет открытой смены.'); return; }
+        document.getElementById('closeShiftForm').style.display = 'flex';
+        document.getElementById('openShiftForm').style.display = 'none';
+        document.getElementById('closeFiles').value = '';
+        document.getElementById('closeNote').value = '';
+        document.getElementById('confirmCloseBtn').disabled = true;
+        document.getElementById('closeFiles').onchange = function() {
+            document.getElementById('confirmCloseBtn').disabled = this.files.length === 0;
+        };
+    });
+
+    document.getElementById('cancelCloseBtn').addEventListener('click', function() {
+        document.getElementById('closeShiftForm').style.display = 'none';
+    });
+
+    document.getElementById('confirmCloseBtn').addEventListener('click', async function() {
+        const openShift = getCurrentOpenShift();
+        if (!openShift) { alert('Нет открытой смены.'); return; }
+
+        const filesInput = document.getElementById('closeFiles');
+        if (filesInput.files.length === 0) {
+            alert('Выберите хотя бы один файл (фото или видео) для закрытия смены.');
+            return;
+        }
+
+        try {
+            // Сохраняем файлы в IndexedDB
+            await saveFilesForShift(openShift.id, filesInput.files);
+        } catch(e) {
+            alert('Ошибка при сохранении файлов: ' + e.message);
+            return;
+        }
+
+        // Обновляем запись смены
+        const idx = shifts.indexOf(openShift);
+        if (idx === -1) { alert('Ошибка: смена не найдена.'); return; }
+
+        shifts[idx].closeTime = new Date().toISOString();
+        const fileNames = [];
+        for (let f of filesInput.files) {
+            fileNames.push({ name: f.name, size: f.size, type: f.type });
+        }
+        shifts[idx].files = fileNames;
+        const note = document.getElementById('closeNote').value.trim();
+        if (note) shifts[idx].note = note;
+
+        saveShifts();
+        renderShifts();
+        updateAll();
+        updateShiftUI();
+        document.getElementById('closeShiftForm').style.display = 'none';
+    });
+
+    // ============================================================
+    //   РЕНДЕРИНГ ТАБЛИЦЫ ЭТАПОВ
+    // ============================================================
+    function renderInputTable() {
+        const tbody = document.getElementById('inputBody');
+        tbody.innerHTML = '';
+        stages.forEach((st, index) => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><input type="text" class="inp-name" value="${st.name}" data-idx="${index}"></td>
+                <td><input type="date" class="inp-planStart" value="${st.planStart || ''}" data-idx="${index}"></td>
+                <td><input type="date" class="inp-planEnd" value="${st.planEnd || ''}" data-idx="${index}"></td>
+                <td><input type="date" class="inp-factStart" value="${st.factStart || ''}" data-idx="${index}"></td>
+                <td><input type="date" class="inp-factEnd" value="${st.factEnd || ''}" data-idx="${index}"></td>
+                <td><input type="number" class="inp-progress" value="${st.progress}" min="0" max="100" data-idx="${index}"></td>
+                <td><button class="del-btn" data-idx="${index}">✕</button></td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        document.querySelectorAll('#inputBody input').forEach(inp => {
+            inp.addEventListener('input', function() {
+                const idx = parseInt(this.dataset.idx);
+                const field = this.className.replace('inp-', '');
+                let value = this.value;
+                if (field === 'progress') value = parseFloat(value) || 0;
+                stages[idx][field] = value;
+                saveStages();
+            });
+        });
+
+        document.querySelectorAll('#inputBody .del-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const idx = parseInt(this.dataset.idx);
+                stages.splice(idx, 1);
+                saveStages();
+                renderInputTable();
+                updateAll();
+            });
+        });
+    }
+
+    // ============================================================
+    //   РЕНДЕРИНГ ЖУРНАЛА СМЕН
+    // ============================================================
+    function renderShifts() {
+        const filtered = getFilteredShifts();
+        const tbody = document.getElementById('shiftBody');
+        tbody.innerHTML = '';
+        filtered.forEach((sh, idx) => {
+            const realIdx = shifts.indexOf(sh);
+            const tr = document.createElement('tr');
+            const openStr = sh.openTime ? new Date(sh.openTime).toLocaleString('ru-RU') : '—';
+            const closeStr = sh.closeTime ? new Date(sh.closeTime).toLocaleString('ru-RU') : '—';
+            const filesStr = sh.files && sh.files.length ? sh.files.map(f => f.name).join(', ') : '—';
+            const hasFiles = sh.files && sh.files.length > 0;
+            tr.innerHTML = `
+                <td>${sh.date || '—'}</td>
+                <td>${sh.fio || sh.user || ''}</td>
+                <td>${sh.stage || '—'}</td>
+                <td>${sh.people || ''}</td>
+                <td>${openStr}</td>
+                <td>${closeStr}</td>
+                <td><span class="file-list">${filesStr}</span></td>
+                <td>${sh.note || ''}</td>
+                <td>
+                    ${hasFiles ? `<button class="view-btn" data-idx="${realIdx}" title="Просмотр файлов">👁️</button>` : ''}
+                    <button class="del-btn" data-idx="${realIdx}">✕</button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        // Обработчики кнопок просмотра файлов
+        document.querySelectorAll('#shiftBody .view-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const idx = parseInt(this.dataset.idx);
+                const shift = shifts[idx];
+                if (!shift) return;
+                if (currentUser !== ADMIN_NAME && shift.user !== currentUser) {
+                    alert('Вы можете просматривать только свои файлы.');
+                    return;
+                }
+                openFileModal(shift.id, shift.user);
+            });
+        });
+
+        // Обработчики удаления
+        document.querySelectorAll('#shiftBody .del-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const idx = parseInt(this.dataset.idx);
+                const shift = shifts[idx];
+                if (currentUser !== ADMIN_NAME && shift.user !== currentUser) {
+                    alert('Вы можете удалять только свои записи.');
+                    return;
+                }
+                if (confirm('Удалить запись о смене? Это также удалит загруженные файлы.')) {
+                    deleteFilesForShift(shift.id).catch(e => console.warn('Ошибка удаления файлов:', e));
+                    shifts.splice(idx, 1);
+                    saveShifts();
+                    renderShifts();
+                    updateAll();
+                    updateShiftUI();
+                }
+            });
+        });
+    }
+
+    // ============================================================
+    //   МОДАЛЬНОЕ ОКНО ПРОСМОТРА ФАЙЛОВ (улучшенное)
+    // ============================================================
+    const fileModal = document.getElementById('fileModal');
+    const fileGrid = document.getElementById('fileGrid');
+    const fileModalTitle = document.getElementById('fileModalTitle');
+    const fileLoader = document.getElementById('fileModalLoader');
+
+    async function openFileModal(shiftId, user) {
+        fileModal.classList.add('active');
+        fileModalTitle.textContent = `Файлы смены (${user})`;
+        fileGrid.innerHTML = '';
+        fileLoader.style.display = 'block';
+
+        try {
+            const files = await getFilesForShift(shiftId);
+            fileLoader.style.display = 'none';
+            if (!files || files.length === 0) {
+                fileGrid.innerHTML = '<p style="color:#6a7b8c;">Нет файлов для этой смены. Возможно, они были удалены.</p>';
+                return;
+            }
+            fileGrid.innerHTML = '';
+            files.forEach(f => {
+                const item = document.createElement('div');
+                item.className = 'file-item';
+                let content = '';
+                if (f.type && f.type.startsWith('image/')) {
+                    content = `<img src="${f.data}" alt="${f.name}" loading="lazy">`;
+                } else if (f.type && f.type.startsWith('video/')) {
+                    content = `<video controls src="${f.data}" preload="metadata"></video>`;
+                } else {
+                    // Попытка отобразить как изображение, если тип не распознан
+                    content = `<img src="${f.data}" alt="${f.name}" loading="lazy" onerror="this.outerHTML='<div>Невозможно отобразить файл</div>'">`;
+                }
+                item.innerHTML = `
+                    ${content}
+                    <div class="file-name">${f.name}</div>
+                `;
+                fileGrid.appendChild(item);
+            });
+        } catch(e) {
+            fileLoader.style.display = 'none';
+            fileGrid.innerHTML = `<p style="color:#c9453b;">Ошибка загрузки файлов: ${e.message}</p>`;
+            console.error('Ошибка при открытии модального окна:', e);
+        }
+    }
+
+    document.getElementById('fileModalClose').addEventListener('click', function() {
+        fileModal.classList.remove('active');
+    });
+    fileModal.addEventListener('click', function(e) {
+        if (e.target === this) fileModal.classList.remove('active');
+    });
+
+    // ============================================================
+    //   ОЧИСТКА СМЕН (только админ)
+    // ============================================================
+    document.getElementById('clearShiftsBtn').addEventListener('click', function() {
+        if (currentUser !== ADMIN_NAME) {
+            alert('Только администратор может очистить все смены.');
+            return;
+        }
+        if (confirm('Удалить ВСЕ записи о сменах и файлы всех пользователей?')) {
+            (async () => {
+                const db = await openDB();
+                const tx = db.transaction(STORE_NAME, 'readwrite');
+                const store = tx.objectStore(STORE_NAME);
+                store.clear();
+                await new Promise((resolve, reject) => {
+                    tx.oncomplete = () => resolve();
+                    tx.onerror = (e) => reject(e.target.error);
+                });
+            })().catch(console.warn);
+            shifts = [];
+            saveShifts();
+            renderShifts();
+            updateAll();
+            updateShiftUI();
+        }
+    });
+
+    // ============================================================
+    //   ОБНОВЛЕНИЕ ВСЕГО
+    // ============================================================
+    function updateAll() {
+        updateReport();
+        renderGantt();
+        updateShiftStats();
+    }
+
+    // ============================================================
+    //   ОТЧЁТ
+    // ============================================================
+    function updateReport() {
+        document.querySelectorAll('#inputBody input').forEach(inp => {
+            const idx = parseInt(inp.dataset.idx);
+            const field = inp.className.replace('inp-', '');
+            let value = inp.value;
+            if (field === 'progress') value = parseFloat(value) || 0;
+            stages[idx][field] = value;
+        });
+        saveStages();
+
+        const totalProgress = stages.reduce((sum, st) => sum + st.progress, 0);
+        const overall = stages.length ? Math.round(totalProgress / stages.length) : 0;
+
+        const now = new Date();
+        now.setHours(0,0,0,0);
+        let totalDelay = 0;
+        let hasRisk = false;
+        stages.forEach(st => {
+            const pEnd = st.planEnd ? new Date(st.planEnd + 'T00:00:00') : null;
+            const fEnd = st.factEnd ? new Date(st.factEnd + 'T00:00:00') : null;
+            if (fEnd && pEnd && fEnd > pEnd) {
+                totalDelay += Math.round((fEnd - pEnd) / (1000*60*60*24));
+            }
+            if (!fEnd && pEnd && now > pEnd && st.progress < 100) {
+                totalDelay += Math.round((now - pEnd) / (1000*60*60*24));
+                hasRisk = true;
+            }
+        });
+        let statusText = 'В графике ✅';
+        let statusClass = '';
+        if (totalDelay > 0) {
+            statusText = `Отставание ${totalDelay} дн.`;
+            statusClass = 'danger';
+        } else if (hasRisk) {
+            statusText = 'Есть риски';
+            statusClass = 'warning';
+        }
+
+        let maxDate = null;
+        stages.forEach(st => {
+            const pEnd = st.planEnd ? new Date(st.planEnd + 'T00:00:00') : null;
+            const fEnd = st.factEnd ? new Date(st.factEnd + 'T00:00:00') : null;
+            if (pEnd && (!maxDate || pEnd > maxDate)) maxDate = pEnd;
+            if (fEnd && (!maxDate || fEnd > maxDate)) maxDate = fEnd;
+        });
+        const forecast = maxDate ? maxDate.toLocaleDateString('ru-RU') : '—';
+
+        document.getElementById('reportSummary').innerHTML = `
+            <div class="stat-card">
+                <div class="label">Общая готовность</div>
+                <div class="value">${overall}%</div>
+            </div>
+            <div class="stat-card">
+                <div class="label">Текущий статус</div>
+                <div class="value"><span class="badge ${statusClass}">${statusText}</span></div>
+            </div>
+            <div class="stat-card">
+                <div class="label">Плановый срок сдачи</div>
+                <div class="value">${forecast}</div>
+            </div>
+        `;
+
+        const tbody = document.getElementById('reportBody');
+        tbody.innerHTML = '';
+        stages.forEach(st => {
+            const pStart = st.planStart ? new Date(st.planStart + 'T00:00:00') : null;
+            const pEnd = st.planEnd ? new Date(st.planEnd + 'T00:00:00') : null;
+            const fStart = st.factStart ? new Date(st.factStart + 'T00:00:00') : null;
+            const fEnd = st.factEnd ? new Date(st.factEnd + 'T00:00:00') : null;
+
+            let planProgress = 0;
+            if (pStart && pEnd) {
+                const dur = (pEnd - pStart) / (1000*60*60*24);
+                if (now < pStart) planProgress = 0;
+                else if (now > pEnd) planProgress = 100;
+                else planProgress = Math.round(((now - pStart) / (1000*60*60*24)) / dur * 100);
+            }
+            const factProgress = Math.min(st.progress, 100);
+            const compare = factProgress - planProgress;
+            let barClass = 'fact';
+            let statusTag = '';
+            if (factProgress >= 100) {
+                statusTag = '✅ Завершён';
+                barClass = 'fact ahead';
+            } else if (compare >= 5) {
+                statusTag = '🏃 Опережение';
+                barClass = 'fact ahead';
+            } else if (compare <= -5) {
+                statusTag = '⚠️ Отставание';
+                barClass = 'fact behind';
+            } else {
+                statusTag = '▶️ В графике';
+                barClass = 'fact';
+            }
+            if (factProgress === 0 && !fStart) statusTag = '⏸ Не начат';
+
+            const planLabel = `${pStart ? pStart.toLocaleDateString('ru-RU') : '—'} – ${pEnd ? pEnd.toLocaleDateString('ru-RU') : '—'}`;
+            const factLabel = fStart ? `${fStart.toLocaleDateString('ru-RU')} – ${fEnd ? fEnd.toLocaleDateString('ru-RU') : '...'}` : '—';
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><strong>${st.name}</strong></td>
+                <td style="font-size:13px;">${planLabel}</td>
+                <td style="font-size:13px;">${factLabel}</td>
+                <td>
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <div class="progress-bar" style="flex:1;">
+                            <div class="fill plan" style="width:${Math.min(planProgress, 100)}%;"></div>
+                            <div class="fill ${barClass}" style="width:${Math.min(factProgress, 100)}%;"></div>
+                        </div>
+                        <span style="font-size:13px; font-weight:500; min-width:40px;">${factProgress}%</span>
+                    </div>
+                </td>
+                <td><span class="status-tag ${barClass === 'fact' ? 'ok' : barClass === 'fact.behind' ? 'fail' : barClass === 'fact.ahead' ? 'ok' : ''}">${statusTag}</span></td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        renderCharts(overall);
+        updateShiftStats();
+    }
+
+    // ============================================================
+    //   СМЕННАЯ СТАТИСТИКА (только закрытые смены)
+    // ============================================================
+    function updateShiftStats() {
+        const container = document.getElementById('shiftStats');
+        if (!container) return;
+        const filtered = getFilteredShifts();
+        const closed = filtered.filter(sh => sh.closeTime !== null);
+        if (closed.length === 0) {
+            container.innerHTML = '<p style="color:#6a7b8c;">Нет закрытых смен.</p>';
+            return;
+        }
+        const totalPeople = closed.reduce((sum, sh) => sum + sh.people, 0);
+        const uniqueFio = [...new Set(closed.map(sh => sh.fio || sh.user).filter(Boolean))];
+        const uniqueStages = [...new Set(closed.map(sh => sh.stage).filter(Boolean))];
+
+        let html = `<div><strong>Всего закрытых смен:</strong> ${closed.length}</div>
+                    <div><strong>Человеко-дней:</strong> ${totalPeople}</div>
+                    <div><strong>Сотрудники:</strong> ${uniqueFio.join(', ') || '—'}</div>
+                    <div><strong>Этапы:</strong> ${uniqueStages.join(', ') || '—'}</div>`;
+        container.innerHTML = html;
+    }
+
+    // ============================================================
+    //   ДИАГРАММЫ
+    // ============================================================
+    let pieChartInstance = null, barChartInstance = null;
+
+    function renderCharts(overall) {
+        const pieCtx = document.getElementById('pieChart').getContext('2d');
+        if (pieChartInstance) pieChartInstance.destroy();
+        pieChartInstance = new Chart(pieCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Выполнено', 'Осталось'],
+                datasets: [{ data: [overall, 100 - overall], backgroundColor: ['#1a7f4a', '#e6ecf2'], borderWidth: 0 }]
+            },
+            options: { cutout: '70%', plugins: { legend: { display: false }, tooltip: { callbacks: { label: (ctx) => `${ctx.parsed}%` } } }, responsive: true, maintainAspectRatio: true }
+        });
+
+        const barCtx = document.getElementById('barChart').getContext('2d');
+        if (barChartInstance) barChartInstance.destroy();
+        const labels = stages.map(st => st.name.length > 12 ? st.name.slice(0,10)+'…' : st.name);
+        const planData = stages.map(st => {
+            const pStart = st.planStart ? new Date(st.planStart + 'T00:00:00') : null;
+            const pEnd = st.planEnd ? new Date(st.planEnd + 'T00:00:00') : null;
+            if (!pStart || !pEnd) return 0;
+            const now = new Date(); now.setHours(0,0,0,0);
+            const dur = (pEnd - pStart) / (1000*60*60*24);
+            if (now < pStart) return 0;
+            if (now > pEnd) return 100;
+            return Math.round(((now - pStart) / (1000*60*60*24)) / dur * 100);
+        });
+        const factData = stages.map(st => Math.min(st.progress, 100));
+
+        barChartInstance = new Chart(barCtx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [
+                    { label: 'План (по графику)', data: planData, backgroundColor: 'rgba(59, 111, 155, 0.5)', borderColor: '#3b6f9b', borderWidth: 1 },
+                    { label: 'Факт (выполнено)', data: factData, backgroundColor: factData.map((v, i) => v >= planData[i] ? '#1a7f4a' : '#c9453b'), borderColor: factData.map((v, i) => v >= planData[i] ? '#1a7f4a' : '#c9453b'), borderWidth: 1 }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: { legend: { position: 'top' } },
+                scales: { y: { beginAtZero: true, max: 100, title: { display: true, text: 'Прогресс, %' } } }
+            }
+        });
+    }
+
+    // ============================================================
+    //   ГАНТ
+    // ============================================================
+    function renderGantt() {
+        const container = document.getElementById('ganttContainer');
+        container.innerHTML = '';
+
+        let minDate = null, maxDate = null;
+        stages.forEach(st => {
+            const pStart = st.planStart ? new Date(st.planStart + 'T00:00:00') : null;
+            const pEnd = st.planEnd ? new Date(st.planEnd + 'T00:00:00') : null;
+            const fStart = st.factStart ? new Date(st.factStart + 'T00:00:00') : null;
+            const fEnd = st.factEnd ? new Date(st.factEnd + 'T00:00:00') : null;
+            const dates = [pStart, pEnd, fStart, fEnd].filter(d => d);
+            dates.forEach(d => {
+                if (!minDate || d < minDate) minDate = d;
+                if (!maxDate || d > maxDate) maxDate = d;
+            });
+        });
+
+        if (!minDate || !maxDate || stages.length === 0) {
+            container.innerHTML = '<p style="color:#6a7b8c;">Нет данных для отображения графика. Добавьте этапы с датами.</p>';
+            return;
+        }
+
+        const marginDays = 5;
+        minDate = new Date(minDate);
+        minDate.setDate(minDate.getDate() - marginDays);
+        maxDate = new Date(maxDate);
+        maxDate.setDate(maxDate.getDate() + marginDays);
+
+        const totalDays = Math.max(1, (maxDate - minDate) / (1000*60*60*24));
+
+        const monthLabels = [];
+        let cur = new Date(minDate);
+        while (cur <= maxDate) {
+            monthLabels.push(new Date(cur));
+            cur.setMonth(cur.getMonth() + 1);
+        }
+        if (monthLabels.length === 0) monthLabels.push(new Date(minDate));
+
+        let html = `<div class="gantt-grid">`;
+        html += `<div class="gantt-month-labels">`;
+        monthLabels.forEach((m, i) => {
+            const next = i < monthLabels.length-1 ? monthLabels[i+1] : maxDate;
+            const start = new Date(m);
+            const end = new Date(next);
+            const days = Math.max(1, (end - start) / (1000*60*60*24));
+            const pct = (days / totalDays) * 100;
+            html += `<div style="flex:0 0 ${pct}%;">${m.toLocaleDateString('ru-RU', {month:'short', year:'numeric'})}</div>`;
+        });
+        html += `</div>`;
+
+        stages.forEach(st => {
+            const pStart = st.planStart ? new Date(st.planStart + 'T00:00:00') : null;
+            const pEnd = st.planEnd ? new Date(st.planEnd + 'T00:00:00') : null;
+            const fStart = st.factStart ? new Date(st.factStart + 'T00:00:00') : null;
+            const fEnd = st.factEnd ? new Date(st.factEnd + 'T00:00:00') : null;
+
+            html += `<div class="gantt-row">`;
+            html += `<div class="label">${st.name}</div>`;
+            html += `<div class="timeline">`;
+
+            if (pStart && pEnd) {
+                const left = ((pStart - minDate) / (1000*60*60*24)) / totalDays * 100;
+                const width = ((pEnd - pStart) / (1000*60*60*24)) / totalDays * 100;
+                html += `<div class="gantt-bar plan" style="left:${left}%; width:${width}%;"></div>`;
+            }
+
+            if (fStart && fEnd) {
+                const left = ((fStart - minDate) / (1000*60*60*24)) / totalDays * 100;
+                const width = ((fEnd - fStart) / (1000*60*60*24)) / totalDays * 100;
+                let cls = 'fact';
+                if (pEnd && fEnd > pEnd) cls += ' behind';
+                else cls += ' ahead';
+                html += `<div class="gantt-bar ${cls}" style="left:${left}%; width:${Math.max(width, 2)}%;"></div>`;
+            } else if (fStart && !fEnd && st.progress > 0) {
+                const now = new Date();
+                const left = ((fStart - minDate) / (1000*60*60*24)) / totalDays * 100;
+                const width = Math.max(2, ((now - fStart) / (1000*60*60*24)) / totalDays * 100);
+                let cls = 'fact';
+                if (pEnd && now > pEnd) cls += ' behind';
+                else cls += ' ahead';
+                html += `<div class="gantt-bar ${cls}" style="left:${left}%; width:${Math.min(width, 100-left)}%;"></div>`;
+            }
+
+            html += `</div></div>`;
+        });
+
+        html += `</div>`;
+        container.innerHTML = html;
+    }
+
+    // ============================================================
+    //   ЭКСПОРТ PDF
+    // ============================================================
+    document.getElementById('exportPdfBtn').addEventListener('click', function() {
+        const element = document.getElementById('pdfContent');
+        const btn = this;
+        btn.textContent = '⏳ Генерация PDF...';
+        btn.disabled = true;
+
+        const opt = {
+            margin:        [10, 10, 10, 10],
+            filename:     'Suvarov_Report.pdf',
+            image:        { type: 'jpeg', quality: 0.98 },
+            html2canvas:  { scale: 2, useCORS: true, letterRendering: true, logging: false },
+            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+            pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
+        };
+
+        html2pdf().set(opt).from(element).save().then(() => {
+            btn.textContent = '📄 Экспорт PDF';
+            btn.disabled = false;
+        }).catch(err => {
+            console.error('PDF generation error:', err);
+            alert('Ошибка при создании PDF. Попробуйте снова.');
+            btn.textContent = '📄 Экспорт PDF';
+            btn.disabled = false;
+        });
+    });
+
+    // ============================================================
+    //   ЭКСПОРТ EXCEL
+    // ============================================================
+    document.getElementById('exportExcelBtn').addEventListener('click', function() {
+        const wb = XLSX.utils.book_new();
+        const summary = [
+            ['Сводка по объекту "Суворовские бастионы"'],
+            ['Дата отчёта', new Date().toLocaleDateString('ru-RU')],
+            ['Общая готовность', document.querySelector('.stat-card .value')?.textContent || ''],
+            ['Статус', document.querySelector('.badge')?.textContent || ''],
+            ['Плановый срок сдачи', document.querySelectorAll('.stat-card .value')[2]?.textContent || ''],
+            []
+        ];
+        const ws1 = XLSX.utils.aoa_to_sheet(summary);
+        XLSX.utils.book_append_sheet(wb, ws1, 'Сводка');
+
+        const rows = [['Этап', 'План старт', 'План финиш', 'Факт старт', 'Факт финиш', 'Прогресс, %']];
+        stages.forEach(st => rows.push([st.name, st.planStart || '', st.planEnd || '', st.factStart || '', st.factEnd || '', st.progress]));
+        const ws2 = XLSX.utils.aoa_to_sheet(rows);
+        XLSX.utils.book_append_sheet(wb, ws2, 'Этапы');
+
+        const compareRows = [['Этап', 'План (прогресс по графику), %', 'Факт, %', 'Статус']];
+        const now = new Date(); now.setHours(0,0,0,0);
+        stages.forEach(st => {
+            const pStart = st.planStart ? new Date(st.planStart + 'T00:00:00') : null;
+            const pEnd = st.planEnd ? new Date(st.planEnd + 'T00:00:00') : null;
+            let planPct = 0;
+            if (pStart && pEnd) {
+                const dur = (pEnd - pStart) / (1000*60*60*24);
+                if (now < pStart) planPct = 0;
+                else if (now > pEnd) planPct = 100;
+                else planPct = Math.round(((now - pStart) / (1000*60*60*24)) / dur * 100);
+            }
+            const factPct = Math.min(st.progress, 100);
+            let status = '';
+            if (factPct >= 100) status = 'Завершён';
+            else if (factPct >= planPct + 5) status = 'Опережение';
+            else if (factPct <= planPct - 5) status = 'Отставание';
+            else status = 'В графике';
+            compareRows.push([st.name, planPct, factPct, status]);
+        });
+        const ws3 = XLSX.utils.aoa_to_sheet(compareRows);
+        XLSX.utils.book_append_sheet(wb, ws3, 'План-Факт');
+
+        const filtered = getFilteredShifts();
+        if (filtered.length > 0) {
+            const shiftRows = [['Дата', 'ФИО', 'Этап', 'Человек', 'Открыта (дата+время)', 'Закрыта (дата+время)', 'Файлы', 'Примечание']];
+            filtered.forEach(sh => {
+                const openStr = sh.openTime ? new Date(sh.openTime).toLocaleString('ru-RU') : '—';
+                const closeStr = sh.closeTime ? new Date(sh.closeTime).toLocaleString('ru-RU') : '—';
+                const filesStr = sh.files && sh.files.length ? sh.files.map(f => f.name).join('; ') : '—';
+                shiftRows.push([
+                    sh.date || '—',
+                    sh.fio || sh.user || '',
+                    sh.stage || '—',
+                    sh.people || '',
+                    openStr,
+                    closeStr,
+                    filesStr,
+                    sh.note || ''
+                ]);
+            });
+            const ws4 = XLSX.utils.aoa_to_sheet(shiftRows);
+            XLSX.utils.book_append_sheet(wb, ws4, 'Смены');
+        }
+
+        XLSX.writeFile(wb, 'Suvarov_Report.xlsx');
+    });
+
+    // ============================================================
+    //   ПЕРЕКЛЮЧЕНИЕ ВКЛАДОК
+    // ============================================================
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const tabId = this.dataset.tab;
+            document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
+            document.getElementById('tab-'+tabId).classList.add('active');
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            if (tabId === 'report') updateReport();
+            if (tabId === 'gantt') renderGantt();
+            if (tabId === 'shift') {
+                renderShifts();
+                updateShiftStats();
+                updateShiftUI();
+            }
+        });
+    });
+
+    document.getElementById('updateReportBtn').addEventListener('click', function() {
+        document.querySelectorAll('#inputBody input').forEach(inp => {
+            const idx = parseInt(inp.dataset.idx);
+            const field = inp.className.replace('inp-', '');
+            let value = inp.value;
+            if (field === 'progress') value = parseFloat(value) || 0;
+            stages[idx][field] = value;
+        });
+        saveStages();
+        renderInputTable();
+        updateAll();
+        document.querySelector('[data-tab="report"]').click();
+    });
+
+    document.getElementById('addRowBtn').addEventListener('click', function() {
+        stages.push({ name: 'Новый этап', planStart: '', planEnd: '', factStart: '', factEnd: '', progress: 0 });
+        saveStages();
+        renderInputTable();
+        updateAll();
+    });
+
+    document.getElementById('resetDataBtn').addEventListener('click', function() {
+        if (confirm('Сбросить все этапы к начальным данным?')) {
+            stages = [
+                { name: 'Котлован', planStart: '2026-04-01', planEnd: '2026-04-20', factStart: '2026-04-01', factEnd: '2026-04-18', progress: 100 },
+                { name: 'Фундамент', planStart: '2026-04-21', planEnd: '2026-05-15', factStart: '2026-04-21', factEnd: '', progress: 75 },
+                { name: 'Стены подвала', planStart: '2026-05-10', planEnd: '2026-05-30', factStart: '2026-05-12', factEnd: '', progress: 30 },
+                { name: 'Стены 1-го этажа', planStart: '2026-05-20', planEnd: '2026-06-15', factStart: '2026-06-01', factEnd: '', progress: 10 },
+                { name: 'Перекрытия', planStart: '2026-06-10', planEnd: '2026-06-30', factStart: '', factEnd: '', progress: 0 },
+                { name: 'Кровля', planStart: '2026-07-01', planEnd: '2026-07-25', factStart: '', factEnd: '', progress: 0 },
+                { name: 'Инженерные сети', planStart: '2026-06-20', planEnd: '2026-08-10', factStart: '2026-06-22', factEnd: '', progress: 45 },
+                { name: 'Отделка', planStart: '2026-08-01', planEnd: '2026-09-30', factStart: '', factEnd: '', progress: 0 }
+            ];
+            saveStages();
+            renderInputTable();
+            updateAll();
+        }
+    });
+
+    document.getElementById('logoutBtn').addEventListener('click', logout);
+</script>
+</body>
+</html>
