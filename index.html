@@ -201,12 +201,19 @@
             border-radius: 12px;
             padding: 10px;
             background: #f9fbfd;
+            transition: transform 0.2s;
+        }
+        .file-modal-box .file-item:hover {
+            transform: scale(1.02);
         }
         .file-modal-box .file-item img,
         .file-modal-box .file-item video {
             max-width: 100%;
             max-height: 300px;
             border-radius: 8px;
+        }
+        .file-modal-box .file-item img {
+            cursor: pointer;
         }
         .file-modal-box .file-item .file-name {
             font-size: 12px;
@@ -548,7 +555,7 @@
     });
 
     // ============================================================
-    //   IndexedDB для хранения файлов (ИСПРАВЛЕНО!)
+    //   IndexedDB для хранения файлов
     // ============================================================
     const DB_NAME = 'ShiftFilesDB';
     const STORE_NAME = 'files';
@@ -567,11 +574,9 @@
         });
     }
 
-    // ==== ИСПРАВЛЕННАЯ ФУНКЦИЯ СОХРАНЕНИЯ ====
     async function saveFilesForShift(shiftId, files) {
         if (!files || files.length === 0) return;
 
-        // 1. Сначала читаем все файлы в dataURL
         const fileData = [];
         for (let f of files) {
             const dataURL = await new Promise((resolve) => {
@@ -582,7 +587,6 @@
             fileData.push({ name: f.name, type: f.type, data: dataURL });
         }
 
-        // 2. Теперь открываем транзакцию и сохраняем
         const db = await openDB();
         const tx = db.transaction(STORE_NAME, 'readwrite');
         const store = tx.objectStore(STORE_NAME);
@@ -849,7 +853,7 @@
     }
 
     // ============================================================
-    //   РЕНДЕРИНГ ЖУРНАЛА СМЕН
+    //   РЕНДЕРИНГ ЖУРНАЛА СМЕН (с кнопкой просмотра)
     // ============================================================
     function renderShifts() {
         const filtered = getFilteredShifts();
@@ -862,6 +866,7 @@
             const closeStr = sh.closeTime ? new Date(sh.closeTime).toLocaleString('ru-RU') : '—';
             const filesStr = sh.files && sh.files.length ? sh.files.map(f => f.name).join(', ') : '—';
             const hasFiles = sh.files && sh.files.length > 0;
+
             tr.innerHTML = `
                 <td>${sh.date || '—'}</td>
                 <td>${sh.fio || sh.user || ''}</td>
@@ -913,7 +918,7 @@
     }
 
     // ============================================================
-    //   МОДАЛЬНОЕ ОКНО ПРОСМОТРА ФАЙЛОВ
+    //   МОДАЛЬНОЕ ОКНО ПРОСМОТРА ФАЙЛОВ (с открытием фото в новой вкладке)
     // ============================================================
     const fileModal = document.getElementById('fileModal');
     const fileGrid = document.getElementById('fileGrid');
@@ -930,7 +935,7 @@
             const files = await getFilesForShift(shiftId);
             fileLoader.style.display = 'none';
             if (!files || files.length === 0) {
-                fileGrid.innerHTML = '<p style="color:#6a7b8c;">Нет файлов для этой смены. Возможно, они были удалены.</p>';
+                fileGrid.innerHTML = '<p style="color:#6a7b8c;">Нет файлов для этой смены.</p>';
                 return;
             }
             fileGrid.innerHTML = '';
@@ -939,11 +944,14 @@
                 item.className = 'file-item';
                 let content = '';
                 if (f.type && f.type.startsWith('image/')) {
-                    content = `<img src="${f.data}" alt="${f.name}" loading="lazy">`;
+                    // При клике на фото – открываем в новой вкладке в полный размер
+                    content = `<img src="${f.data}" alt="${f.name}" loading="lazy" 
+                               onclick="window.open(this.src, '_blank')" 
+                               style="cursor:pointer;" title="Кликните для увеличения">`;
                 } else if (f.type && f.type.startsWith('video/')) {
                     content = `<video controls src="${f.data}" preload="metadata"></video>`;
                 } else {
-                    content = `<img src="${f.data}" alt="${f.name}" loading="lazy" onerror="this.outerHTML='<div>Невозможно отобразить файл</div>'">`;
+                    content = `<div>Невозможно отобразить файл</div>`;
                 }
                 item.innerHTML = `
                     ${content}
