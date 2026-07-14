@@ -3,837 +3,147 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Стройконтроль – ввод данных и отчёт</title>
-    <!-- Подключаем библиотеки -->
+    <title>Стройконтроль – Суворовские бастионы</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
-        }
-        body {
-            background: #f0f4f9;
-            padding: 20px;
-        }
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            background: #fff;
-            border-radius: 24px;
-            box-shadow: 0 8px 30px rgba(0,0,0,0.08);
-            padding: 25px 30px 35px;
-        }
-        h1 {
-            font-size: 26px;
-            font-weight: 600;
-            color: #1a2634;
-            margin-bottom: 8px;
-        }
-        .sub {
-            color: #5e6f7e;
-            margin-bottom: 25px;
-            font-weight: 500;
-        }
-        .tabs {
-            display: flex;
-            gap: 8px;
-            border-bottom: 2px solid #e6ecf2;
-            margin-bottom: 25px;
-        }
-        .tab-btn {
-            padding: 10px 22px;
-            background: transparent;
-            border: none;
-            font-size: 15px;
-            font-weight: 600;
-            color: #5e6f7e;
-            cursor: pointer;
-            border-bottom: 3px solid transparent;
-            transition: 0.2s;
-        }
-        .tab-btn.active {
-            color: #1a7f4a;
-            border-bottom-color: #1a7f4a;
-        }
-        .tab-content {
-            display: none;
-        }
-        .tab-content.active {
-            display: block;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Roboto, sans-serif; }
+        body { background: #f0f4f9; padding: 20px; }
+        .container { max-width: 1400px; margin: 0 auto; background: #fff; border-radius: 24px; box-shadow: 0 8px 30px rgba(0,0,0,0.08); padding: 25px 30px 35px; }
+        h1 { font-size: 26px; font-weight: 600; color: #1a2634; }
+        .sub { color: #5e6f7e; margin-bottom: 25px; font-weight: 500; }
+        .header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; border-bottom: 2px solid #eef2f6; padding-bottom: 18px; margin-bottom: 25px; }
+        .user-info { display: flex; align-items: center; gap: 15px; }
+        .user-info .name { font-weight: 600; color: #1a7f4a; }
+        .user-info .btn-logout { background: #eef2f6; border: none; padding: 5px 15px; border-radius: 30px; cursor: pointer; font-weight: 500; color: #2e3e4e; }
+        .user-info .btn-logout:hover { background: #dce3eb; }
 
-        /* Таблица ввода */
-        .input-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 14px;
-            margin-top: 10px;
-        }
-        .input-table th {
-            background: #f7f9fc;
-            padding: 10px 8px;
-            text-align: left;
-            border-bottom: 2px solid #dce3eb;
-            font-weight: 600;
-            color: #2e3e4e;
-        }
-        .input-table td {
-            padding: 6px 8px;
-            border-bottom: 1px solid #e6ecf2;
-            vertical-align: middle;
-        }
-        .input-table input {
-            width: 100%;
-            padding: 6px 8px;
-            border: 1px solid #dce3eb;
-            border-radius: 6px;
-            font-size: 13px;
-            background: #fafcfe;
-        }
-        .input-table input:focus {
-            border-color: #1a7f4a;
-            outline: none;
-            box-shadow: 0 0 0 2px rgba(26,127,74,0.15);
-        }
-        .input-table .del-btn {
-            background: none;
-            border: none;
-            color: #b33636;
-            font-size: 18px;
-            cursor: pointer;
-            padding: 0 4px;
-        }
-        .input-table .del-btn:hover {
-            transform: scale(1.2);
-        }
-        .btn-group {
-            margin: 18px 0 10px;
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-        .btn {
-            padding: 8px 22px;
-            border: none;
-            border-radius: 30px;
-            font-weight: 600;
-            font-size: 14px;
-            background: #eef2f6;
-            color: #1a2634;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-        .btn-primary {
-            background: #1a7f4a;
-            color: #fff;
-        }
-        .btn-primary:hover {
-            background: #146a3d;
-        }
-        .btn-success {
-            background: #2b6f9b;
-            color: #fff;
-        }
-        .btn-success:hover {
-            background: #1f5a7d;
-        }
-        .btn-danger {
-            background: #c9453b;
-            color: #fff;
-        }
-        .btn-danger:hover {
-            background: #b33636;
-        }
-        .btn-outline {
-            background: transparent;
-            border: 2px solid #1a7f4a;
-            color: #1a7f4a;
-        }
-        .btn-outline:hover {
-            background: #1a7f4a;
-            color: #fff;
-        }
+        .tabs { display: flex; gap: 8px; border-bottom: 2px solid #e6ecf2; margin-bottom: 25px; flex-wrap: wrap; }
+        .tab-btn { padding: 10px 22px; background: transparent; border: none; font-size: 15px; font-weight: 600; color: #5e6f7e; cursor: pointer; border-bottom: 3px solid transparent; transition: 0.2s; }
+        .tab-btn.active { color: #1a7f4a; border-bottom-color: #1a7f4a; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
 
-        /* Отчёт */
-        .report-summary {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 20px;
-            margin: 20px 0 30px;
-        }
-        .stat-card {
-            background: #f9fbfd;
-            border-radius: 16px;
-            padding: 18px 20px;
-            box-shadow: inset 0 0 0 1px #e6ecf2;
-        }
-        .stat-card .label {
-            font-size: 13px;
-            text-transform: uppercase;
-            color: #6a7b8c;
-            font-weight: 600;
-        }
-        .stat-card .value {
-            font-size: 30px;
-            font-weight: 700;
-            color: #0b1a2a;
-            margin-top: 4px;
-        }
-        .stat-card .badge {
-            display: inline-block;
-            padding: 4px 14px;
-            border-radius: 30px;
-            font-size: 14px;
-            font-weight: 600;
-            background: #e2f0e6;
-            color: #0f6e3f;
-        }
-        .stat-card .badge.warning {
-            background: #fff3d6;
-            color: #a86b1a;
-        }
-        .stat-card .badge.danger {
-            background: #fce4e4;
-            color: #b33636;
-        }
-        .chart-row {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 30px;
-            margin: 30px 0 20px;
-        }
-        .chart-box {
-            flex: 1 1 300px;
-            min-width: 250px;
-            background: #fafcfe;
-            border-radius: 16px;
-            padding: 16px;
-            box-shadow: inset 0 0 0 1px #e6ecf2;
-        }
-        .chart-box h3 {
-            font-size: 16px;
-            font-weight: 500;
-            margin-bottom: 10px;
-            color: #2e3e4e;
-        }
-        .chart-box canvas {
-            width: 100% !important;
-            height: auto !important;
-            max-height: 220px;
-        }
+        .input-table { width: 100%; border-collapse: collapse; font-size: 14px; margin-top: 10px; }
+        .input-table th { background: #f7f9fc; padding: 10px 8px; text-align: left; border-bottom: 2px solid #dce3eb; font-weight: 600; color: #2e3e4e; }
+        .input-table td { padding: 6px 8px; border-bottom: 1px solid #e6ecf2; vertical-align: middle; }
+        .input-table input, .input-table select { width: 100%; padding: 6px 8px; border: 1px solid #dce3eb; border-radius: 6px; font-size: 13px; background: #fafcfe; }
+        .input-table input:focus, .input-table select:focus { border-color: #1a7f4a; outline: none; box-shadow: 0 0 0 2px rgba(26,127,74,0.15); }
+        .input-table .del-btn { background: none; border: none; color: #b33636; font-size: 18px; cursor: pointer; }
+        .input-table .view-btn { background: none; border: none; color: #2b6f9b; font-size: 18px; cursor: pointer; }
 
-        .report-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 14px;
-            margin: 20px 0;
-        }
-        .report-table th {
-            background: #f7f9fc;
-            padding: 12px 10px;
-            text-align: left;
-            border-bottom: 2px solid #dce3eb;
-            font-weight: 600;
-            color: #2e3e4e;
-        }
-        .report-table td {
-            padding: 12px 10px;
-            border-bottom: 1px solid #e6ecf2;
-            vertical-align: middle;
-        }
-        .progress-bar {
-            background: #e6ecf2;
-            height: 10px;
-            border-radius: 10px;
-            overflow: hidden;
-            min-width: 120px;
-        }
-        .progress-bar .fill {
-            height: 100%;
-            border-radius: 10px;
-            transition: width 0.4s;
-        }
-        .fill.plan {
-            background: #3b6f9b;
-            opacity: 0.35;
-        }
-        .fill.fact {
-            background: #1a7f4a;
-        }
-        .fill.fact.behind {
-            background: #c9453b;
-        }
-        .fill.fact.ahead {
-            background: #1a7f4a;
-        }
-        .status-tag {
-            font-size: 12px;
-            font-weight: 600;
-            padding: 3px 12px;
-            border-radius: 30px;
-            background: #eef2f6;
-            color: #2e3e4e;
-            display: inline-block;
-        }
+        .btn-group { margin: 18px 0 10px; display: flex; gap: 12px; flex-wrap: wrap; }
+        .btn { padding: 8px 22px; border: none; border-radius: 30px; font-weight: 600; font-size: 14px; background: #eef2f6; color: #1a2634; cursor: pointer; transition: 0.2s; }
+        .btn-primary { background: #1a7f4a; color: #fff; }
+        .btn-primary:hover { background: #146a3d; }
+        .btn-success { background: #2b6f9b; color: #fff; }
+        .btn-success:hover { background: #1f5a7d; }
+        .btn-outline { background: transparent; border: 2px solid #1a7f4a; color: #1a7f4a; }
+        .btn-outline:hover { background: #1a7f4a; color: #fff; }
+        .btn-danger { background: #c9453b; color: #fff; }
+        .btn-danger:hover { background: #b33636; }
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        .report-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 20px; margin: 20px 0 30px; }
+        .stat-card { background: #f9fbfd; border-radius: 16px; padding: 18px 20px; box-shadow: inset 0 0 0 1px #e6ecf2; }
+        .stat-card .label { font-size: 13px; text-transform: uppercase; color: #6a7b8c; font-weight: 600; }
+        .stat-card .value { font-size: 30px; font-weight: 700; color: #0b1a2a; margin-top: 4px; }
+
+        .chart-row { display: flex; flex-wrap: wrap; gap: 30px; margin: 30px 0 20px; }
+        .chart-box { flex: 1 1 300px; min-width: 250px; background: #fafcfe; border-radius: 16px; padding: 16px; box-shadow: inset 0 0 0 1px #e6ecf2; }
+        .chart-box h3 { font-size: 16px; font-weight: 500; margin-bottom: 10px; color: #2e3e4e; }
+        .chart-box canvas { width: 100% !important; height: auto !important; max-height: 220px; }
+
+        .report-table { width: 100%; border-collapse: collapse; font-size: 14px; margin: 20px 0; }
+        .report-table th { background: #f7f9fc; padding: 12px 10px; text-align: left; border-bottom: 2px solid #dce3eb; font-weight: 600; color: #2e3e4e; }
+        .report-table td { padding: 12px 10px; border-bottom: 1px solid #e6ecf2; vertical-align: middle; }
+
+        .progress-bar { background: #e6ecf2; height: 10px; border-radius: 10px; overflow: hidden; min-width: 120px; }
+        .progress-bar .fill { height: 100%; border-radius: 10px; transition: width 0.4s; }
+        .fill.plan { background: #3b6f9b; opacity: 0.35; }
+        .fill.fact { background: #1a7f4a; }
+        .status-tag { font-size: 12px; font-weight: 600; padding: 3px 12px; border-radius: 30px; background: #eef2f6; color: #2e3e4e; display: inline-block; }
         .status-tag.ok { background: #ddf0e3; color: #0f6e3f; }
         .status-tag.warn { background: #fff3d6; color: #a86b1a; }
         .status-tag.fail { background: #fce4e4; color: #b33636; }
 
-        .export-group {
+        .gantt-container { margin: 20px 0; overflow-x: auto; }
+        .gantt-legend { display: flex; gap: 20px; margin-bottom: 15px; font-size: 14px; }
+        .gantt-legend span { display: inline-flex; align-items: center; gap: 6px; }
+        .gantt-legend .color-box { width: 20px; height: 12px; border-radius: 4px; display: inline-block; }
+        .gantt-grid { position: relative; min-width: 700px; }
+        .gantt-row { display: flex; align-items: center; border-bottom: 1px solid #eef2f6; min-height: 44px; }
+        .gantt-row .label { width: 180px; min-width: 180px; padding-right: 15px; font-weight: 500; font-size: 13px; color: #1a2634; }
+        .gantt-row .timeline { flex: 1; position: relative; height: 32px; background: #f9fbfd; border-radius: 6px; margin: 4px 0; }
+        .gantt-bar { position: absolute; top: 4px; height: 24px; border-radius: 6px; opacity: 0.85; display: flex; align-items: center; justify-content: center; font-size: 11px; color: #fff; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 6px; cursor: default; }
+        .gantt-bar.plan { background: #3b6f9b; opacity: 0.5; top: 0; height: 14px; }
+        .gantt-bar.fact { background: #1a7f4a; top: 14px; height: 14px; }
+        .gantt-bar.fact.behind { background: #c9453b; }
+        .gantt-bar.fact.ahead { background: #1a7f4a; }
+        .gantt-month-labels { display: flex; margin-left: 180px; padding: 6px 0; font-size: 12px; color: #5e6f7e; }
+        .gantt-month-labels div { flex: 1; text-align: center; border-right: 1px solid #e6ecf2; }
+        .gantt-month-labels div:last-child { border-right: none; }
+
+        .export-group { display: flex; gap: 14px; justify-content: flex-end; margin-top: 25px; padding-top: 20px; border-top: 1px solid #e6ecf2; }
+
+        /* Сменный учёт */
+        .shift-status {
+            background: #f9fbfd;
+            padding: 16px 20px;
+            border-radius: 16px;
+            margin-bottom: 20px;
             display: flex;
-            gap: 14px;
-            justify-content: flex-end;
-            margin-top: 25px;
-            padding-top: 20px;
-            border-top: 1px solid #e6ecf2;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
         }
+        .shift-status .status-text { font-weight: 600; font-size: 16px; }
+        .shift-status .status-text .open { color: #1a7f4a; }
+        .shift-status .status-text .closed { color: #5e6f7e; }
+        .shift-status .status-text .none { color: #c9453b; }
 
-        /* Стили для печати (PDF) */
-        @media print {
-            body { background: #fff; padding: 0.5cm; }
-            .container { box-shadow: none; border: none; padding: 0; }
-            .tabs, .tab-btn, .btn-group, .export-group, .no-print { display: none !important; }
-            .tab-content { display: block !important; }
-            .report-summary { break-inside: avoid; }
-            .chart-row { break-inside: avoid; }
-            .report-table { break-inside: auto; }
-            .stat-card .badge { background: #e2f0e6 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-            .progress-bar .fill { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        .shift-action-form {
+            background: #f9fbfd;
+            padding: 16px 20px;
+            border-radius: 16px;
+            margin-bottom: 20px;
+            display: none;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: end;
         }
-    </style>
-</head>
-<body>
-<div class="container">
-    <h1>🏛 Суворовские бастионы</h1>
-    <div class="sub">Строительный контроль – ввод данных и генерация отчёта</div>
+        .shift-action-form .field { display: flex; flex-direction: column; gap: 4px; }
+        .shift-action-form .field label { font-size: 13px; font-weight: 500; color: #2e3e4e; }
+        .shift-action-form .field input, .shift-action-form .field select { padding: 6px 10px; border: 1px solid #dce3eb; border-radius: 6px; font-size: 13px; background: #fff; width: 160px; }
+        .shift-action-form .field input[type="number"] { width: 100px; }
+        .shift-action-form .field input[type="file"] { padding: 6px 0; border: none; }
+        .shift-action-form .field input[type="text"] { width: 180px; }
 
-    <!-- Вкладки -->
-    <div class="tabs">
-        <button class="tab-btn active" data-tab="input">📝 Ввод данных</button>
-        <button class="tab-btn" data-tab="report">📊 Отчёт</button>
-    </div>
+        .shift-stats { display: flex; flex-wrap: wrap; gap: 20px; background: #f9fbfd; padding: 16px; border-radius: 16px; margin: 8px 0; }
 
-    <!-- Вкладка "Ввод данных" -->
-    <div id="tab-input" class="tab-content active">
-        <p style="color:#5e6f7e; margin-bottom: 12px;">Добавьте или отредактируйте этапы. Все изменения сохраняются автоматически.</p>
-        <div style="overflow-x:auto;">
-            <table class="input-table" id="inputTable">
-                <thead>
-                    <tr>
-                        <th style="width:18%">Название этапа</th>
-                        <th style="width:14%">План старт</th>
-                        <th style="width:14%">План финиш</th>
-                        <th style="width:14%">Факт старт</th>
-                        <th style="width:14%">Факт финиш</th>
-                        <th style="width:10%">Прогресс, %</th>
-                        <th style="width:8%">Вес, %</th>
-                        <th style="width:4%"></th>
-                    </tr>
-                </thead>
-                <tbody id="inputBody">
-                </tbody>
-            </table>
-        </div>
-        <div class="btn-group">
-            <button class="btn btn-primary" id="addRowBtn">➕ Добавить этап</button>
-            <button class="btn btn-success" id="updateReportBtn">🔄 Обновить отчёт</button>
-            <button class="btn btn-outline" id="resetDataBtn">🗑 Сбросить все данные</button>
-        </div>
-        <div style="margin-top:8px; font-size:13px; color:#6a7b8c;">
-            * Веса должны в сумме давать 100% (пересчёт автоматический).
-        </div>
-    </div>
+        .file-list { font-size: 12px; color: #2e3e4e; max-width: 150px; word-break: break-all; }
 
-    <!-- Вкладка "Отчёт" -->
-    <div id="tab-report" class="tab-content">
-        <div id="reportContent">
-            <!-- Сводка -->
-            <div class="report-summary" id="reportSummary"></div>
-
-            <!-- Диаграммы -->
-            <div class="chart-row">
-                <div class="chart-box">
-                    <h3>Общая готовность</h3>
-                    <canvas id="pieChart"></canvas>
-                </div>
-                <div class="chart-box">
-                    <h3>План vs Факт (прогресс по этапам)</h3>
-                    <canvas id="barChart"></canvas>
-                </div>
-            </div>
-
-            <!-- Таблица -->
-            <h3 style="margin:25px 0 10px; font-weight:500;">Детальный план-факт</h3>
-            <div style="overflow-x:auto;">
-                <table class="report-table" id="reportTable">
-                    <thead>
-                        <tr>
-                            <th>Этап</th>
-                            <th>План</th>
-                            <th>Факт</th>
-                            <th>Ход работ</th>
-                            <th>Статус</th>
-                        </tr>
-                    </thead>
-                    <tbody id="reportBody"></tbody>
-                </table>
-            </div>
-
-            <!-- Кнопки экспорта -->
-            <div class="export-group no-print">
-                <button class="btn btn-primary" id="exportPdfBtn">📄 Экспорт PDF</button>
-                <button class="btn btn-success" id="exportExcelBtn">📊 Экспорт Excel</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<script>
-    // ======== УПРАВЛЕНИЕ ДАННЫМИ ========
-    const STORAGE_KEY = 'suvarov_stages';
-    let stages = [];
-
-    // Загрузка из localStorage
-    function loadData() {
-        const saved = localStorage.getItem(STORAGE_KEY);
-        if (saved) {
-            try {
-                stages = JSON.parse(saved);
-            } catch(e) { stages = []; }
+        /* Модальное окно входа */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.4);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 1000;
+            backdrop-filter: blur(4px);
         }
-        if (!stages || stages.length === 0) {
-            // Пример данных по умолчанию
-            stages = [
-                { name: 'Котлован', planStart: '2026-04-01', planEnd: '2026-04-20', factStart: '2026-04-01', factEnd: '2026-04-18', progress: 100, weight: 5 },
-                { name: 'Фундамент', planStart: '2026-04-21', planEnd: '2026-05-15', factStart: '2026-04-21', factEnd: '', progress: 75, weight: 15 },
-                { name: 'Стены подвала', planStart: '2026-05-10', planEnd: '2026-05-30', factStart: '2026-05-12', factEnd: '', progress: 30, weight: 10 },
-                { name: 'Стены 1-го этажа', planStart: '2026-05-20', planEnd: '2026-06-15', factStart: '2026-06-01', factEnd: '', progress: 10, weight: 15 },
-                { name: 'Перекрытия', planStart: '2026-06-10', planEnd: '2026-06-30', factStart: '', factEnd: '', progress: 0, weight: 10 },
-                { name: 'Кровля', planStart: '2026-07-01', planEnd: '2026-07-25', factStart: '', factEnd: '', progress: 0, weight: 12 },
-                { name: 'Инженерные сети', planStart: '2026-06-20', planEnd: '2026-08-10', factStart: '2026-06-22', factEnd: '', progress: 45, weight: 18 },
-                { name: 'Отделка', planStart: '2026-08-01', planEnd: '2026-09-30', factStart: '', factEnd: '', progress: 0, weight: 15 }
-            ];
-            saveData();
+        .modal-overlay.hidden { display: none; }
+        .modal-box {
+            background: #fff;
+            padding: 40px 35px;
+            border-radius: 24px;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+            text-align: center;
         }
-        // Если сумма весов не равна 100 – нормализуем
-        normalizeWeights();
-    }
-
-    function saveData() {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(stages));
-    }
-
-    function normalizeWeights() {
-        const total = stages.reduce((s, st) => s + (parseFloat(st.weight) || 0), 0);
-        if (Math.abs(total - 100) > 0.01 && total > 0) {
-            stages.forEach(st => {
-                st.weight = Math.round((st.weight / total) * 100);
-            });
-            // Корректировка округления
-            let sum = stages.reduce((s, st) => s + st.weight, 0);
-            if (sum !== 100 && stages.length > 0) {
-                stages[stages.length-1].weight += (100 - sum);
-            }
-            saveData();
-        }
-    }
-
-    // ======== ОТРИСОВКА ТАБЛИЦЫ ВВОДА ========
-    function renderInputTable() {
-        const tbody = document.getElementById('inputBody');
-        tbody.innerHTML = '';
-        stages.forEach((st, index) => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td><input type="text" class="inp-name" value="${st.name}" data-idx="${index}"></td>
-                <td><input type="date" class="inp-planStart" value="${st.planStart || ''}" data-idx="${index}"></td>
-                <td><input type="date" class="inp-planEnd" value="${st.planEnd || ''}" data-idx="${index}"></td>
-                <td><input type="date" class="inp-factStart" value="${st.factStart || ''}" data-idx="${index}"></td>
-                <td><input type="date" class="inp-factEnd" value="${st.factEnd || ''}" data-idx="${index}"></td>
-                <td><input type="number" class="inp-progress" value="${st.progress}" min="0" max="100" data-idx="${index}"></td>
-                <td><input type="number" class="inp-weight" value="${st.weight}" min="0" max="100" data-idx="${index}"></td>
-                <td><button class="del-btn" data-idx="${index}">✕</button></td>
-            `;
-            tbody.appendChild(tr);
-        });
-
-        // События на ввод – автоматическое сохранение
-        document.querySelectorAll('#inputBody input').forEach(inp => {
-            inp.addEventListener('input', function() {
-                const idx = parseInt(this.dataset.idx);
-                const field = this.className.replace('inp-', '');
-                let value = this.value;
-                if (field === 'progress' || field === 'weight') value = parseFloat(value) || 0;
-                stages[idx][field] = value;
-                saveData();
-                // Пересчитываем веса при изменении
-                if (field === 'weight') normalizeWeights();
-            });
-        });
-
-        // События на удаление
-        document.querySelectorAll('#inputBody .del-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const idx = parseInt(this.dataset.idx);
-                stages.splice(idx, 1);
-                saveData();
-                renderInputTable();
-                updateReport();
-            });
-        });
-    }
-
-    // ======== ДОБАВЛЕНИЕ СТРОКИ ========
-    document.getElementById('addRowBtn').addEventListener('click', function() {
-        stages.push({
-            name: 'Новый этап',
-            planStart: '',
-            planEnd: '',
-            factStart: '',
-            factEnd: '',
-            progress: 0,
-            weight: 0
-        });
-        saveData();
-        renderInputTable();
-        updateReport();
-    });
-
-    // ======== СБРОС ДАННЫХ ========
-    document.getElementById('resetDataBtn').addEventListener('click', function() {
-        if (confirm('Удалить все данные и восстановить пример?')) {
-            localStorage.removeItem(STORAGE_KEY);
-            loadData();
-            renderInputTable();
-            updateReport();
-        }
-    });
-
-    // ======== ОБНОВЛЕНИЕ ОТЧЁТА ========
-    function updateReport() {
-        // Сохраняем данные из таблицы ввода (на случай, если что-то не сохранилось)
-        document.querySelectorAll('#inputBody input').forEach(inp => {
-            const idx = parseInt(inp.dataset.idx);
-            const field = inp.className.replace('inp-', '');
-            let value = inp.value;
-            if (field === 'progress' || field === 'weight') value = parseFloat(value) || 0;
-            stages[idx][field] = value;
-        });
-        saveData();
-        normalizeWeights();
-
-        // Пересчёт общей готовности
-        let overall = 0;
-        stages.forEach(st => {
-            overall += (st.progress / 100) * st.weight;
-        });
-        overall = Math.round(overall);
-
-        // Статус и отставание
-        const now = new Date();
-        now.setHours(0,0,0,0);
-        let totalDelay = 0;
-        let hasRisk = false;
-        stages.forEach(st => {
-            const pEnd = st.planEnd ? new Date(st.planEnd + 'T00:00:00') : null;
-            const fEnd = st.factEnd ? new Date(st.factEnd + 'T00:00:00') : null;
-            if (fEnd && pEnd && fEnd > pEnd) {
-                totalDelay += Math.round((fEnd - pEnd) / (1000*60*60*24));
-            }
-            if (!fEnd && pEnd && now > pEnd && st.progress < 100) {
-                totalDelay += Math.round((now - pEnd) / (1000*60*60*24));
-                hasRisk = true;
-            }
-        });
-        let statusText = 'В графике ✅';
-        let statusClass = '';
-        if (totalDelay > 0) {
-            statusText = `Отставание ${totalDelay} дн.`;
-            statusClass = 'danger';
-        } else if (hasRisk) {
-            statusText = 'Есть риски';
-            statusClass = 'warning';
-        }
-
-        // Прогноз сдачи
-        let maxDate = null;
-        stages.forEach(st => {
-            const pEnd = st.planEnd ? new Date(st.planEnd + 'T00:00:00') : null;
-            const fEnd = st.factEnd ? new Date(st.factEnd + 'T00:00:00') : null;
-            if (pEnd && (!maxDate || pEnd > maxDate)) maxDate = pEnd;
-            if (fEnd && (!maxDate || fEnd > maxDate)) maxDate = fEnd;
-        });
-        const forecast = maxDate ? maxDate.toLocaleDateString('ru-RU') : '—';
-
-        // ===== Сводка =====
-        document.getElementById('reportSummary').innerHTML = `
-            <div class="stat-card">
-                <div class="label">Общая готовность</div>
-                <div class="value">${overall}%</div>
-            </div>
-            <div class="stat-card">
-                <div class="label">Текущий статус</div>
-                <div class="value"><span class="badge ${statusClass}">${statusText}</span></div>
-            </div>
-            <div class="stat-card">
-                <div class="label">Плановый срок сдачи</div>
-                <div class="value">${forecast}</div>
-            </div>
-        `;
-
-        // ===== Таблица отчёта =====
-        const tbody = document.getElementById('reportBody');
-        tbody.innerHTML = '';
-        stages.forEach(st => {
-            const pStart = st.planStart ? new Date(st.planStart + 'T00:00:00') : null;
-            const pEnd = st.planEnd ? new Date(st.planEnd + 'T00:00:00') : null;
-            const fStart = st.factStart ? new Date(st.factStart + 'T00:00:00') : null;
-            const fEnd = st.factEnd ? new Date(st.factEnd + 'T00:00:00') : null;
-
-            let planProgress = 0;
-            if (pStart && pEnd) {
-                const dur = (pEnd - pStart) / (1000*60*60*24);
-                if (now < pStart) planProgress = 0;
-                else if (now > pEnd) planProgress = 100;
-                else planProgress = Math.round(((now - pStart) / (1000*60*60*24)) / dur * 100);
-            }
-            const factProgress = Math.min(st.progress, 100);
-            const compare = factProgress - planProgress;
-            let barClass = 'fact';
-            let statusTag = '';
-            if (factProgress >= 100) {
-                statusTag = '✅ Завершён';
-                barClass = 'fact ahead';
-            } else if (compare >= 5) {
-                statusTag = '🏃 Опережение';
-                barClass = 'fact ahead';
-            } else if (compare <= -5) {
-                statusTag = '⚠️ Отставание';
-                barClass = 'fact behind';
-            } else {
-                statusTag = '▶️ В графике';
-                barClass = 'fact';
-            }
-            if (factProgress === 0 && !fStart) statusTag = '⏸ Не начат';
-
-            const planLabel = `${pStart ? pStart.toLocaleDateString('ru-RU') : '—'} – ${pEnd ? pEnd.toLocaleDateString('ru-RU') : '—'}`;
-            const factLabel = fStart ? `${fStart.toLocaleDateString('ru-RU')} – ${fEnd ? fEnd.toLocaleDateString('ru-RU') : '...'}` : '—';
-
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td><strong>${st.name}</strong></td>
-                <td style="font-size:13px;">${planLabel}</td>
-                <td style="font-size:13px;">${factLabel}</td>
-                <td>
-                    <div style="display:flex; align-items:center; gap:10px;">
-                        <div class="progress-bar" style="flex:1;">
-                            <div class="fill plan" style="width:${Math.min(planProgress, 100)}%;"></div>
-                            <div class="fill ${barClass}" style="width:${Math.min(factProgress, 100)}%;"></div>
-                        </div>
-                        <span style="font-size:13px; font-weight:500; min-width:40px;">${factProgress}%</span>
-                    </div>
-                </td>
-                <td><span class="status-tag ${barClass === 'fact' ? 'ok' : barClass === 'fact.behind' ? 'fail' : barClass === 'fact.ahead' ? 'ok' : ''}">${statusTag}</span></td>
-            `;
-            tbody.appendChild(tr);
-        });
-
-        // ===== Диаграммы =====
-        renderCharts(overall);
-    }
-
-    // ======== ДИАГРАММЫ (Chart.js) ========
-    let pieChartInstance = null;
-    let barChartInstance = null;
-
-    function renderCharts(overall) {
-        // Круговая диаграмма – общая готовность
-        const pieCtx = document.getElementById('pieChart').getContext('2d');
-        if (pieChartInstance) pieChartInstance.destroy();
-        pieChartInstance = new Chart(pieCtx, {
-            type: 'doughnut',
-            data: {
-                labels: ['Выполнено', 'Осталось'],
-                datasets: [{
-                    data: [overall, 100 - overall],
-                    backgroundColor: ['#1a7f4a', '#e6ecf2'],
-                    borderWidth: 0
-                }]
-            },
-            options: {
-                cutout: '70%',
-                plugins: {
-                    legend: { display: false },
-                    tooltip: { callbacks: { label: (ctx) => `${ctx.parsed}%` } }
-                },
-                responsive: true,
-                maintainAspectRatio: true
-            }
-        });
-
-        // Гистограмма – сравнение план/факт по этапам
-        const barCtx = document.getElementById('barChart').getContext('2d');
-        if (barChartInstance) barChartInstance.destroy();
-        const labels = stages.map(st => st.name.length > 12 ? st.name.slice(0,10)+'…' : st.name);
-        const planData = stages.map(st => {
-            const pStart = st.planStart ? new Date(st.planStart + 'T00:00:00') : null;
-            const pEnd = st.planEnd ? new Date(st.planEnd + 'T00:00:00') : null;
-            if (!pStart || !pEnd) return 0;
-            const now = new Date(); now.setHours(0,0,0,0);
-            const dur = (pEnd - pStart) / (1000*60*60*24);
-            if (now < pStart) return 0;
-            if (now > pEnd) return 100;
-            return Math.round(((now - pStart) / (1000*60*60*24)) / dur * 100);
-        });
-        const factData = stages.map(st => Math.min(st.progress, 100));
-
-        barChartInstance = new Chart(barCtx, {
-            type: 'bar',
-            data: {
-                labels: labels,
-                datasets: [
-                    {
-                        label: 'План (по графику)',
-                        data: planData,
-                        backgroundColor: 'rgba(59, 111, 155, 0.5)',
-                        borderColor: '#3b6f9b',
-                        borderWidth: 1
-                    },
-                    {
-                        label: 'Факт (выполнено)',
-                        data: factData,
-                        backgroundColor: factData.map((v, i) => v >= planData[i] ? '#1a7f4a' : '#c9453b'),
-                        borderColor: factData.map((v, i) => v >= planData[i] ? '#1a7f4a' : '#c9453b'),
-                        borderWidth: 1
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: true,
-                plugins: {
-                    legend: { position: 'top' },
-                    tooltip: { callbacks: { label: (ctx) => `${ctx.dataset.label}: ${ctx.parsed.y}%` } }
-                },
-                scales: {
-                    y: { beginAtZero: true, max: 100, title: { display: true, text: 'Прогресс, %' } }
-                }
-            }
-        });
-    }
-
-    // ======== ЭКСПОРТ PDF (печать) ========
-    document.getElementById('exportPdfBtn').addEventListener('click', function() {
-        window.print();
-    });
-
-    // ======== ЭКСПОРТ EXCEL ========
-    document.getElementById('exportExcelBtn').addEventListener('click', function() {
-        // Собираем данные для Excel
-        const wb = XLSX.utils.book_new();
-
-        // 1. Сводка
-        const summary = [
-            ['Сводка по объекту "Суворовские бастионы"'],
-            ['Дата отчёта', new Date().toLocaleDateString('ru-RU')],
-            ['Общая готовность', document.querySelector('.stat-card .value')?.textContent || ''],
-            ['Статус', document.querySelector('.badge')?.textContent || ''],
-            ['Плановый срок сдачи', document.querySelectorAll('.stat-card .value')[2]?.textContent || ''],
-            []
-        ];
-        const ws1 = XLSX.utils.aoa_to_sheet(summary);
-        XLSX.utils.book_append_sheet(wb, ws1, 'Сводка');
-
-        // 2. Детальная таблица
-        const rows = [
-            ['Этап', 'План старт', 'План финиш', 'Факт старт', 'Факт финиш', 'Прогресс, %', 'Вес, %']
-        ];
-        stages.forEach(st => {
-            rows.push([
-                st.name,
-                st.planStart || '',
-                st.planEnd || '',
-                st.factStart || '',
-                st.factEnd || '',
-                st.progress,
-                st.weight
-            ]);
-        });
-        const ws2 = XLSX.utils.aoa_to_sheet(rows);
-        XLSX.utils.book_append_sheet(wb, ws2, 'Детали');
-
-        // 3. План-факт сравнение (для отчёта)
-        const compareRows = [
-            ['Этап', 'План (прогресс по графику), %', 'Факт, %', 'Статус']
-        ];
-        // Пересчитываем план для каждого этапа на сегодня
-        const now = new Date(); now.setHours(0,0,0,0);
-        stages.forEach(st => {
-            const pStart = st.planStart ? new Date(st.planStart + 'T00:00:00') : null;
-            const pEnd = st.planEnd ? new Date(st.planEnd + 'T00:00:00') : null;
-            let planPct = 0;
-            if (pStart && pEnd) {
-                const dur = (pEnd - pStart) / (1000*60*60*24);
-                if (now < pStart) planPct = 0;
-                else if (now > pEnd) planPct = 100;
-                else planPct = Math.round(((now - pStart) / (1000*60*60*24)) / dur * 100);
-            }
-            const factPct = Math.min(st.progress, 100);
-            let status = '';
-            if (factPct >= 100) status = 'Завершён';
-            else if (factPct >= planPct + 5) status = 'Опережение';
-            else if (factPct <= planPct - 5) status = 'Отставание';
-            else status = 'В графике';
-            compareRows.push([st.name, planPct, factPct, status]);
-        });
-        const ws3 = XLSX.utils.aoa_to_sheet(compareRows);
-        XLSX.utils.book_append_sheet(wb, ws3, 'План-Факт');
-
-        // Сохраняем файл
-        XLSX.writeFile(wb, 'Suvarov_Report.xlsx');
-    });
-
-    // ======== ПЕРЕКЛЮЧЕНИЕ ВКЛАДОК ========
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const tabId = this.dataset.tab;
-            document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
-            document.getElementById('tab-'+tabId).classList.add('active');
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            this.classList.add('active');
-            if (tabId === 'report') {
-                updateReport();
-            }
-        });
-    });
-
-    // ======== КНОПКА ОБНОВИТЬ ОТЧЁТ ========
-    document.getElementById('updateReportBtn').addEventListener('click', function() {
-        // Сначала сохраняем все данные из полей ввода
-        document.querySelectorAll('#inputBody input').forEach(inp => {
-            const idx = parseInt(inp.dataset.idx);
-            const field = inp.className.replace('inp-', '');
-            let value = inp.value;
-            if (field === 'progress' || field === 'weight') value = parseFloat(value) || 0;
-            stages[idx][field] = value;
-        });
-        saveData();
-        normalizeWeights();
-        renderInputTable(); // перерисовка для обновления весов
-        updateReport();
-        // Переключаем на вкладку отчёта
-        document.querySelector('[data-tab="report"]').click();
-    });
-
-    // ======== ИНИЦИАЛИЗАЦИЯ ========
-    loadData();
-    renderInputTable();
-    // При первой загрузке показываем отчёт на вкладке "Отчёт" (но не активно)
-    // Но лучше сразу отрисовать отчёт в фоне
-    updateReport();
-</script>
-</body>
-</html>
+        .modal-box h2 { margin-bottom: 10px; color: #1a2634; }
+        .modal-box p { color: #5e6f7e; margin-bottom: 20px; }
+        .modal-box input { width: 100%; padding: 12px 15px; border: 1px solid #dce3eb; border-radius: 10px; font-size: 16px; margin-bottom: 15px; }
+        .modal-box input:focus { border-color: #1a7f4a; outline: none; box-shadow: 0 0 0 3px rgba(26,127,7
