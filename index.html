@@ -748,37 +748,60 @@
         document.getElementById('openShiftForm').style.display = 'none';
     });
 
-    // ============================================================
-    //   ЗАКРЫТИЕ СМЕНЫ
-    // ============================================================
-    document.getElementById('btnCloseShift').addEventListener('click', function() {
-        const openShift = getCurrentOpenShift();
-        if (!openShift) { alert('Нет открытой смены.'); return; }
-        document.getElementById('closeShiftForm').style.display = 'flex';
-        document.getElementById('openShiftForm').style.display = 'none';
-        document.getElementById('closeFiles').value = '';
-        document.getElementById('closeNote').value = '';
-        document.getElementById('confirmCloseBtn').disabled = true;
-        document.getElementById('closeFiles').onchange = function() {
-            document.getElementById('confirmCloseBtn').disabled = this.files.length === 0;
-        };
-    });
+// ============================================================
+//   ЗАКРЫТИЕ СМЕНЫ (исправленная версия)
+// ============================================================
+document.getElementById('btnCloseShift').addEventListener('click', function() {
+    const openShift = getCurrentOpenShift();
+    if (!openShift) { alert('Нет открытой смены.'); return; }
+    document.getElementById('closeShiftForm').style.display = 'flex';
+    document.getElementById('openShiftForm').style.display = 'none';
+    document.getElementById('closeFiles').value = '';
+    document.getElementById('closeNote').value = '';
+    // Кнопка теперь всегда активна, валидация будет при клике
+    document.getElementById('confirmCloseBtn').disabled = false;
+});
 
-    document.getElementById('cancelCloseBtn').addEventListener('click', function() {
-        document.getElementById('closeShiftForm').style.display = 'none';
-    });
+document.getElementById('cancelCloseBtn').addEventListener('click', function() {
+    document.getElementById('closeShiftForm').style.display = 'none';
+});
 
-    document.getElementById('confirmCloseBtn').addEventListener('click', async function() {
-        const openShift = getCurrentOpenShift();
-        if (!openShift) { alert('Нет открытой смены.'); return; }
+document.getElementById('confirmCloseBtn').addEventListener('click', async function() {
+    const openShift = getCurrentOpenShift();
+    if (!openShift) { alert('Нет открытой смены.'); return; }
 
-        const filesInput = document.getElementById('closeFiles');
-        if (filesInput.files.length === 0) {
-            alert('Выберите хотя бы один файл (фото или видео) для закрытия смены.');
-            return;
-        }
+    const filesInput = document.getElementById('closeFiles');
+    if (filesInput.files.length === 0) {
+        alert('❌ Выберите хотя бы один файл (фото или видео) для закрытия смены.');
+        return; // не даём продолжить
+    }
 
-        try {
+    try {
+        await saveFilesForShift(openShift.id, filesInput.files);
+    } catch(e) {
+        alert('Ошибка при сохранении файлов: ' + e.message);
+        return;
+    }
+
+    const idx = shifts.indexOf(openShift);
+    if (idx === -1) { alert('Ошибка: смена не найдена.'); return; }
+
+    shifts[idx].closeTime = new Date().toISOString();
+    const fileNames = [];
+    for (let f of filesInput.files) {
+        fileNames.push({ name: f.name, size: f.size, type: f.type });
+    }
+    shifts[idx].files = fileNames;
+    const note = document.getElementById('closeNote').value.trim();
+    if (note) shifts[idx].note = note;
+
+    saveShifts();
+    renderShifts();
+    updateAll();
+    updateShiftUI();
+    document.getElementById('closeShiftForm').style.display = 'none';
+    alert('✅ Смена успешно закрыта! Файлы сохранены.');
+});
             // Сохраняем файлы в IndexedDB
             await saveFilesForShift(openShift.id, filesInput.files);
         } catch(e) {
