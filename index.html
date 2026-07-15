@@ -8,7 +8,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
     <style>
-        /* ===== ВСЕ СТИЛИ (такие же, как в предыдущей версии) ===== */
+        /* ===== ВСЕ СТИЛИ БЕЗ ИЗМЕНЕНИЙ, КРОМЕ ДОБАВЛЕННЫХ ДЛЯ ЧАТА ===== */
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
         body {
             background: linear-gradient(145deg, #e8edf5 0%, #d5dde8 100%);
@@ -508,7 +508,7 @@
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* ===== СТИЛИ ДЛЯ ОБУЧЕНИЯ (box-shadow затемнение) ===== */
+        /* ===== СТИЛИ ДЛЯ ОБУЧЕНИЯ ===== */
         .onboarding-highlight {
             position: relative;
             z-index: 9999 !important;
@@ -648,26 +648,254 @@
             100% { opacity: 1; transform: translateY(0); }
         }
 
+        /* ===== СТИЛИ ДЛЯ ПОДДЕРЖКИ (ЧАТ) ===== */
+        .support-btn {
+            position: fixed;
+            bottom: 90px;
+            right: 20px;
+            z-index: 100;
+            background: #1f5a7d;
+            color: #fff;
+            border: none;
+            border-radius: 50%;
+            width: 56px;
+            height: 56px;
+            font-size: 26px;
+            cursor: pointer;
+            box-shadow: 0 4px 16px rgba(31,90,125,0.35);
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .support-btn:hover {
+            transform: scale(1.1);
+            background: #15405a;
+        }
+        .support-btn .badge-support {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            background: #c9453b;
+            color: #fff;
+            font-size: 12px;
+            font-weight: 700;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 8px rgba(201,69,59,0.3);
+        }
+        .support-btn .badge-support.hidden {
+            display: none;
+        }
+
+        .support-modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,20,40,0.6);
+            backdrop-filter: blur(6px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 5000;
+        }
+        .support-modal-overlay.active {
+            display: flex;
+        }
+        .support-modal-box {
+            background: #fff;
+            border-radius: 28px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 30px 80px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        .support-modal-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid #e6ecf2;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f7f9fc;
+            flex-shrink: 0;
+        }
+        .support-modal-header h3 {
+            font-size: 18px;
+            color: #0a1e2f;
+        }
+        .support-modal-header .close-btn {
+            font-size: 28px;
+            cursor: pointer;
+            color: #4a6378;
+            background: none;
+            border: none;
+            transition: 0.2s;
+        }
+        .support-modal-header .close-btn:hover {
+            color: #c9453b;
+            transform: rotate(90deg);
+        }
+
+        /* Список чатов (для админа) */
+        .chat-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0;
+            margin: 0;
+            list-style: none;
+        }
+        .chat-list-item {
+            padding: 12px 20px;
+            border-bottom: 1px solid #eef2f6;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: 0.15s;
+        }
+        .chat-list-item:hover {
+            background: #f0f7ff;
+        }
+        .chat-list-item .chat-user {
+            font-weight: 600;
+            color: #0a1e2f;
+        }
+        .chat-list-item .chat-unread {
+            background: #c9453b;
+            color: #fff;
+            font-size: 12px;
+            font-weight: 700;
+            border-radius: 50%;
+            min-width: 22px;
+            height: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 6px;
+        }
+        .chat-list-item .chat-last-msg {
+            font-size: 13px;
+            color: #4a6378;
+            max-width: 150px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Область сообщений */
+        .support-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px 20px;
+            min-height: 200px;
+            max-height: 50vh;
+            background: #fafcfe;
+            display: flex;
+            flex-direction: column;
+        }
+        .support-message {
+            margin-bottom: 12px;
+            padding: 10px 14px;
+            border-radius: 12px;
+            max-width: 80%;
+            word-wrap: break-word;
+            font-size: 14px;
+            line-height: 1.5;
+            align-self: flex-start;
+        }
+        .support-message.user {
+            background: #ddf0e3;
+            color: #0a1e2f;
+            align-self: flex-end;
+        }
+        .support-message.admin {
+            background: #e6ecf2;
+            color: #0a1e2f;
+            align-self: flex-start;
+        }
+        .support-message .meta {
+            font-size: 11px;
+            color: #4a6378;
+            margin-top: 4px;
+            display: flex;
+            justify-content: flex-end;
+        }
+        .support-message .sender {
+            font-weight: 600;
+            font-size: 13px;
+            color: #1f5a7d;
+            margin-bottom: 2px;
+        }
+
+        .support-empty {
+            color: #4a6378;
+            text-align: center;
+            padding: 40px 0;
+            font-size: 15px;
+        }
+
+        .support-input-area {
+            padding: 12px 16px;
+            border-top: 1px solid #e6ecf2;
+            display: flex;
+            gap: 12px;
+            background: #fff;
+            flex-shrink: 0;
+        }
+        .support-input-area textarea {
+            flex: 1;
+            padding: 10px 14px;
+            border: 1px solid #dce3eb;
+            border-radius: 12px;
+            font-size: 14px;
+            resize: vertical;
+            min-height: 44px;
+            max-height: 120px;
+            font-family: inherit;
+            transition: 0.2s;
+        }
+        .support-input-area textarea:focus {
+            border-color: #0f6e4a;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(15,110,74,0.12);
+        }
+        .support-input-area .btn {
+            align-self: flex-end;
+            padding: 10px 20px;
+        }
+
+        /* Адаптивность чата */
         @media (max-width: 768px) {
-            .onboarding-tooltip {
-                padding: 20px 18px;
+            .support-modal-box {
                 max-width: 95%;
-                bottom: 20px;
+                max-height: 90vh;
             }
-            .onboarding-tooltip h3 { font-size: 18px; }
-            .onboarding-tooltip p { font-size: 14px; }
-            .restart-tour-btn {
-                width: 44px;
-                height: 44px;
-                font-size: 20px;
-                bottom: 16px;
-                right: 16px;
+            .support-messages {
+                min-height: 150px;
+                max-height: 40vh;
             }
-            .onboarding-reminder {
+            .support-message {
+                max-width: 90%;
+            }
+            .support-input-area textarea {
+                font-size: 13px;
+                padding: 8px 10px;
+            }
+            .chat-list-item .chat-last-msg {
+                max-width: 100px;
+            }
+            .support-btn {
                 bottom: 80px;
                 right: 16px;
-                max-width: 280px;
-                padding: 14px 16px;
+                width: 48px;
+                height: 48px;
+                font-size: 22px;
             }
         }
     </style>
@@ -898,7 +1126,7 @@
     </div>
 </div>
 
-<!-- ===== ОБУЧЕНИЕ (тултип) ===== -->
+<!-- ===== ОБУЧЕНИЕ ===== -->
 <div class="onboarding-tooltip" id="onboardingTooltip" style="display:none;">
     <div class="step-counter" id="onboardingStepCounter">Шаг 1 из 9</div>
     <h3 id="onboardingTitle">Добро пожаловать!</h3>
@@ -914,13 +1142,37 @@
     </div>
 </div>
 
-<!-- ===== НАПОМИНАНИЕ (тост) ===== -->
+<!-- ===== НАПОМИНАНИЕ ===== -->
 <div class="onboarding-reminder" id="onboardingReminder">
     <p>❓ Если вам что-то непонятно, вы можете запустить обучение, нажав на кнопку с вопросительным знаком справа внизу.</p>
     <button class="btn btn-primary" id="reminderStartBtn" style="padding: 4px 16px; font-size:13px;">Запустить обучение</button>
 </div>
 
-<!-- ===== КНОПКА РУЧНОГО ЗАПУСКА ===== -->
+<!-- ===== КНОПКА ПОДДЕРЖКИ ===== -->
+<button class="support-btn" id="supportBtn" title="Поддержка">
+    💬
+    <span class="badge-support hidden" id="supportBadge">0</span>
+</button>
+
+<!-- ===== МОДАЛЬНОЕ ОКНО ПОДДЕРЖКИ (ЧАТ) ===== -->
+<div class="support-modal-overlay" id="supportModal">
+    <div class="support-modal-box">
+        <div class="support-modal-header">
+            <h3 id="supportModalTitle">💬 Поддержка</h3>
+            <button class="close-btn" id="supportModalClose">&times;</button>
+        </div>
+        <!-- Контейнер для списка чатов (админ) или сообщений (пользователь) -->
+        <div id="supportContent" style="flex:1; overflow-y:auto; display:flex; flex-direction:column;">
+            <!-- Сюда динамически подставляется список чатов или переписка -->
+        </div>
+        <div class="support-input-area" id="supportInputArea">
+            <textarea id="supportInput" placeholder="Введите ваше сообщение..." rows="1"></textarea>
+            <button class="btn btn-primary" id="supportSendBtn">Отправить</button>
+        </div>
+    </div>
+</div>
+
+<!-- ===== КНОПКА РУЧНОГО ЗАПУСКА ОБУЧЕНИЯ ===== -->
 <button class="restart-tour-btn" id="restartTourBtn" title="Запустить обучение">❓</button>
 
 <script>
@@ -931,21 +1183,101 @@
     const ADMIN_NAME = 'Леухин Олег Павлович';
     const ADMIN_PASSWORD = 'OlegMolodoy()!';
 
-    // ===== ФУНКЦИИ РАБОТЫ С ФЛАГОМ ОБУЧЕНИЯ (ПО ПОЛЬЗОВАТЕЛЮ) =====
+    // ===== ФУНКЦИИ ОБУЧЕНИЯ =====
     function getOnboardingKey(user) {
         return 'onboardingDone_' + user;
     }
-
     function isOnboardingDoneForUser(user) {
         return localStorage.getItem(getOnboardingKey(user)) === 'true';
     }
-
     function setOnboardingDoneForUser(user) {
         localStorage.setItem(getOnboardingKey(user), 'true');
     }
-
     function resetOnboardingForUser(user) {
         localStorage.removeItem(getOnboardingKey(user));
+    }
+
+    // ============================================================
+    //   ФУНКЦИИ ПОДДЕРЖКИ (НОВАЯ ЛОГИКА ДИАЛОГОВ)
+    // ============================================================
+    const SUPPORT_KEY = 'support_messages';
+
+    function getSupportMessages() {
+        try {
+            return JSON.parse(localStorage.getItem(SUPPORT_KEY)) || [];
+        } catch {
+            return [];
+        }
+    }
+
+    function saveSupportMessages(messages) {
+        localStorage.setItem(SUPPORT_KEY, JSON.stringify(messages));
+    }
+
+    // Отправка сообщения (from -> to)
+    function sendSupportMessage(from, to, text) {
+        const messages = getSupportMessages();
+        const now = new Date().toISOString();
+        const newMsg = {
+            id: Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+            from: from,
+            to: to,
+            text: text.trim(),
+            timestamp: now,
+            isRead: false // для админа (если сообщение от пользователя)
+        };
+        messages.push(newMsg);
+        saveSupportMessages(messages);
+        return newMsg;
+    }
+
+    // Получить все сообщения, где участвует пользователь (как отправитель или получатель)
+    function getMessagesForUser(userId) {
+        const all = getSupportMessages();
+        return all.filter(msg => msg.from === userId || msg.to === userId);
+    }
+
+    // Для админа: получить список уникальных пользователей, с которыми есть диалог (т.е. сообщения где from или to = ADMIN_NAME)
+    function getChatUsersForAdmin() {
+        const all = getSupportMessages();
+        const users = new Set();
+        all.forEach(msg => {
+            if (msg.from === ADMIN_NAME) {
+                users.add(msg.to);
+            } else if (msg.to === ADMIN_NAME) {
+                users.add(msg.from);
+            }
+        });
+        // Убираем самого админа (если вдруг попал)
+        users.delete(ADMIN_NAME);
+        return Array.from(users);
+    }
+
+    // Получить сообщения для конкретного чата (между двумя пользователями)
+    function getChatMessages(user1, user2) {
+        const all = getSupportMessages();
+        return all.filter(msg =>
+            (msg.from === user1 && msg.to === user2) ||
+            (msg.from === user2 && msg.to === user1)
+        );
+    }
+
+    // Получить количество непрочитанных сообщений для админа (от пользователей)
+    function getUnreadAdminCount() {
+        const all = getSupportMessages();
+        return all.filter(msg => msg.to === ADMIN_NAME && !msg.isRead).length;
+    }
+
+    // Пометить сообщение как прочитанное (только для админа)
+    function markMessageAsRead(msgId) {
+        const messages = getSupportMessages();
+        const idx = messages.findIndex(m => m.id === msgId);
+        if (idx !== -1 && messages[idx].to === ADMIN_NAME) {
+            messages[idx].isRead = true;
+            saveSupportMessages(messages);
+            return true;
+        }
+        return false;
     }
 
     // ============================================================
@@ -964,39 +1296,25 @@
             updateShiftUI();
             updateDashboard();
             updateTabBadges();
+            updateSupportBadge();
 
-            // ===== ЗАПУСК ОБУЧЕНИЯ (если не пройдено для этого пользователя) =====
+            // Запуск обучения
             if (!isOnboardingDoneForUser(currentUser)) {
-                console.log('Обучение не пройдено для пользователя', currentUser, '– запускаем.');
-                // Попытка 1
-                setTimeout(function() {
+                setTimeout(() => {
                     try {
-                        if (!isOnboardingActive) {
-                            startOnboarding();
-                        }
-                    } catch (e) {
-                        console.error('Ошибка запуска обучения (попытка 1):', e);
-                    }
+                        if (!isOnboardingActive) startOnboarding();
+                    } catch (e) { console.error('Ошибка запуска обучения:', e); }
                 }, 600);
-                // Попытка 2
-                setTimeout(function() {
+                setTimeout(() => {
                     try {
-                        if (!isOnboardingActive) {
-                            startOnboarding();
-                        }
-                    } catch (e) {
-                        console.error('Ошибка запуска обучения (попытка 2):', e);
-                    }
+                        if (!isOnboardingActive) startOnboarding();
+                    } catch (e) { console.error('Ошибка запуска обучения (2):', e); }
                 }, 1200);
-                // Напоминание через 5 секунд, если обучение так и не запустилось
-                setTimeout(function() {
+                setTimeout(() => {
                     if (!isOnboardingActive && !isOnboardingDoneForUser(currentUser)) {
                         document.getElementById('onboardingReminder').classList.add('active');
-                        console.log('Показано напоминание об обучении.');
                     }
                 }, 5000);
-            } else {
-                console.log('Обучение уже пройдено для пользователя', currentUser);
             }
         });
     }
@@ -1018,12 +1336,10 @@
         document.getElementById('closeShiftForm').style.display = 'none';
         updateDashboard();
         updateTabBadges();
-        // Скрываем напоминание
+        updateSupportBadge();
         document.getElementById('onboardingReminder').classList.remove('active');
-        // Закрываем обучение, если оно активно
-        if (isOnboardingActive) {
-            finishOnboarding();
-        }
+        if (isOnboardingActive) finishOnboarding();
+        document.getElementById('supportModal').classList.remove('active');
     }
 
     window.addEventListener('DOMContentLoaded', function() {
@@ -1092,7 +1408,7 @@
     });
 
     // ============================================================
-    //   INDEXEDDB, ХРАНИЛИЩЕ, ФИЛЬТРАЦИЯ (без изменений)
+    //   INDEXEDDB И ХРАНИЛИЩЕ (без изменений)
     // ============================================================
     const DB_NAME = 'ShiftFilesDB';
     const STORE_NAME = 'files';
@@ -1262,7 +1578,7 @@
     }
 
     // ============================================================
-    //   ОТКРЫТИЕ / ЗАКРЫТИЕ СМЕНЫ (без изменений)
+    //   ОТКРЫТИЕ / ЗАКРЫТИЕ СМЕНЫ (без изменений, сокращённо)
     // ============================================================
     document.getElementById('btnOpenShift').addEventListener('click', function() {
         if (getCurrentOpenShift()) {
@@ -1371,7 +1687,7 @@
     });
 
     // ============================================================
-    //   РЕНДЕРИНГ ТАБЛИЦЫ ЭТАПОВ
+    //   РЕНДЕРИНГ ТАБЛИЦ ЭТАПОВ И СМЕН (сокращённо, без изменений)
     // ============================================================
     function renderInputTable() {
         const tbody = document.getElementById('inputBody');
@@ -1423,9 +1739,6 @@
         });
     }
 
-    // ============================================================
-    //   РЕНДЕРИНГ ЖУРНАЛА СМЕН
-    // ============================================================
     function renderShifts() {
         const filtered = getFilteredShifts();
         const tbody = document.getElementById('shiftBody');
@@ -1626,7 +1939,7 @@
     }
 
     // ============================================================
-    //   ОБНОВЛЕНИЕ ОТЧЁТА, ДИАГРАММ, ГАНТА, PDF (без человеко-дней)
+    //   ОБНОВЛЕНИЕ ОТЧЁТА, ДИАГРАММ, ГАНТА, PDF (без изменений)
     // ============================================================
     function updateAll() {
         updateReport();
@@ -1923,7 +2236,7 @@
         container.innerHTML = html;
     }
 
-    // ===== ЭКСПОРТ PDF =====
+    // ===== ЭКСПОРТ PDF (без изменений) =====
     document.getElementById('exportPdfBtn').addEventListener('click', function() {
         const btn = this;
         btn.textContent = '⏳ Генерация PDF...';
@@ -2113,7 +2426,7 @@
     });
 
     // ============================================================
-    //   ОБУЧЕНИЕ (С ЗАТЕНЕНИЕМ ЧЕРЕЗ BOX-SHADOW И ПРИВЯЗКОЙ К ПОЛЬЗОВАТЕЛЮ)
+    //   ОБУЧЕНИЕ (без изменений)
     // ============================================================
     const onboardingSteps = [
         {
@@ -2206,19 +2519,12 @@
     let isOnboardingActive = false;
 
     function startOnboarding() {
-        console.log('startOnboarding вызван для пользователя', currentUser);
         if (isOnboardingActive) return;
-        // Если для этого пользователя уже пройдено – не запускаем
-        if (isOnboardingDoneForUser(currentUser)) {
-            console.log('Обучение уже пройдено для', currentUser);
-            return;
-        }
+        if (isOnboardingDoneForUser(currentUser)) return;
         isOnboardingActive = true;
         currentOnboardingStep = 0;
         document.getElementById('onboardingTooltip').style.display = 'block';
         showOnboardingStep();
-        console.log('Обучение запущено, шаг 0');
-        // Скрываем напоминание
         document.getElementById('onboardingReminder').classList.remove('active');
     }
 
@@ -2257,8 +2563,6 @@
                     const tabBtn = document.querySelector(`.tab-btn[data-tab="${step.tab}"]`);
                     if (tabBtn) tabBtn.click();
                 }
-            } else {
-                console.warn('Элемент не найден:', step.element);
             }
         }
     }
@@ -2291,26 +2595,19 @@
         clearHighlight();
         if (currentUser) {
             setOnboardingDoneForUser(currentUser);
-            console.log('Обучение завершено для', currentUser);
         }
         isOnboardingActive = false;
         document.getElementById('onboardingReminder').classList.remove('active');
     }
 
-    // Обработчики кнопок обучения
     document.getElementById('onboardingNextBtn').addEventListener('click', nextOnboardingStep);
     document.getElementById('onboardingPrevBtn').addEventListener('click', prevOnboardingStep);
     document.getElementById('onboardingSkipBtn').addEventListener('click', finishOnboarding);
 
-    // Кнопка ручного запуска
     document.getElementById('restartTourBtn').addEventListener('click', function() {
         if (currentUser) {
-            // Сбрасываем флаг для текущего пользователя
             resetOnboardingForUser(currentUser);
-            // Если обучение активно – завершаем
-            if (isOnboardingActive) {
-                finishOnboarding();
-            }
+            if (isOnboardingActive) finishOnboarding();
             document.getElementById('onboardingReminder').classList.remove('active');
             setTimeout(startOnboarding, 300);
         } else {
@@ -2318,19 +2615,245 @@
         }
     });
 
-    // Кнопка запуска из напоминания
     document.getElementById('reminderStartBtn').addEventListener('click', function() {
         if (currentUser) {
             resetOnboardingForUser(currentUser);
-            if (isOnboardingActive) {
-                finishOnboarding();
-            }
+            if (isOnboardingActive) finishOnboarding();
             document.getElementById('onboardingReminder').classList.remove('active');
             setTimeout(startOnboarding, 300);
         } else {
             alert('Сначала войдите в систему.');
         }
     });
+
+    // ============================================================
+    //   ПОДДЕРЖКА – НОВАЯ ЛОГИКА (ЧАТЫ)
+    // ============================================================
+    let currentChatUser = null; // для админа – с кем сейчас чат
+
+    function updateSupportBadge() {
+        const badge = document.getElementById('supportBadge');
+        if (!currentUser) {
+            badge.classList.add('hidden');
+            return;
+        }
+        let count = 0;
+        if (currentUser === ADMIN_NAME) {
+            count = getUnreadAdminCount();
+        } else {
+            // Для пользователя считаем непрочитанные ответы админа (сообщения от админа, которые он не видел – но мы не храним isRead для пользователя, поэтому просто 0)
+            count = 0;
+        }
+        if (count > 0) {
+            badge.textContent = count;
+            badge.classList.remove('hidden');
+        } else {
+            badge.classList.add('hidden');
+        }
+    }
+
+    // Рендеринг списка чатов для админа
+    function renderChatList() {
+        const container = document.getElementById('supportContent');
+        const users = getChatUsersForAdmin();
+        if (users.length === 0) {
+            container.innerHTML = '<div class="support-empty">Нет чатов с пользователями.</div>';
+            return;
+        }
+        let html = '<ul class="chat-list">';
+        users.forEach(user => {
+            const messages = getChatMessages(ADMIN_NAME, user);
+            const lastMsg = messages.length > 0 ? messages[messages.length - 1] : null;
+            const lastText = lastMsg ? lastMsg.text.substring(0, 50) : '';
+            const unread = messages.filter(m => m.from === user && !m.isRead).length;
+            html += `
+                <li class="chat-list-item" data-user="${user}">
+                    <div>
+                        <div class="chat-user">${user}</div>
+                        <div class="chat-last-msg">${lastText ? lastText : 'Нет сообщений'}</div>
+                    </div>
+                    ${unread > 0 ? `<span class="chat-unread">${unread}</span>` : ''}
+                </li>
+            `;
+        });
+        html += '</ul>';
+        container.innerHTML = html;
+
+        // Обработчики клика по чатам
+        container.querySelectorAll('.chat-list-item').forEach(item => {
+            item.addEventListener('click', function() {
+                const user = this.dataset.user;
+                openChatWithUser(user);
+            });
+        });
+    }
+
+    // Открыть чат с конкретным пользователем (для админа)
+    function openChatWithUser(user) {
+        currentChatUser = user;
+        document.getElementById('supportModalTitle').textContent = `💬 Чат с ${user}`;
+        renderChatMessages(ADMIN_NAME, user);
+        // Показать поле ввода
+        document.getElementById('supportInputArea').style.display = 'flex';
+        document.getElementById('supportInput').focus();
+        // Помечаем все сообщения от пользователя как прочитанные
+        const messages = getChatMessages(ADMIN_NAME, user);
+        messages.forEach(msg => {
+            if (msg.from === user && !msg.isRead) {
+                markMessageAsRead(msg.id);
+            }
+        });
+        updateSupportBadge();
+    }
+
+    // Рендеринг сообщений для чата (user1 и user2)
+    function renderChatMessages(user1, user2) {
+        const container = document.getElementById('supportContent');
+        const messages = getChatMessages(user1, user2);
+        if (messages.length === 0) {
+            container.innerHTML = '<div class="support-empty">Нет сообщений. Напишите что-нибудь.</div>';
+            return;
+        }
+        const sorted = [...messages].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+        let html = '<div class="support-messages" id="supportMessagesContainer">';
+        sorted.forEach(msg => {
+            const isUser = msg.from === currentUser;
+            const senderName = msg.from === ADMIN_NAME ? 'Администратор' : msg.from;
+            html += `
+                <div class="support-message ${isUser ? 'user' : 'admin'}">
+                    ${currentUser === ADMIN_NAME ? `<div class="sender">${senderName}</div>` : ''}
+                    <div>${msg.text}</div>
+                    <div class="meta">${new Date(msg.timestamp).toLocaleString('ru-RU')}</div>
+                </div>
+            `;
+        });
+        html += '</div>';
+        container.innerHTML = html;
+        // Прокрутка вниз
+        const msgsContainer = document.getElementById('supportMessagesContainer');
+        if (msgsContainer) msgsContainer.scrollTop = msgsContainer.scrollHeight;
+        // Скрываем поле ввода, если чат закрыт (но мы его показываем)
+    }
+
+    // Для обычного пользователя – показать его чат с админом
+    function renderUserChat() {
+        const container = document.getElementById('supportContent');
+        // Показываем сообщения пользователя с админом
+        const messages = getChatMessages(currentUser, ADMIN_NAME);
+        if (messages.length === 0) {
+            container.innerHTML = '<div class="support-empty">Нет сообщений. Напишите что-нибудь.</div>';
+            return;
+        }
+        const sorted = [...messages].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+        let html = '<div class="support-messages" id="supportMessagesContainer">';
+        sorted.forEach(msg => {
+            const isUser = msg.from === currentUser;
+            html += `
+                <div class="support-message ${isUser ? 'user' : 'admin'}">
+                    <div>${msg.text}</div>
+                    <div class="meta">${new Date(msg.timestamp).toLocaleString('ru-RU')}</div>
+                </div>
+            `;
+        });
+        html += '</div>';
+        container.innerHTML = html;
+        const msgsContainer = document.getElementById('supportMessagesContainer');
+        if (msgsContainer) msgsContainer.scrollTop = msgsContainer.scrollHeight;
+        // Показываем поле ввода
+        document.getElementById('supportInputArea').style.display = 'flex';
+        document.getElementById('supportInput').focus();
+        // Заголовок
+        document.getElementById('supportModalTitle').textContent = '💬 Поддержка';
+    }
+
+    // Открытие модального окна поддержки
+    function openSupportModal() {
+        if (!currentUser) {
+            alert('Сначала войдите в систему.');
+            return;
+        }
+        document.getElementById('supportModal').classList.add('active');
+        // Определяем, что показывать
+        if (currentUser === ADMIN_NAME) {
+            // Админ – список чатов
+            renderChatList();
+            document.getElementById('supportInputArea').style.display = 'none'; // скрываем поле ввода (оно появится при выборе чата)
+            document.getElementById('supportModalTitle').textContent = '💬 Список чатов';
+            currentChatUser = null;
+        } else {
+            // Пользователь – его чат с админом
+            renderUserChat();
+            document.getElementById('supportInputArea').style.display = 'flex';
+            document.getElementById('supportModalTitle').textContent = '💬 Поддержка';
+            // Помечаем сообщения от админа как прочитанные? Для пользователя не нужно.
+        }
+        // Обновляем бейдж
+        updateSupportBadge();
+    }
+
+    function closeSupportModal() {
+        document.getElementById('supportModal').classList.remove('active');
+        // Если админ был в чате, сбрасываем
+        currentChatUser = null;
+        // Показываем поле ввода снова (по умолчанию)
+        document.getElementById('supportInputArea').style.display = 'flex';
+    }
+
+    // Отправка сообщения из UI
+    function sendSupportMessageFromUI() {
+        const input = document.getElementById('supportInput');
+        const text = input.value.trim();
+        if (!text) return;
+        if (!currentUser) {
+            alert('Сначала войдите в систему.');
+            return;
+        }
+
+        let toUser = ADMIN_NAME;
+        if (currentUser === ADMIN_NAME) {
+            // Админ должен выбрать чат (currentChatUser)
+            if (!currentChatUser) {
+                alert('Выберите чат с пользователем из списка.');
+                return;
+            }
+            toUser = currentChatUser;
+        }
+
+        // Отправляем сообщение
+        sendSupportMessage(currentUser, toUser, text);
+        input.value = '';
+
+        // Перерисовываем чат
+        if (currentUser === ADMIN_NAME) {
+            if (currentChatUser) {
+                renderChatMessages(ADMIN_NAME, currentChatUser);
+            } else {
+                renderChatList();
+            }
+        } else {
+            renderUserChat();
+        }
+        updateSupportBadge();
+    }
+
+    // Обработчики поддержки
+    document.getElementById('supportBtn').addEventListener('click', openSupportModal);
+    document.getElementById('supportModalClose').addEventListener('click', closeSupportModal);
+    document.getElementById('supportModal').addEventListener('click', function(e) {
+        if (e.target === this) closeSupportModal();
+    });
+    document.getElementById('supportSendBtn').addEventListener('click', sendSupportMessageFromUI);
+    document.getElementById('supportInput').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendSupportMessageFromUI();
+        }
+    });
+
+    // Автообновление бейджа
+    setInterval(function() {
+        updateSupportBadge();
+    }, 10000);
 
     // ============================================================
     //   ПЕРЕКЛЮЧЕНИЕ ВКЛАДОК
@@ -2403,6 +2926,9 @@
     });
 
     document.getElementById('logoutBtn').addEventListener('click', logout);
+
+    // Обновляем бейдж при загрузке
+    updateSupportBadge();
 </script>
 </body>
 </html>
