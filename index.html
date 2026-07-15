@@ -1433,8 +1433,8 @@
 
     // Закрыть смену
     document.getElementById('btnCloseShift').addEventListener('click', function() {
-        const openShift = getCurrentOpenShift();
-        if (!openShift) { alert('Нет открытой смены.'); return; }
+        const closeShift = getCurrentСloseShift();
+        if (!closeShift) { alert('Нет открытой смены.'); return; }
         document.getElementById('closeShiftForm').style.display = 'flex';
         document.getElementById('openShiftForm').style.display = 'none';
         document.getElementById('closeFiles').value = '';
