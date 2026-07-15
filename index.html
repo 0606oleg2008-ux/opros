@@ -1192,6 +1192,10 @@
     const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
     const BUCKET_NAME = 'shift-files';
 
+    // ===== ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ДЛЯ ГРАФИКОВ =====
+    let pieChartInstance = null;
+    let barChartInstance = null;
+
     // ============================================================
     //   ПЕРЕМЕННЫЕ СОСТОЯНИЯ
     // ============================================================
@@ -1228,7 +1232,7 @@
     }
 
     // ============================================================
-    //   РАБОТА СО СМЕНАМИ (исправлено)
+    //   РАБОТА СО СМЕНАМИ
     // ============================================================
     async function loadShifts() {
         const { data, error } = await supabaseClient.from('shifts').select('*').order('openTime', { ascending: false });
@@ -1239,7 +1243,6 @@
         updateShiftUI();
     }
 
-    // НОВАЯ ФУНКЦИЯ: сохранение всех смен (для удаления и очистки)
     async function saveShiftsToSupabase() {
         for (let shift of shifts) {
             if (!shift.id) {
@@ -1253,7 +1256,6 @@
         await loadShifts();
     }
 
-    // НОВАЯ ФУНКЦИЯ: удаление файлов из Storage
     async function deleteFilesFromStorage(paths) {
         if (!paths || paths.length === 0) return;
         for (let path of paths) {
@@ -1372,7 +1374,6 @@
         btn.disabled = true;
 
         try {
-            // Загружаем файлы
             let uploadedFiles = await uploadFilesToStorage(openShift.id, filesInput.files);
             if (uploadedFiles.length === 0) {
                 alert('❌ Не удалось загрузить ни одного файла. Проверьте подключение и права доступа.');
@@ -1383,7 +1384,6 @@
 
             const note = document.getElementById('closeNote').value.trim() || '';
 
-            // Обновляем запись в БД
             const { error } = await supabaseClient
                 .from('shifts')
                 .update({
@@ -1405,7 +1405,6 @@
                 return;
             }
 
-            // Перезагружаем смены и обновляем UI
             await loadShifts();
             renderShifts();
             updateAll();
@@ -1508,7 +1507,7 @@
     }
 
     // ============================================================
-    //   РЕНДЕРИНГ ЖУРНАЛА СМЕН (исправленный)
+    //   РЕНДЕРИНГ ЖУРНАЛА СМЕН
     // ============================================================
     function renderShifts() {
         const filtered = getFilteredShifts();
@@ -1564,12 +1563,10 @@
                 }
                 if (!confirm('Удалить запись о смене? Это также удалит загруженные файлы.')) return;
 
-                // Удаляем файлы из Storage
                 if (shift.files && shift.files.length) {
                     await deleteFilesFromStorage(shift.files.map(f => f.path));
                 }
 
-                // Удаляем запись из БД
                 const { error } = await supabaseClient.from('shifts').delete().match({ id: shift.id });
                 if (error) {
                     console.error('Ошибка удаления смены:', error);
@@ -1577,7 +1574,6 @@
                     return;
                 }
 
-                // Обновляем локальный массив и UI
                 shifts.splice(idx, 1);
                 renderShifts();
                 updateAll();
@@ -1679,7 +1675,7 @@
     });
 
     // ============================================================
-    //   ОЧИСТКА ВСЕХ СМЕН (исправленная)
+    //   ОЧИСТКА ВСЕХ СМЕН
     // ============================================================
     document.getElementById('clearShiftsBtn').addEventListener('click', async function() {
         if (currentUser !== ADMIN_NAME) {
@@ -1688,14 +1684,12 @@
         }
         if (!confirm('Удалить ВСЕ записи о сменах и файлы всех пользователей?')) return;
 
-        // Удаляем все файлы из Storage (по одному)
         for (let shift of shifts) {
             if (shift.files && shift.files.length) {
                 await deleteFilesFromStorage(shift.files.map(f => f.path));
             }
         }
 
-        // Удаляем все записи из таблицы
         const { error } = await supabaseClient.from('shifts').delete().neq('id', 0);
         if (error) {
             console.error('Ошибка очистки смен:', error);
@@ -1732,7 +1726,7 @@
     }
 
     // ============================================================
-    //   ОТЧЁТ, ДИАГРАММЫ, ГАНТ (оригинальные функции)
+    //   ОТЧЁТ, ДИАГРАММЫ, ГАНТ (исправлено: уничтожение графиков)
     // ============================================================
     function updateReport() {
         // Сводка
@@ -1802,16 +1796,27 @@
             tbody.appendChild(tr);
         });
 
-        // Диаграммы
+        // Диаграммы – уничтожаем старые экземпляры
         renderCharts(overall);
         // Статистика смен
         updateShiftStats();
     }
 
+    // ===== ИСПРАВЛЕННАЯ ФУНКЦИЯ RENDERCHARTS =====
     function renderCharts(overall) {
+        // Уничтожаем старые графики, если они существуют
+        if (pieChartInstance) {
+            pieChartInstance.destroy();
+            pieChartInstance = null;
+        }
+        if (barChartInstance) {
+            barChartInstance.destroy();
+            barChartInstance = null;
+        }
+
         // Круговая диаграмма
         const ctx1 = document.getElementById('pieChart').getContext('2d');
-        new Chart(ctx1, {
+        pieChartInstance = new Chart(ctx1, {
             type: 'pie',
             data: {
                 labels: ['Завершено (100%)', 'В процессе (1–99%)', 'Не начато (0%)'],
@@ -1828,9 +1833,9 @@
             options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
         });
 
-        // Столбчатая диаграмма план vs факт (прогресс)
+        // Столбчатая диаграмма
         const ctx2 = document.getElementById('barChart').getContext('2d');
-        new Chart(ctx2, {
+        barChartInstance = new Chart(ctx2, {
             type: 'bar',
             data: {
                 labels: stages.map(s => s.name.length > 15 ? s.name.slice(0,15)+'…' : s.name),
@@ -1886,7 +1891,6 @@
             return;
         }
 
-        // Определяем общий диапазон дат
         let minDate = new Date();
         let maxDate = new Date();
         let hasDates = false;
@@ -1902,7 +1906,6 @@
             return;
         }
 
-        // Расширяем диапазон на 10% для отступов
         const range = maxDate - minDate;
         minDate = new Date(minDate.getTime() - range * 0.1);
         maxDate = new Date(maxDate.getTime() + range * 0.1);
@@ -1912,7 +1915,6 @@
 
         let html = '<div class="gantt-grid">';
 
-        // Заголовки месяцев
         html += '<div class="gantt-month-labels">';
         const months = ['Янв','Фев','Мар','Апр','Май','Июн','Июл','Авг','Сен','Окт','Ноя','Дек'];
         const startMonth = minDate.getMonth();
@@ -1925,7 +1927,6 @@
         }
         html += '</div>';
 
-        // Строки этапов
         stages.forEach(st => {
             html += '<div class="gantt-row">';
             html += `<div class="label">${st.name}</div>`;
@@ -1936,7 +1937,6 @@
             const factStart = st.factStart ? new Date(st.factStart) : null;
             const factEnd = st.factEnd ? new Date(st.factEnd) : null;
 
-            // Функция для расчёта позиции и ширины
             function getBarPosition(start, end) {
                 if (!start || !end) return null;
                 const left = ((start - minDate) / totalMs) * 100;
@@ -1944,7 +1944,6 @@
                 return { left: Math.max(0, left), width: Math.min(100, width) };
             }
 
-            // План
             if (planStart && planEnd) {
                 const pos = getBarPosition(planStart, planEnd);
                 if (pos) {
@@ -1952,11 +1951,9 @@
                 }
             }
 
-            // Факт
             if (factStart && factEnd) {
                 const pos = getBarPosition(factStart, factEnd);
                 if (pos) {
-                    // Проверяем, укладывается ли в план
                     let cls = 'fact';
                     if (planEnd && new Date(factEnd) > new Date(planEnd)) cls += ' behind';
                     else if (planEnd && new Date(factEnd) <= new Date(planEnd)) cls += ' ahead';
@@ -1972,7 +1969,7 @@
     }
 
     // ============================================================
-    //   ПОДДЕРЖКА (ЧАТ) – все функции
+    //   ПОДДЕРЖКА (ЧАТ)
     // ============================================================
     let currentChatUser = null;
 
@@ -2232,7 +2229,7 @@
     });
 
     // ============================================================
-    //   ЭКСПОРТ PDF (заглушка, можно расширить)
+    //   ЭКСПОРТ PDF (заглушка)
     // ============================================================
     document.getElementById('exportPdfBtn').addEventListener('click', function() {
         alert('PDF-экспорт будет реализован в следующей версии. Сейчас вы можете использовать печать страницы (Ctrl+P) и сохранить как PDF.');
@@ -2453,7 +2450,9 @@
             .subscribe();
     }
 
-    // Инициализация при загрузке
+    // ============================================================
+    //   ИНИЦИАЛИЗАЦИЯ
+    // ============================================================
     window.addEventListener('DOMContentLoaded', function() {
         const savedUser = sessionStorage.getItem('currentUser');
         if (savedUser) {
@@ -2523,7 +2522,7 @@
         if (e.key === 'Enter') { e.preventDefault(); handleLogin(); }
     });
 
-    console.log('✅ Приложение запущено. Закрытие смены защищено от одновременных изменений.');
+    console.log('✅ Приложение запущено. Ошибка "Canvas already in use" исправлена.');
 </script>
 
 </body>
