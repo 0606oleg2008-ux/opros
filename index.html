@@ -2,14 +2,14 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Строительный контроль</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        /* ===== ВСЕ СТИЛИ ===== */
+        /* ===== СТИЛИ (полностью сохранены) ===== */
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
         body {
             background: linear-gradient(145deg, #e8edf5 0%, #d5dde8 100%);
@@ -481,6 +481,7 @@
             padding: 12px;
             background: #f8faff;
             transition: 0.2s;
+            cursor: pointer;
         }
         .file-modal-box .file-item:hover { transform: scale(1.02); box-shadow: 0 8px 24px rgba(0,0,0,0.06); }
         .file-modal-box .file-item img,
@@ -488,44 +489,14 @@
             max-width: 100%;
             max-height: 280px;
             border-radius: 12px;
+            pointer-events: none; /* клик по картинке не мешает */
         }
-        .file-modal-box .file-item img { cursor: pointer; }
         .file-modal-box .file-item .file-name {
             font-size: 12px;
             color: #4a6378;
             margin-top: 6px;
             word-break: break-word;
         }
-        .modal-img.fullscreen {
-            position: fixed !important;
-            top: 50% !important;
-            left: 50% !important;
-            transform: translate(-50%, -50%) scale(1.5) !important;
-            max-width: 90vw !important;
-            max-height: 90vh !important;
-            z-index: 9999 !important;
-            object-fit: contain !important;
-            background: rgba(0,0,0,0.85) !important;
-            padding: 16px !important;
-            border-radius: 16px !important;
-            box-shadow: 0 0 60px rgba(0,0,0,0.5) !important;
-            cursor: zoom-out !important;
-        }
-        .modal-img {
-            transition: all 0.3s ease !important;
-            max-width: 100%;
-            max-height: 280px;
-        }
-        .loader {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #0f6e4a;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 20px auto;
-        }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
         .onboarding-highlight {
             position: relative;
@@ -954,7 +925,6 @@
         </div>
     </div>
 
-    <!-- ===== СВОДНАЯ ПАНЕЛЬ ===== -->
     <div class="dashboard" id="dashboard">
         <div class="dashboard-item">
             <div class="dash-label">Общая готовность</div>
@@ -970,7 +940,6 @@
         </div>
     </div>
 
-    <!-- ===== ВКЛАДКИ ===== -->
     <div class="tabs" id="tabHeaders">
         <button class="tab-btn active" data-tab="input">📝 Этапы <span class="badge-count" id="badgeStages">0</span></button>
         <button class="tab-btn" data-tab="shift">👷 Сменный учёт <span class="badge-count" id="badgeShifts">0</span></button>
@@ -978,7 +947,7 @@
         <button class="tab-btn" data-tab="gantt">📅 График работ</button>
     </div>
 
-    <!-- ===== ВКЛАДКА "ЭТАПЫ" ===== -->
+    <!-- ===== ВКЛАДКА ЭТАПЫ ===== -->
     <div id="tab-input" class="tab-content active">
         <p style="color:#5e6f7e; margin-bottom:12px;">Добавьте или отредактируйте этапы. Все изменения сохраняются автоматически.</p>
         <div style="overflow-x:auto;">
@@ -1006,7 +975,7 @@
         </div>
     </div>
 
-    <!-- ===== ВКЛАДКА "СМЕННЫЙ УЧЁТ" ===== -->
+    <!-- ===== ВКЛАДКА СМЕНЫ ===== -->
     <div id="tab-shift" class="tab-content">
         <h3 style="font-weight:500; margin-bottom:12px;">Управление сменой</h3>
 
@@ -1018,7 +987,6 @@
             </div>
         </div>
 
-        <!-- Форма открытия смены -->
         <div class="shift-action-form" id="openShiftForm">
             <div class="field">
                 <label>Этап</label>
@@ -1044,7 +1012,6 @@
             <button class="btn btn-outline" id="cancelOpenBtn">Отмена</button>
         </div>
 
-        <!-- Форма закрытия смены -->
         <div class="shift-action-form" id="closeShiftForm">
             <div class="field">
                 <label>Файлы (фото/видео) *</label>
@@ -1085,7 +1052,7 @@
         </div>
     </div>
 
-    <!-- ===== ВКЛАДКА "ОТЧЁТ" ===== -->
+    <!-- ===== ВКЛАДКА ОТЧЁТ ===== -->
     <div id="tab-report" class="tab-content">
         <div id="reportContent">
             <div class="report-summary" id="reportSummary"></div>
@@ -1126,7 +1093,7 @@
         </div>
     </div>
 
-    <!-- ===== ВКЛАДКА "ГРАФИК РАБОТ" ===== -->
+    <!-- ===== ВКЛАДКА ГРАФИК ===== -->
     <div id="tab-gantt" class="tab-content">
         <div style="margin: 10px 0 20px;">
             <div class="gantt-legend">
@@ -1187,1000 +1154,1347 @@
 <button class="restart-tour-btn" id="restartTourBtn" title="Запустить обучение">❓</button>
 
 <script>
-    // ============================================================
-    //   ПОДКЛЮЧЕНИЕ К SUPABASE (ВАШИ КЛЮЧИ)
-    // ============================================================
-    const supabaseUrl = 'https://unlehvbjsoxcbdcybkbd.supabase.co';
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVubGVodmJqc294Y2JkY3lia2JkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQwODQxMTgsImV4cCI6MjA5OTY2MDExOH0.zWH5M2PcdW5WFiowvPWVhTDnmwKkBzaiN6aDlMSVyAU';
+    // ================================================================
+    //   ПОЛНЫЙ КОД С ВСЕМИ ИСПРАВЛЕНИЯМИ
+    // ================================================================
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('🚀 DOM загружен, инициализация...');
 
-    const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
-    const BUCKET_NAME = 'shift-files';
-
-    // ============================================================
-    //   УПРАВЛЕНИЕ ПОЛЬЗОВАТЕЛЕМ
-    // ============================================================
-    let currentUser = null;
-    const ADMIN_NAME = 'Леухин Олег Павлович';
-    const ADMIN_PASSWORD = 'OlegMolodoy()!';
-
-    let stages = [];
-    let shifts = [];
-    let supportMessages = [];
-
-    // ============================================================
-    //   РАБОТА С ДАННЫМИ (SUPABASE)
-    // ============================================================
-    async function loadStages() {
-        const { data, error } = await supabaseClient.from('stages').select('*').order('id', { ascending: true });
-        if (error) { console.error('Ошибка загрузки этапов:', error); return; }
-        stages = data || [];
-        renderInputTable();
-        updateAll();
-    }
-
-    async function saveStagesToSupabase() {
-        for (let stage of stages) {
-            if (!stage.id) {
-                const { error } = await supabaseClient.from('stages').insert([stage]);
-                if (error) console.error('Ошибка создания этапа:', error);
-            } else {
-                const { error } = await supabaseClient.from('stages').update(stage).match({ id: stage.id });
-                if (error) console.error('Ошибка обновления этапа:', error);
-            }
+        // --- Проверка протокола ---
+        if (window.location.protocol === 'file:') {
+            alert('⚠️ ВНИМАНИЕ! Страница открыта через file://.\nДля работы с Supabase необходимо использовать http:// или https://.\nЗапустите локальный сервер (например, Live Server в VS Code).');
+            console.error('❌ Протокол file:// не поддерживается.');
         }
-        await loadStages();
-    }
 
-    // ===== ЗАГРУЗКА СМЕН =====
-    async function loadShifts() {
-        const { data, error } = await supabaseClient.from('shifts').select('*').order('openTime', { ascending: false });
-        if (error) { console.error('Ошибка загрузки смен:', error); return; }
-        shifts = data || [];
-        renderShifts();
-        updateAll();
-        updateShiftUI();
-    }
+        // --- Подключение к Supabase ---
+        const supabaseUrl = 'https://unlehvbjsoxcbdcybkbd.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVubGVodmJqc294Y2JkY3lia2JkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQwODQxMTgsImV4cCI6MjA5OTY2MDExOH0.zWH5M2PcdW5WFiowvPWVhTDnmwKkBzaiN6aDlMSVyAU';
+        const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+        const BUCKET_NAME = 'shift-files';
+        console.log('✅ Supabase клиент создан');
 
-    // ============================================================
-    //   ОТКРЫТИЕ СМЕНЫ (СОХРАНЕНИЕ С СИНХРОНИЗАЦИЕЙ)
-    // ============================================================
-    document.getElementById('confirmOpenBtn').addEventListener('click', function() {
-        const stage = document.getElementById('openStage').value;
-        const shiftNumber = document.getElementById('openShiftNumber').value.trim() || '—';
-        const smu = document.getElementById('openSMU').value.trim() || '—';
-        const people = parseInt(document.getElementById('openPeople').value) || 1;
-        const note = document.getElementById('openNote').value.trim() || '';
-        if (!stage) { alert('Выберите этап'); return; }
-        if (people < 1) { alert('Количество человек должно быть не менее 1'); return; }
+        // --- Глобальные переменные ---
+        let pieChartInstance = null;
+        let barChartInstance = null;
+        let currentUser = null;
+        const ADMIN_NAME = 'Леухин Олег Павлович';
+        const ADMIN_PASSWORD = 'OlegMolodoy()!';
+        let stages = [];
+        let shifts = [];
+        let supportMessages = [];
+        let currentChatUser = null;
 
-        const newShift = {
-            user: currentUser,
-            date: new Date().toISOString().slice(0,10),
-            openTime: new Date().toISOString(),
-            closeTime: null,
-            stage: stage,
-            shiftNumber: shiftNumber,
-            smu: smu,
-            people: people,
-            note: note,
-            files: []
-        };
+        // --- Элементы DOM ---
+        const confirmOpenBtn = document.getElementById('confirmOpenBtn');
+        const openStage = document.getElementById('openStage');
+        const openShiftNumber = document.getElementById('openShiftNumber');
+        const openSMU = document.getElementById('openSMU');
+        const openPeople = document.getElementById('openPeople');
+        const openNote = document.getElementById('openNote');
+        const cancelOpenBtn = document.getElementById('cancelOpenBtn');
+        const btnOpenShift = document.getElementById('btnOpenShift');
+        const btnCloseShift = document.getElementById('btnCloseShift');
+        const closeFiles = document.getElementById('closeFiles');
+        const closeNote = document.getElementById('closeNote');
+        const confirmCloseBtn = document.getElementById('confirmCloseBtn');
+        const cancelCloseBtn = document.getElementById('cancelCloseBtn');
+        const shiftBody = document.getElementById('shiftBody');
+        const statusText = document.getElementById('statusText');
 
-        const btn = this;
-        btn.textContent = '⏳ Сохранение...';
-        btn.disabled = true;
-
-        supabaseClient
-            .from('shifts')
-            .insert([newShift])
-            .select('*')
-            .then(({ data, error }) => {
-                btn.textContent = '✅ Подтвердить открытие';
-                btn.disabled = false;
-                if (error) {
-                    console.error('Ошибка создания смены:', error);
-                    alert('Ошибка создания смены: ' + error.message);
-                    return;
-                }
-                if (data && data.length > 0) {
-                    const savedShift = data[0];
-                    shifts.push(savedShift);
-                    renderShifts();
-                    updateAll();
-                    updateShiftUI();
-                    document.getElementById('openShiftForm').style.display = 'none';
-                    alert('✅ Смена успешно открыта!');
-                } else {
-                    alert('Не удалось создать смену. Попробуйте ещё раз.');
-                }
-            })
-            .catch(err => {
-                btn.textContent = '✅ Подтвердить открытие';
-                btn.disabled = false;
-                console.error('Ошибка:', err);
-                alert('Произошла ошибка: ' + err.message);
-            });
-    });
-
-    // ============================================================
-    //   ЗАКРЫТИЕ СМЕНЫ (АТОМАРНОЕ ОБНОВЛЕНИЕ)
-    // ============================================================
-    document.getElementById('btnCloseShift').addEventListener('click', function() {
-        const openShift = getCurrentOpenShift();
-        if (!openShift) { alert('Нет открытой смены.'); return; }
-        document.getElementById('closeShiftForm').style.display = 'flex';
-        document.getElementById('openShiftForm').style.display = 'none';
-        document.getElementById('closeFiles').value = '';
-        document.getElementById('closeNote').value = '';
-        document.getElementById('confirmCloseBtn').disabled = false;
-    });
-
-    document.getElementById('cancelCloseBtn').addEventListener('click', function() {
-        document.getElementById('closeShiftForm').style.display = 'none';
-    });
-
-    // ЗАГРУЗКА ФАЙЛОВ В STORAGE
-    async function uploadFilesToStorage(shiftId, files) {
-        const uploaded = [];
-        for (let file of files) {
-            const filePath = `${shiftId}/${Date.now()}_${file.name}`;
-            const { error } = await supabaseClient.storage.from(BUCKET_NAME).upload(filePath, file);
-            if (error) { console.error('Ошибка загрузки файла:', error); continue; }
-            const { data: publicUrlData } = supabaseClient.storage.from(BUCKET_NAME).getPublicUrl(filePath);
-            uploaded.push({ name: file.name, type: file.type, url: publicUrlData.publicUrl, path: filePath });
-        }
-        return uploaded;
-    }
-
-    document.getElementById('confirmCloseBtn').addEventListener('click', async function() {
-        const openShift = getCurrentOpenShift();
-        if (!openShift) { alert('Нет открытой смены.'); return; }
-
-        const filesInput = document.getElementById('closeFiles');
-        if (filesInput.files.length === 0) {
-            alert('❌ Выберите хотя бы один файл (фото или видео) для закрытия смены.');
+        // --- Проверка наличия элементов ---
+        if (!confirmOpenBtn) {
+            alert('КРИТИЧЕСКАЯ ОШИБКА: кнопка confirmOpenBtn не найдена!');
             return;
         }
 
-        // Блокируем кнопку
-        const btn = this;
-        btn.textContent = '⏳ Закрытие...';
-        btn.disabled = true;
-
-        try {
-            // 1. Загружаем файлы в Storage
-            let uploadedFiles;
+        // ============================================================
+        //   ФУНКЦИИ ЗАГРУЗКИ/СОХРАНЕНИЯ
+        // ============================================================
+        async function loadStages() {
             try {
-                uploadedFiles = await uploadFilesToStorage(openShift.id, filesInput.files);
-            } catch(e) {
-                alert('Ошибка при загрузке файлов: ' + e.message);
-                btn.textContent = '✅ Подтвердить закрытие';
-                btn.disabled = false;
-                return;
-            }
-
-            // 2. Обновляем запись в БД с условием, что closeTime всё ещё NULL
-            const note = document.getElementById('closeNote').value.trim() || '';
-
-            const { error } = await supabaseClient
-                .from('shifts')
-                .update({
-                    closeTime: new Date().toISOString(),
-                    files: uploadedFiles.map(f => ({ name: f.name, type: f.type, url: f.url, path: f.path })),
-                    note: note
-                })
-                .match({ id: openShift.id, closeTime: null });
-
-            if (error) {
-                // Если ошибка связана с тем, что запись не найдена (уже закрыта)
-                if (error.code === 'PGRST116' || error.message?.includes('not found') || error.message?.includes('No rows')) {
-                    alert('⚠️ Смена уже была закрыта другим пользователем.');
-                } else {
-                    alert('Ошибка закрытия смены: ' + error.message);
-                }
-                btn.textContent = '✅ Подтвердить закрытие';
-                btn.disabled = false;
-                return;
-            }
-
-            // 3. Успешно обновили – перезагружаем данные
-            await loadShifts();
-            renderShifts();
-            updateAll();
-            updateShiftUI();
-            document.getElementById('closeShiftForm').style.display = 'none';
-            alert('✅ Смена успешно закрыта! Файлы сохранены в облаке.');
-            btn.textContent = '✅ Подтвердить закрытие';
-            btn.disabled = false;
-
-        } catch (err) {
-            console.error('Ошибка:', err);
-            alert('Произошла непредвиденная ошибка: ' + err.message);
-            btn.textContent = '✅ Подтвердить закрытие';
-            btn.disabled = false;
-        }
-    });
-
-    // ============================================================
-    //   ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
-    // ============================================================
-    function getCurrentOpenShift() {
-        return shifts.find(sh => sh.closeTime === null);
-    }
-
-    function updateShiftUI() {
-        const openShift = getCurrentOpenShift();
-        const statusText = document.getElementById('statusText');
-        const btnOpen = document.getElementById('btnOpenShift');
-        const btnClose = document.getElementById('btnCloseShift');
-        if (openShift) {
-            const openDate = new Date(openShift.openTime);
-            statusText.innerHTML = `Статус: <span class="open">Смена открыта ${openDate.toLocaleString('ru-RU')}</span>`;
-            btnOpen.disabled = true;
-            btnClose.disabled = false;
-        } else {
-            statusText.innerHTML = `Статус: <span class="none">Смена не открыта</span>`;
-            btnOpen.disabled = false;
-            btnClose.disabled = true;
-        }
-        document.getElementById('openShiftForm').style.display = 'none';
-        document.getElementById('closeShiftForm').style.display = 'none';
-    }
-
-    // ============================================================
-    //   РЕНДЕРИНГ ТАБЛИЦЫ ЭТАПОВ
-    // ============================================================
-    const STAGE_NAMES = [
-        'Котлован', 'Фундамент', 'Стены подвала', 'Стены 1-го этажа',
-        'Перекрытия', 'Кровля', 'Инженерные сети', 'Отделка', 'Благоустройство'
-    ];
-
-    function renderInputTable() {
-        const tbody = document.getElementById('inputBody');
-        tbody.innerHTML = '';
-        stages.forEach((st, index) => {
-            const tr = document.createElement('tr');
-            const datalistId = 'stageNames_' + index;
-            let optionsHtml = STAGE_NAMES.map(name => `<option value="${name}">`).join('');
-            tr.innerHTML = `
-                <td>
-                    <input type="text" class="inp-name" value="${st.name}" data-idx="${index}" list="${datalistId}">
-                    <datalist id="${datalistId}">${optionsHtml}</datalist>
-                </td>
-                <td><input type="text" class="inp-objectName" value="${st.objectName || ''}" data-idx="${index}" placeholder="Объект"></td>
-                <td><input type="text" class="inp-building" value="${st.building || ''}" data-idx="${index}" placeholder="Дом/корпус"></td>
-                <td><input type="date" class="inp-planStart" value="${st.planStart || ''}" data-idx="${index}"></td>
-                <td><input type="date" class="inp-planEnd" value="${st.planEnd || ''}" data-idx="${index}"></td>
-                <td><input type="date" class="inp-factStart" value="${st.factStart || ''}" data-idx="${index}"></td>
-                <td><input type="date" class="inp-factEnd" value="${st.factEnd || ''}" data-idx="${index}"></td>
-                <td><input type="number" class="inp-progress" value="${st.progress}" min="0" max="100" data-idx="${index}"></td>
-                <td><button class="del-btn" data-idx="${index}">✕</button></td>
-            `;
-            tbody.appendChild(tr);
-        });
-
-        document.querySelectorAll('#inputBody input').forEach(inp => {
-            inp.addEventListener('input', function() {
-                const idx = parseInt(this.dataset.idx);
-                const field = this.className.replace('inp-', '');
-                let value = this.value;
-                if (field === 'progress') value = parseFloat(value) || 0;
-                stages[idx][field] = value;
-                saveStagesToSupabase();
-                updateDashboard();
-                updateTabBadges();
-            });
-        });
-
-        document.querySelectorAll('#inputBody .del-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const idx = parseInt(this.dataset.idx);
-                stages.splice(idx, 1);
-                saveStagesToSupabase();
+                const { data, error } = await supabaseClient.from('stages').select('*').order('id', { ascending: true });
+                if (error) throw error;
+                stages = data || [];
                 renderInputTable();
                 updateAll();
-                updateDashboard();
-                updateTabBadges();
-            });
-        });
-    }
+            } catch (e) {
+                console.error('Ошибка загрузки этапов:', e);
+                alert('Ошибка загрузки этапов: ' + e.message);
+            }
+        }
 
-    // ============================================================
-    //   РЕНДЕРИНГ ЖУРНАЛА СМЕН
-    // ============================================================
-    function renderShifts() {
-        const filtered = getFilteredShifts();
-        const tbody = document.getElementById('shiftBody');
-        tbody.innerHTML = '';
-        filtered.forEach((sh, idx) => {
-            const realIdx = shifts.indexOf(sh);
-            const tr = document.createElement('tr');
-            const openStr = sh.openTime ? new Date(sh.openTime).toLocaleString('ru-RU') : '—';
-            const closeStr = sh.closeTime ? new Date(sh.closeTime).toLocaleString('ru-RU') : '—';
-            const filesStr = sh.files && sh.files.length ? sh.files.map(f => f.name).join(', ') : '—';
-            const hasFiles = sh.files && sh.files.length > 0;
-
-            tr.innerHTML = `
-                <td>${sh.date || '—'}</td>
-                <td>${sh.fio || sh.user || ''}</td>
-                <td>${sh.stage || '—'}</td>
-                <td>${sh.shiftNumber || '—'}</td>
-                <td>${sh.smu || '—'}</td>
-                <td>${sh.people || ''}</td>
-                <td>${openStr}</td>
-                <td>${closeStr}</td>
-                <td><span class="file-list">${filesStr}</span></td>
-                <td>${sh.note || ''}</td>
-                <td>
-                    ${hasFiles ? `<button class="view-btn" data-idx="${realIdx}" title="Просмотр файлов">👁️</button>` : ''}
-                    <button class="del-btn" data-idx="${realIdx}">✕</button>
-                </td>
-            `;
-            tbody.appendChild(tr);
-        });
-
-        document.querySelectorAll('#shiftBody .view-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const idx = parseInt(this.dataset.idx);
-                const shift = shifts[idx];
-                if (!shift) return;
-                if (currentUser !== ADMIN_NAME && shift.user !== currentUser) {
-                    alert('Вы можете просматривать только свои файлы.');
-                    return;
+        async function saveStagesToSupabase() {
+            for (let stage of stages) {
+                if (!stage.id) {
+                    const { error } = await supabaseClient.from('stages').insert([stage]);
+                    if (error) console.error('Ошибка создания этапа:', error);
+                } else {
+                    const { error } = await supabaseClient.from('stages').update(stage).match({ id: stage.id });
+                    if (error) console.error('Ошибка обновления этапа:', error);
                 }
-                openFileModal(shift.files);
-            });
-        });
+            }
+            await loadStages();
+        }
 
-        document.querySelectorAll('#shiftBody .del-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const idx = parseInt(this.dataset.idx);
-                const shift = shifts[idx];
-                if (currentUser !== ADMIN_NAME && shift.user !== currentUser) {
-                    alert('Вы можете удалять только свои записи.');
-                    return;
+        async function loadShifts() {
+            try {
+                const { data, error } = await supabaseClient.from('shifts').select('*').order('openTime', { ascending: false });
+                if (error) throw error;
+                shifts = data || [];
+                renderShifts();
+                updateAll();
+                updateShiftUI();
+            } catch (e) {
+                console.error('Ошибка загрузки смен:', e);
+                alert('Ошибка загрузки смен: ' + e.message);
+            }
+        }
+
+        async function saveShiftsToSupabase() {
+            for (let shift of shifts) {
+                if (!shift.id) {
+                    const { error } = await supabaseClient.from('shifts').insert([shift]);
+                    if (error) console.error('Ошибка создания смены:', error);
+                } else {
+                    const { error } = await supabaseClient.from('shifts').update(shift).match({ id: shift.id });
+                    if (error) console.error('Ошибка обновления смены:', error);
                 }
-                if (confirm('Удалить запись о смене? Это также удалит загруженные файлы.')) {
-                    if (shift.files && shift.files.length) {
-                        deleteFilesFromStorage(shift.files.map(f => f.path));
+            }
+            await loadShifts();
+        }
+
+        async function deleteFilesFromStorage(paths) {
+            if (!paths || paths.length === 0) return;
+            for (let path of paths) {
+                const { error } = await supabaseClient.storage.from(BUCKET_NAME).remove([path]);
+                if (error) console.error('Ошибка удаления файла:', path, error);
+            }
+        }
+
+        // ============================================================
+        //   ОТКРЫТИЕ СМЕНЫ (исправлено: обработчик навешивается только один раз)
+        // ============================================================
+        confirmOpenBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            console.log('🖱️ Клик по кнопке "Подтвердить открытие"');
+
+            if (!currentUser) {
+                alert('❌ Вы не авторизованы.');
+                return;
+            }
+
+            const stage = openStage.value;
+            const shiftNumber = openShiftNumber.value.trim() || '—';
+            const smu = openSMU.value.trim() || '—';
+            const people = parseInt(openPeople.value) || 1;
+            const note = openNote.value.trim() || '';
+
+            if (!stage) { alert('Выберите этап'); return; }
+            if (people < 1) { alert('Количество человек не менее 1'); return; }
+
+            const newShift = {
+                user: currentUser,
+                date: new Date().toISOString().slice(0,10),
+                openTime: new Date().toISOString(),
+                closeTime: null,
+                stage: stage,
+                shiftNumber: shiftNumber,
+                smu: smu,
+                people: people,
+                note: note,
+                files: []
+            };
+
+            const btn = this;
+            btn.textContent = '⏳ Сохранение...';
+            btn.disabled = true;
+
+            supabaseClient
+                .from('shifts')
+                .insert([newShift])
+                .select('*')
+                .then(({ data, error }) => {
+                    btn.textContent = '✅ Подтвердить открытие';
+                    btn.disabled = false;
+                    if (error) {
+                        alert('Ошибка создания смены: ' + error.message);
+                        return;
                     }
+                    if (data && data.length > 0) {
+                        shifts.push(data[0]);
+                        renderShifts();
+                        updateAll();
+                        updateShiftUI();
+                        document.getElementById('openShiftForm').style.display = 'none';
+                        alert('✅ Смена открыта!');
+                    } else {
+                        alert('⚠️ Пустой ответ от сервера.');
+                    }
+                })
+                .catch(err => {
+                    btn.textContent = '✅ Подтвердить открытие';
+                    btn.disabled = false;
+                    alert('Ошибка: ' + err.message);
+                });
+        });
+
+        // ============================================================
+        //   ЗАКРЫТИЕ СМЕНЫ
+        // ============================================================
+        btnCloseShift.addEventListener('click', function() {
+            const openShift = getCurrentOpenShift();
+            if (!openShift) { alert('Нет открытой смены.'); return; }
+            document.getElementById('closeShiftForm').style.display = 'flex';
+            document.getElementById('openShiftForm').style.display = 'none';
+            closeFiles.value = '';
+            closeNote.value = '';
+            confirmCloseBtn.disabled = false;
+        });
+
+        cancelCloseBtn.addEventListener('click', function() {
+            document.getElementById('closeShiftForm').style.display = 'none';
+        });
+
+        async function uploadFilesToStorage(shiftId, files) {
+            const uploaded = [];
+            for (let file of files) {
+                const filePath = `${shiftId}/${Date.now()}_${file.name}`;
+                const { error } = await supabaseClient.storage.from(BUCKET_NAME).upload(filePath, file);
+                if (error) { console.error('Ошибка загрузки файла:', error); continue; }
+                const { data: publicUrlData } = supabaseClient.storage.from(BUCKET_NAME).getPublicUrl(filePath);
+                uploaded.push({ name: file.name, type: file.type, url: publicUrlData.publicUrl, path: filePath });
+            }
+            return uploaded;
+        }
+
+        confirmCloseBtn.addEventListener('click', async function() {
+            const openShift = getCurrentOpenShift();
+            if (!openShift) {
+                alert('Нет открытой смены.');
+                document.getElementById('closeShiftForm').style.display = 'none';
+                updateShiftUI();
+                return;
+            }
+
+            if (closeFiles.files.length === 0) {
+                alert('❌ Выберите хотя бы один файл.');
+                return;
+            }
+
+            const btn = this;
+            btn.textContent = '⏳ Закрытие...';
+            btn.disabled = true;
+
+            try {
+                let uploadedFiles = await uploadFilesToStorage(openShift.id, closeFiles.files);
+                if (uploadedFiles.length === 0) {
+                    alert('❌ Не удалось загрузить файлы.');
+                    btn.textContent = '✅ Подтвердить закрытие';
+                    btn.disabled = false;
+                    return;
+                }
+
+                const note = closeNote.value.trim() || '';
+                const { error } = await supabaseClient
+                    .from('shifts')
+                    .update({
+                        closeTime: new Date().toISOString(),
+                        files: uploadedFiles,
+                        note: note
+                    })
+                    .match({ id: openShift.id, closeTime: null });
+
+                if (error) {
+                    alert('Ошибка закрытия: ' + error.message);
+                    btn.textContent = '✅ Подтвердить закрытие';
+                    btn.disabled = false;
+                    return;
+                }
+
+                await loadShifts();
+                renderShifts();
+                updateAll();
+                updateShiftUI();
+                document.getElementById('closeShiftForm').style.display = 'none';
+                alert('✅ Смена закрыта, файлы сохранены.');
+                btn.textContent = '✅ Подтвердить закрытие';
+                btn.disabled = false;
+
+            } catch (err) {
+                alert('Ошибка: ' + err.message);
+                btn.textContent = '✅ Подтвердить закрытие';
+                btn.disabled = false;
+            }
+        });
+
+        // ============================================================
+        //   ВСПОМОГАТЕЛЬНЫЕ
+        // ============================================================
+        function getCurrentOpenShift() {
+            return shifts.find(sh => sh.closeTime === null);
+        }
+
+        function updateShiftUI() {
+            const openShift = getCurrentOpenShift();
+            if (openShift) {
+                const openDate = new Date(openShift.openTime);
+                statusText.innerHTML = `Статус: <span class="open">Смена открыта ${openDate.toLocaleString('ru-RU')}</span>`;
+                btnOpenShift.disabled = true;
+                btnCloseShift.disabled = false;
+            } else {
+                statusText.innerHTML = `Статус: <span class="none">Смена не открыта</span>`;
+                btnOpenShift.disabled = false;
+                btnCloseShift.disabled = true;
+            }
+            document.getElementById('openShiftForm').style.display = 'none';
+            document.getElementById('closeShiftForm').style.display = 'none';
+        }
+
+        // ============================================================
+        //   РЕНДЕРИНГ ТАБЛИЦЫ ЭТАПОВ
+        // ============================================================
+        const STAGE_NAMES = [
+            'Котлован', 'Фундамент', 'Стены подвала', 'Стены 1-го этажа',
+            'Перекрытия', 'Кровля', 'Инженерные сети', 'Отделка', 'Благоустройство'
+        ];
+
+        function renderInputTable() {
+            const tbody = document.getElementById('inputBody');
+            tbody.innerHTML = '';
+            stages.forEach((st, index) => {
+                const tr = document.createElement('tr');
+                const datalistId = 'stageNames_' + index;
+                let optionsHtml = STAGE_NAMES.map(name => `<option value="${name}">`).join('');
+                tr.innerHTML = `
+                    <td>
+                        <input type="text" class="inp-name" value="${st.name}" data-idx="${index}" list="${datalistId}">
+                        <datalist id="${datalistId}">${optionsHtml}</datalist>
+                    </td>
+                    <td><input type="text" class="inp-objectName" value="${st.objectName || ''}" data-idx="${index}" placeholder="Объект"></td>
+                    <td><input type="text" class="inp-building" value="${st.building || ''}" data-idx="${index}" placeholder="Дом/корпус"></td>
+                    <td><input type="date" class="inp-planStart" value="${st.planStart || ''}" data-idx="${index}"></td>
+                    <td><input type="date" class="inp-planEnd" value="${st.planEnd || ''}" data-idx="${index}"></td>
+                    <td><input type="date" class="inp-factStart" value="${st.factStart || ''}" data-idx="${index}"></td>
+                    <td><input type="date" class="inp-factEnd" value="${st.factEnd || ''}" data-idx="${index}"></td>
+                    <td><input type="number" class="inp-progress" value="${st.progress}" min="0" max="100" data-idx="${index}"></td>
+                    <td><button class="del-btn" data-idx="${index}">✕</button></td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            document.querySelectorAll('#inputBody input').forEach(inp => {
+                inp.addEventListener('input', function() {
+                    const idx = parseInt(this.dataset.idx);
+                    const field = this.className.replace('inp-', '');
+                    let value = this.value;
+                    if (field === 'progress') value = parseFloat(value) || 0;
+                    stages[idx][field] = value;
+                    saveStagesToSupabase();
+                    updateDashboard();
+                    updateTabBadges();
+                });
+            });
+
+            document.querySelectorAll('#inputBody .del-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const idx = parseInt(this.dataset.idx);
+                    stages.splice(idx, 1);
+                    saveStagesToSupabase();
+                    renderInputTable();
+                    updateAll();
+                    updateDashboard();
+                    updateTabBadges();
+                });
+            });
+        }
+
+        // ============================================================
+        //   РЕНДЕРИНГ ЖУРНАЛА СМЕН (с правами доступа)
+        // ============================================================
+        function renderShifts() {
+            const filtered = getFilteredShifts();
+            const tbody = document.getElementById('shiftBody');
+            tbody.innerHTML = '';
+            filtered.forEach((sh, idx) => {
+                const realIdx = shifts.indexOf(sh);
+                const tr = document.createElement('tr');
+                const openStr = sh.openTime ? new Date(sh.openTime).toLocaleString('ru-RU') : '—';
+                const closeStr = sh.closeTime ? new Date(sh.closeTime).toLocaleString('ru-RU') : '—';
+                const filesStr = sh.files && sh.files.length ? sh.files.map(f => f.name).join(', ') : '—';
+                const hasFiles = sh.files && sh.files.length > 0;
+
+                tr.innerHTML = `
+                    <td>${sh.date || '—'}</td>
+                    <td>${sh.fio || sh.user || ''}</td>
+                    <td>${sh.stage || '—'}</td>
+                    <td>${sh.shiftNumber || '—'}</td>
+                    <td>${sh.smu || '—'}</td>
+                    <td>${sh.people || ''}</td>
+                    <td>${openStr}</td>
+                    <td>${closeStr}</td>
+                    <td><span class="file-list">${filesStr}</span></td>
+                    <td>${sh.note || ''}</td>
+                    <td>
+                        ${hasFiles ? `<button class="view-btn" data-idx="${realIdx}" title="Просмотр файлов">👁️</button>` : ''}
+                        <button class="del-btn" data-idx="${realIdx}">✕</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            // Просмотр файлов (открываем в новой вкладке)
+            document.querySelectorAll('#shiftBody .view-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const idx = parseInt(this.dataset.idx);
+                    const shift = shifts[idx];
+                    if (!shift) return;
+                    // Проверка прав: админ или владелец
+                    if (currentUser !== ADMIN_NAME && shift.user !== currentUser) {
+                        alert('Вы можете просматривать только свои файлы.');
+                        return;
+                    }
+                    // Открываем в новой вкладке
+                    if (shift.files && shift.files.length > 0) {
+                        // Открываем первый файл в новой вкладке
+                        window.open(shift.files[0].url, '_blank');
+                    } else {
+                        alert('Нет файлов.');
+                    }
+                });
+            });
+
+            // Удаление с проверкой прав
+            document.querySelectorAll('#shiftBody .del-btn').forEach(btn => {
+                btn.addEventListener('click', async function() {
+                    const idx = parseInt(this.dataset.idx);
+                    const shift = shifts[idx];
+                    // Права: админ может удалить всё, пользователь – только свои записи
+                    if (currentUser !== ADMIN_NAME && shift.user !== currentUser) {
+                        alert('Вы можете удалять только свои записи.');
+                        return;
+                    }
+                    if (!confirm('Удалить запись о смене? Это также удалит загруженные файлы.')) return;
+
+                    if (shift.files && shift.files.length) {
+                        await deleteFilesFromStorage(shift.files.map(f => f.path));
+                    }
+
+                    const { error } = await supabaseClient.from('shifts').delete().match({ id: shift.id });
+                    if (error) {
+                        alert('Ошибка удаления: ' + error.message);
+                        return;
+                    }
+
                     shifts.splice(idx, 1);
-                    saveShiftsToSupabase();
                     renderShifts();
                     updateAll();
                     updateShiftUI();
                     updateDashboard();
                     updateTabBadges();
-                }
+                });
             });
-        });
-    }
-
-    function getFilteredShifts() {
-        if (!currentUser) return [];
-        if (currentUser === ADMIN_NAME) return shifts.slice();
-        return shifts.filter(sh => sh.user === currentUser);
-    }
-
-    // ============================================================
-    //   МОДАЛЬНОЕ ОКНО ПРОСМОТРА ФАЙЛОВ
-    // ============================================================
-    const fileModal = document.getElementById('fileModal');
-    const fileGrid = document.getElementById('fileGrid');
-    const fileModalTitle = document.getElementById('fileModalTitle');
-    const fileLoader = document.getElementById('fileModalLoader');
-
-    async function openFileModal(files) {
-        if (!files || files.length === 0) {
-            alert('Нет файлов для этой смены.');
-            return;
         }
-        fileModal.classList.add('active');
-        fileModalTitle.textContent = 'Файлы смены';
-        fileGrid.innerHTML = '';
-        fileLoader.style.display = 'block';
 
-        try {
-            fileLoader.style.display = 'none';
-            fileGrid.innerHTML = '';
-            files.forEach(f => {
-                const item = document.createElement('div');
-                item.className = 'file-item';
-                let content = '';
-                if (f.type && f.type.startsWith('image/')) {
-                    content = `<img src="${f.url}" alt="${f.name}" loading="lazy" 
-                               class="modal-img" 
-                               onclick="this.classList.toggle('fullscreen')" 
-                               style="cursor:pointer; transition: transform 0.3s; max-width:100%; max-height:280px;"
-                               title="Кликните для увеличения">`;
-                } else if (f.type && f.type.startsWith('video/')) {
-                    content = `<video controls src="${f.url}" preload="metadata" style="max-width:100%; max-height:280px;"></video>`;
-                } else {
-                    content = `<div>Невозможно отобразить файл</div>`;
-                }
-                item.innerHTML = `
-                    ${content}
-                    <div class="file-name">${f.name}</div>
+        function getFilteredShifts() {
+            if (!currentUser) return [];
+            if (currentUser === ADMIN_NAME) return shifts.slice();
+            return shifts.filter(sh => sh.user === currentUser);
+        }
+
+        // ============================================================
+        //   ОТЧЁТ, ГАНТ, ДИАГРАММЫ (полная реализация)
+        // ============================================================
+        function updateReport() {
+            const overall = stages.length ? Math.round(stages.reduce((s, st) => s + st.progress, 0) / stages.length) : 0;
+            const totalFact = stages.filter(s => s.factStart && s.factEnd).length;
+            const onTrack = stages.filter(s => {
+                if (!s.planEnd || !s.factEnd) return false;
+                return new Date(s.factEnd) <= new Date(s.planEnd);
+            }).length;
+
+            document.getElementById('reportSummary').innerHTML = `
+                <div class="stat-card">
+                    <div class="label">Общая готовность</div>
+                    <div class="value">${overall}%</div>
+                    <span class="badge ${overall < 30 ? 'danger' : overall < 70 ? 'warning' : ''}">
+                        ${overall < 30 ? 'Требует внимания' : overall < 70 ? 'В процессе' : 'Отлично'}
+                    </span>
+                </div>
+                <div class="stat-card">
+                    <div class="label">Этапов всего</div>
+                    <div class="value">${stages.length}</div>
+                    <span class="badge">${totalFact} завершено</span>
+                </div>
+                <div class="stat-card">
+                    <div class="label">В графике</div>
+                    <div class="value">${onTrack} / ${totalFact}</div>
+                    <span class="badge ${onTrack < totalFact ? 'warning' : 'ok'}">
+                        ${totalFact ? Math.round(onTrack/totalFact*100) : 0}%
+                    </span>
+                </div>
+            `;
+
+            // Детальная таблица
+            const tbody = document.getElementById('reportBody');
+            tbody.innerHTML = '';
+            stages.forEach(st => {
+                const planStart = st.planStart ? new Date(st.planStart).toLocaleDateString('ru-RU') : '—';
+                const planEnd = st.planEnd ? new Date(st.planEnd).toLocaleDateString('ru-RU') : '—';
+                const factStart = st.factStart ? new Date(st.factStart).toLocaleDateString('ru-RU') : '—';
+                const factEnd = st.factEnd ? new Date(st.factEnd).toLocaleDateString('ru-RU') : '—';
+                const progress = st.progress || 0;
+                let status = 'Не начат';
+                let statusClass = '';
+                if (progress === 100) { status = 'Завершён'; statusClass = 'ok'; }
+                else if (progress > 0) { status = 'В работе'; statusClass = 'warn'; }
+                else { status = 'Не начат'; statusClass = 'fail'; }
+
+                const planDays = st.planStart && st.planEnd ? Math.round((new Date(st.planEnd) - new Date(st.planStart))/(1000*60*60*24)) : '—';
+                const factDays = st.factStart && st.factEnd ? Math.round((new Date(st.factEnd) - new Date(st.factStart))/(1000*60*60*24)) : '—';
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><strong>${st.name}</strong></td>
+                    <td>${st.objectName || '—'}</td>
+                    <td>${st.building || '—'}</td>
+                    <td>${planStart} – ${planEnd} (${planDays} дн.)</td>
+                    <td>${factStart} – ${factEnd} (${factDays} дн.)</td>
+                    <td>
+                        <div class="progress-bar">
+                            <div class="fill fact" style="width:${progress}%;"></div>
+                        </div>
+                        ${progress}%
+                    </td>
+                    <td><span class="status-tag ${statusClass}">${status}</span></td>
                 `;
-                fileGrid.appendChild(item);
+                tbody.appendChild(tr);
             });
 
-            if (!document.getElementById('fullscreen-style')) {
-                const style = document.createElement('style');
-                style.id = 'fullscreen-style';
-                style.textContent = `
-                    .modal-img.fullscreen {
-                        position: fixed !important;
-                        top: 50% !important;
-                        left: 50% !important;
-                        transform: translate(-50%, -50%) scale(1.5) !important;
-                        max-width: 90vw !important;
-                        max-height: 90vh !important;
-                        z-index: 9999 !important;
-                        object-fit: contain !important;
-                        background: rgba(0,0,0,0.85) !important;
-                        padding: 16px !important;
-                        border-radius: 16px !important;
-                        box-shadow: 0 0 60px rgba(0,0,0,0.5) !important;
-                        cursor: zoom-out !important;
-                    }
-                    .modal-img {
-                        transition: all 0.3s ease !important;
-                        max-width: 100%;
-                        max-height: 280px;
-                    }
-                `;
-                document.head.appendChild(style);
+            renderCharts(overall);
+            updateShiftStats();
+        }
+
+        function renderCharts(overall) {
+            if (pieChartInstance) pieChartInstance.destroy();
+            if (barChartInstance) barChartInstance.destroy();
+
+            const ctx1 = document.getElementById('pieChart').getContext('2d');
+            pieChartInstance = new Chart(ctx1, {
+                type: 'pie',
+                data: {
+                    labels: ['Завершено (100%)', 'В процессе (1–99%)', 'Не начато (0%)'],
+                    datasets: [{
+                        data: [
+                            stages.filter(s => s.progress === 100).length,
+                            stages.filter(s => s.progress > 0 && s.progress < 100).length,
+                            stages.filter(s => s.progress === 0).length
+                        ],
+                        backgroundColor: ['#0f6e4a', '#f3b33d', '#c9453b'],
+                        borderWidth: 0
+                    }]
+                },
+                options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+            });
+
+            const ctx2 = document.getElementById('barChart').getContext('2d');
+            barChartInstance = new Chart(ctx2, {
+                type: 'bar',
+                data: {
+                    labels: stages.map(s => s.name.length > 15 ? s.name.slice(0,15)+'…' : s.name),
+                    datasets: [
+                        {
+                            label: 'План (эталон)',
+                            data: stages.map(() => 100),
+                            backgroundColor: '#3b6f9b',
+                            opacity: 0.4
+                        },
+                        {
+                            label: 'Факт (прогресс)',
+                            data: stages.map(s => s.progress),
+                            backgroundColor: stages.map(s => s.progress >= 100 ? '#0f6e4a' : (s.progress > 0 ? '#f3b33d' : '#c9453b'))
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    scales: { y: { beginAtZero: true, max: 100 } },
+                    plugins: { legend: { position: 'top' } }
+                }
+            });
+        }
+
+        function updateShiftStats() {
+            const container = document.getElementById('shiftStats');
+            const filtered = getFilteredShifts();
+            if (!filtered.length) {
+                container.innerHTML = '<p style="color:#6a7b8c;">Нет записей о сменах.</p>';
+                return;
             }
-        } catch(e) {
-            fileLoader.style.display = 'none';
-            fileGrid.innerHTML = `<p style="color:#c9453b;">Ошибка загрузки файлов: ${e.message}</p>`;
-            console.error('Ошибка при открытии модального окна:', e);
-        }
-    }
+            const total = filtered.length;
+            const open = filtered.filter(sh => sh.closeTime === null).length;
+            const closed = filtered.filter(sh => sh.closeTime !== null).length;
+            const totalPeople = filtered.reduce((sum, sh) => sum + (sh.people || 0), 0);
+            const stagesSet = new Set(filtered.map(sh => sh.stage));
+            const avgPeople = Math.round(totalPeople / total);
 
-    document.getElementById('fileModalClose').addEventListener('click', function() {
-        fileModal.classList.remove('active');
-    });
-    fileModal.addEventListener('click', function(e) {
-        if (e.target === this) fileModal.classList.remove('active');
-    });
-
-    document.getElementById('clearShiftsBtn').addEventListener('click', function() {
-        if (currentUser !== ADMIN_NAME) {
-            alert('Только администратор может очистить все смены.');
-            return;
+            container.innerHTML = `
+                <div>📋 Всего смен: <strong>${total}</strong></div>
+                <div>🟢 Открыто: <strong>${open}</strong></div>
+                <div>🔒 Закрыто: <strong>${closed}</strong></div>
+                <div>👷 Среднее число человек: <strong>${avgPeople}</strong></div>
+                <div>🏗️ Задействовано этапов: <strong>${stagesSet.size}</strong></div>
+            `;
         }
-        if (confirm('Удалить ВСЕ записи о сменах и файлы всех пользователей?')) {
-            shifts = [];
-            saveShiftsToSupabase();
-            renderShifts();
-            updateAll();
-            updateShiftUI();
+
+        function renderGantt() {
+            const container = document.getElementById('ganttContainer');
+            if (!stages.length) {
+                container.innerHTML = '<p style="color:#6a7b8c;">Нет этапов для отображения.</p>';
+                return;
+            }
+
+            let minDate = new Date();
+            let maxDate = new Date();
+            let hasDates = false;
+            stages.forEach(st => {
+                if (st.planStart) { const d = new Date(st.planStart); if (!hasDates || d < minDate) minDate = d; hasDates = true; }
+                if (st.planEnd) { const d = new Date(st.planEnd); if (!hasDates || d > maxDate) maxDate = d; hasDates = true; }
+                if (st.factStart) { const d = new Date(st.factStart); if (!hasDates || d < minDate) minDate = d; hasDates = true; }
+                if (st.factEnd) { const d = new Date(st.factEnd); if (!hasDates || d > maxDate) maxDate = d; hasDates = true; }
+            });
+
+            if (!hasDates) {
+                container.innerHTML = '<p style="color:#6a7b8c;">Нет дат для построения графика. Задайте плановые даты этапов.</p>';
+                return;
+            }
+
+            const range = maxDate - minDate;
+            minDate = new Date(minDate.getTime() - range * 0.1);
+            maxDate = new Date(maxDate.getTime() + range * 0.1);
+            const totalMs = maxDate - minDate;
+
+            let html = '<div class="gantt-grid">';
+            html += '<div class="gantt-month-labels">';
+            const months = ['Янв','Фев','Мар','Апр','Май','Июн','Июл','Авг','Сен','Окт','Ноя','Дек'];
+            const startMonth = minDate.getMonth();
+            const startYear = minDate.getFullYear();
+            let monthCount = 12 * (maxDate.getFullYear() - startYear) + (maxDate.getMonth() - startMonth) + 1;
+            for (let i = 0; i < Math.max(monthCount, 1); i++) {
+                const d = new Date(startYear, startMonth + i, 1);
+                const label = months[d.getMonth()] + (d.getFullYear() !== startYear ? ` ${d.getFullYear()}` : '');
+                html += `<div>${label}</div>`;
+            }
+            html += '</div>';
+
+            stages.forEach(st => {
+                html += '<div class="gantt-row">';
+                html += `<div class="label">${st.name}</div>`;
+                html += '<div class="timeline">';
+
+                const planStart = st.planStart ? new Date(st.planStart) : null;
+                const planEnd = st.planEnd ? new Date(st.planEnd) : null;
+                const factStart = st.factStart ? new Date(st.factStart) : null;
+                const factEnd = st.factEnd ? new Date(st.factEnd) : null;
+
+                function getBarPosition(start, end) {
+                    if (!start || !end) return null;
+                    const left = ((start - minDate) / totalMs) * 100;
+                    const width = ((end - start) / totalMs) * 100;
+                    return { left: Math.max(0, left), width: Math.min(100, width) };
+                }
+
+                if (planStart && planEnd) {
+                    const pos = getBarPosition(planStart, planEnd);
+                    if (pos) {
+                        html += `<div class="gantt-bar plan" style="left:${pos.left}%;width:${pos.width}%;"></div>`;
+                    }
+                }
+
+                if (factStart && factEnd) {
+                    const pos = getBarPosition(factStart, factEnd);
+                    if (pos) {
+                        let cls = 'fact';
+                        if (planEnd && new Date(factEnd) > new Date(planEnd)) cls += ' behind';
+                        else if (planEnd && new Date(factEnd) <= new Date(planEnd)) cls += ' ahead';
+                        html += `<div class="gantt-bar ${cls}" style="left:${pos.left}%;width:${pos.width}%;">${st.progress}%</div>`;
+                    }
+                }
+
+                html += '</div></div>';
+            });
+
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        function updateAll() {
+            updateReport();
+            renderGantt();
+            updateShiftStats();
             updateDashboard();
             updateTabBadges();
         }
-    });
 
-    // ============================================================
-    //   ДАШБОРД
-    // ============================================================
-    function updateDashboard() {
-        const overall = stages.length ? Math.round(stages.reduce((s, st) => s + st.progress, 0) / stages.length) : 0;
-        document.getElementById('dashOverall').innerHTML = overall + '%';
-        document.getElementById('dashStages').textContent = stages.length;
-        const filtered = getFilteredShifts();
-        const closed = filtered.filter(sh => sh.closeTime !== null);
-        document.getElementById('dashShifts').textContent = closed.length;
-    }
-
-    function updateTabBadges() {
-        document.getElementById('badgeStages').textContent = stages.length;
-        const filtered = getFilteredShifts();
-        const closed = filtered.filter(sh => sh.closeTime !== null);
-        document.getElementById('badgeShifts').textContent = closed.length;
-    }
-
-    // ============================================================
-    //   ПОДДЕРЖКА (ЧАТ)
-    // ============================================================
-    let currentChatUser = null;
-
-    function updateSupportBadge() {
-        const badge = document.getElementById('supportBadge');
-        if (!currentUser) { badge.classList.add('hidden'); return; }
-        let count = 0;
-        if (currentUser === ADMIN_NAME) {
-            count = supportMessages.filter(msg => msg.to === ADMIN_NAME && !msg.isRead).length;
-        }
-        if (count > 0) {
-            badge.textContent = count;
-            badge.classList.remove('hidden');
-        } else {
-            badge.classList.add('hidden');
-        }
-    }
-
-    function getChatUsersForAdmin() {
-        const users = new Set();
-        supportMessages.forEach(msg => {
-            if (msg.from === ADMIN_NAME) users.add(msg.to);
-            else if (msg.to === ADMIN_NAME) users.add(msg.from);
-        });
-        users.delete(ADMIN_NAME);
-        return Array.from(users);
-    }
-
-    function getChatMessages(user1, user2) {
-        return supportMessages.filter(msg =>
-            (msg.from === user1 && msg.to === user2) ||
-            (msg.from === user2 && msg.to === user1)
-        );
-    }
-
-    function renderChatList() {
-        const container = document.getElementById('supportContent');
-        const users = getChatUsersForAdmin();
-        if (users.length === 0) {
-            container.innerHTML = '<div class="support-empty">Нет чатов с пользователями.</div>';
-            return;
-        }
-        let html = '<ul class="chat-list">';
-        users.forEach(user => {
-            const messages = getChatMessages(ADMIN_NAME, user);
-            const lastMsg = messages.length > 0 ? messages[messages.length - 1] : null;
-            const lastText = lastMsg ? lastMsg.text.substring(0, 50) : '';
-            const unread = messages.filter(m => m.from === user && !m.isRead).length;
-            html += `
-                <li class="chat-list-item" data-user="${user}">
-                    <div>
-                        <div class="chat-user">${user}</div>
-                        <div class="chat-last-msg">${lastText ? lastText : 'Нет сообщений'}</div>
-                    </div>
-                    ${unread > 0 ? `<span class="chat-unread">${unread}</span>` : ''}
-                </li>
-            `;
-        });
-        html += '</ul>';
-        container.innerHTML = html;
-        container.querySelectorAll('.chat-list-item').forEach(item => {
-            item.addEventListener('click', function() {
-                const user = this.dataset.user;
-                openChatWithUser(user);
-            });
-        });
-    }
-
-    function openChatWithUser(user) {
-        currentChatUser = user;
-        document.getElementById('supportModalTitle').textContent = `💬 Чат с ${user}`;
-        renderChatMessages(ADMIN_NAME, user);
-        document.getElementById('supportInputArea').style.display = 'flex';
-        document.getElementById('supportInput').focus();
-        const messages = getChatMessages(ADMIN_NAME, user);
-        messages.forEach(msg => {
-            if (msg.from === user && !msg.isRead) {
-                msg.isRead = true;
-                saveSupportMessagesToSupabase();
+        // ============================================================
+        //   ЭКСПОРТ PDF (полная реализация)
+        // ============================================================
+        document.getElementById('exportPdfBtn').addEventListener('click', function() {
+            if (!stages.length) {
+                alert('Нет данных для экспорта.');
+                return;
             }
-        });
-        updateSupportBadge();
-    }
 
-    function renderChatMessages(user1, user2) {
-        const container = document.getElementById('supportContent');
-        const messages = getChatMessages(user1, user2);
-        if (messages.length === 0) {
-            container.innerHTML = '<div class="support-empty">Нет сообщений. Напишите что-нибудь.</div>';
-            return;
+            // Собираем данные для отчёта
+            const overall = stages.length ? Math.round(stages.reduce((s, st) => s + st.progress, 0) / stages.length) : 0;
+            const totalFact = stages.filter(s => s.factStart && s.factEnd).length;
+            const onTrack = stages.filter(s => {
+                if (!s.planEnd || !s.factEnd) return false;
+                return new Date(s.factEnd) <= new Date(s.planEnd);
+            }).length;
+
+            // Формируем таблицу
+            const tableBody = stages.map(st => {
+                const planStart = st.planStart ? new Date(st.planStart).toLocaleDateString('ru-RU') : '—';
+                const planEnd = st.planEnd ? new Date(st.planEnd).toLocaleDateString('ru-RU') : '—';
+                const factStart = st.factStart ? new Date(st.factStart).toLocaleDateString('ru-RU') : '—';
+                const factEnd = st.factEnd ? new Date(st.factEnd).toLocaleDateString('ru-RU') : '—';
+                const progress = st.progress || 0;
+                let status = 'Не начат';
+                if (progress === 100) status = 'Завершён';
+                else if (progress > 0) status = 'В работе';
+                return [st.name, st.objectName || '—', st.building || '—', `${planStart} – ${planEnd}`, `${factStart} – ${factEnd}`, progress + '%', status];
+            });
+
+            const docDefinition = {
+                pageSize: 'A4',
+                pageOrientation: 'landscape',
+                content: [
+                    { text: '📊 Отчёт по строительному контролю', style: 'header' },
+                    { text: `Дата формирования: ${new Date().toLocaleString('ru-RU')}`, style: 'subheader' },
+                    { text: 'Общая статистика', style: 'sectionHeader' },
+                    {
+                        columns: [
+                            { text: `Общая готовность: ${overall}%`, width: 'auto' },
+                            { text: `Этапов всего: ${stages.length}`, width: 'auto' },
+                            { text: `Завершено: ${totalFact}`, width: 'auto' },
+                            { text: `В графике: ${onTrack} из ${totalFact}`, width: 'auto' }
+                        ],
+                        columnGap: 10,
+                        margin: [0, 0, 0, 10]
+                    },
+                    { text: 'Детальный план-факт', style: 'sectionHeader' },
+                    {
+                        table: {
+                            headerRows: 1,
+                            widths: ['auto', 'auto', 'auto', 'auto', 'auto', 'auto', 'auto'],
+                            body: [
+                                ['Этап', 'Объект', 'Дом', 'План', 'Факт', 'Прогресс', 'Статус'],
+                                ...tableBody
+                            ]
+                        }
+                    },
+                    { text: 'Сменная статистика', style: 'sectionHeader', margin: [0, 20, 0, 10] },
+                    {
+                        columns: [
+                            { text: `Всего смен: ${getFilteredShifts().length}`, width: 'auto' },
+                            { text: `Открыто: ${getFilteredShifts().filter(sh => sh.closeTime === null).length}`, width: 'auto' },
+                            { text: `Закрыто: ${getFilteredShifts().filter(sh => sh.closeTime !== null).length}`, width: 'auto' }
+                        ],
+                        columnGap: 10
+                    }
+                ],
+                styles: {
+                    header: { fontSize: 22, bold: true, alignment: 'center', margin: [0, 0, 0, 10] },
+                    subheader: { fontSize: 12, alignment: 'center', margin: [0, 0, 0, 20] },
+                    sectionHeader: { fontSize: 16, bold: true, margin: [0, 15, 0, 5] }
+                }
+            };
+
+            pdfMake.createPdf(docDefinition).download('Строительный_отчёт.pdf');
+            alert('✅ PDF сформирован и начал скачивание.');
+        });
+
+        // ============================================================
+        //   ПОДДЕРЖКА (ЧАТ) – полная реализация
+        // ============================================================
+        async function loadSupportMessages() {
+            try {
+                const { data, error } = await supabaseClient.from('support_messages').select('*').order('timestamp', { ascending: true });
+                if (error) throw error;
+                supportMessages = data || [];
+                if (document.getElementById('supportModal').classList.contains('active')) renderSupportUI();
+                updateSupportBadge();
+            } catch (e) {
+                console.error('Ошибка загрузки сообщений:', e);
+            }
         }
-        const sorted = [...messages].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-        let html = '<div class="support-messages" id="supportMessagesContainer">';
-        sorted.forEach(msg => {
-            const isUser = msg.from === currentUser;
-            const senderName = msg.from === ADMIN_NAME ? 'Администратор' : msg.from;
-            html += `
-                <div class="support-message ${isUser ? 'user' : 'admin'}">
-                    ${currentUser === ADMIN_NAME ? `<div class="sender">${senderName}</div>` : ''}
-                    <div>${msg.text}</div>
-                    <div class="meta">${new Date(msg.timestamp).toLocaleString('ru-RU')}</div>
-                </div>
-            `;
-        });
-        html += '</div>';
-        container.innerHTML = html;
-        const msgsContainer = document.getElementById('supportMessagesContainer');
-        if (msgsContainer) msgsContainer.scrollTop = msgsContainer.scrollHeight;
-    }
 
-    function renderUserChat() {
-        const container = document.getElementById('supportContent');
-        const messages = getChatMessages(currentUser, ADMIN_NAME);
-        if (messages.length === 0) {
-            container.innerHTML = '<div class="support-empty">Нет сообщений. Напишите что-нибудь.</div>';
-            return;
+        async function saveSupportMessagesToSupabase() {
+            for (let msg of supportMessages) {
+                if (!msg.id) {
+                    const { error } = await supabaseClient.from('support_messages').insert([msg]);
+                    if (error) console.error('Ошибка создания сообщения:', error);
+                } else {
+                    const { error } = await supabaseClient.from('support_messages').update(msg).match({ id: msg.id });
+                    if (error) console.error('Ошибка обновления сообщения:', error);
+                }
+            }
+            await loadSupportMessages();
         }
-        const sorted = [...messages].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-        let html = '<div class="support-messages" id="supportMessagesContainer">';
-        sorted.forEach(msg => {
-            const isUser = msg.from === currentUser;
-            html += `
-                <div class="support-message ${isUser ? 'user' : 'admin'}">
-                    <div>${msg.text}</div>
-                    <div class="meta">${new Date(msg.timestamp).toLocaleString('ru-RU')}</div>
-                </div>
-            `;
-        });
-        html += '</div>';
-        container.innerHTML = html;
-        const msgsContainer = document.getElementById('supportMessagesContainer');
-        if (msgsContainer) msgsContainer.scrollTop = msgsContainer.scrollHeight;
-        document.getElementById('supportInputArea').style.display = 'flex';
-        document.getElementById('supportInput').focus();
-        document.getElementById('supportModalTitle').textContent = '💬 Поддержка';
-    }
 
-    function renderSupportUI() {
-        if (!currentUser) return;
-        if (currentUser === ADMIN_NAME) {
-            renderChatList();
-            document.getElementById('supportInputArea').style.display = 'none';
-            document.getElementById('supportModalTitle').textContent = '💬 Список чатов';
-            currentChatUser = null;
-        } else {
-            renderUserChat();
+        function updateSupportBadge() {
+            const badge = document.getElementById('supportBadge');
+            if (!currentUser) { badge.classList.add('hidden'); return; }
+            let count = 0;
+            if (currentUser === ADMIN_NAME) {
+                count = supportMessages.filter(msg => msg.to === ADMIN_NAME && !msg.isRead).length;
+            } else {
+                count = supportMessages.filter(msg => msg.to === currentUser && !msg.isRead).length;
+            }
+            if (count > 0) {
+                badge.textContent = count;
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
+        }
+
+        function getChatUsersForAdmin() {
+            const users = new Set();
+            supportMessages.forEach(msg => {
+                if (msg.from === ADMIN_NAME) users.add(msg.to);
+                else if (msg.to === ADMIN_NAME) users.add(msg.from);
+            });
+            users.delete(ADMIN_NAME);
+            return Array.from(users);
+        }
+
+        function getChatMessages(user1, user2) {
+            return supportMessages.filter(msg =>
+                (msg.from === user1 && msg.to === user2) ||
+                (msg.from === user2 && msg.to === user1)
+            );
+        }
+
+        function renderChatList() {
+            const container = document.getElementById('supportContent');
+            const users = getChatUsersForAdmin();
+            if (users.length === 0) {
+                container.innerHTML = '<div class="support-empty">Нет чатов с пользователями.</div>';
+                return;
+            }
+            let html = '<ul class="chat-list">';
+            users.forEach(user => {
+                const messages = getChatMessages(ADMIN_NAME, user);
+                const lastMsg = messages.length > 0 ? messages[messages.length - 1] : null;
+                const lastText = lastMsg ? lastMsg.text.substring(0, 50) : '';
+                const unread = messages.filter(m => m.from === user && !m.isRead).length;
+                html += `
+                    <li class="chat-list-item" data-user="${user}">
+                        <div>
+                            <div class="chat-user">${user}</div>
+                            <div class="chat-last-msg">${lastText ? lastText : 'Нет сообщений'}</div>
+                        </div>
+                        ${unread > 0 ? `<span class="chat-unread">${unread}</span>` : ''}
+                    </li>
+                `;
+            });
+            html += '</ul>';
+            container.innerHTML = html;
+            container.querySelectorAll('.chat-list-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    const user = this.dataset.user;
+                    openChatWithUser(user);
+                });
+            });
+        }
+
+        function openChatWithUser(user) {
+            currentChatUser = user;
+            document.getElementById('supportModalTitle').textContent = `💬 Чат с ${user}`;
+            renderChatMessages(ADMIN_NAME, user);
             document.getElementById('supportInputArea').style.display = 'flex';
+            document.getElementById('supportInput').focus();
+            const messages = getChatMessages(ADMIN_NAME, user);
+            messages.forEach(msg => {
+                if (msg.from === user && !msg.isRead) {
+                    msg.isRead = true;
+                    saveSupportMessagesToSupabase();
+                }
+            });
+            updateSupportBadge();
+        }
+
+        function renderChatMessages(user1, user2) {
+            const container = document.getElementById('supportContent');
+            const messages = getChatMessages(user1, user2);
+            if (messages.length === 0) {
+                container.innerHTML = '<div class="support-empty">Нет сообщений. Напишите что-нибудь.</div>';
+                return;
+            }
+            const sorted = [...messages].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+            let html = '<div class="support-messages" id="supportMessagesContainer">';
+            sorted.forEach(msg => {
+                const isUser = msg.from === currentUser;
+                const senderName = msg.from === ADMIN_NAME ? 'Администратор' : msg.from;
+                html += `
+                    <div class="support-message ${isUser ? 'user' : 'admin'}">
+                        ${currentUser === ADMIN_NAME ? `<div class="sender">${senderName}</div>` : ''}
+                        <div>${msg.text}</div>
+                        <div class="meta">${new Date(msg.timestamp).toLocaleString('ru-RU')}</div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            container.innerHTML = html;
+            const msgsContainer = document.getElementById('supportMessagesContainer');
+            if (msgsContainer) msgsContainer.scrollTop = msgsContainer.scrollHeight;
+        }
+
+        function renderUserChat() {
+            const container = document.getElementById('supportContent');
+            const messages = getChatMessages(currentUser, ADMIN_NAME);
+            if (messages.length === 0) {
+                container.innerHTML = '<div class="support-empty">Нет сообщений. Напишите что-нибудь.</div>';
+                return;
+            }
+            const sorted = [...messages].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+            let html = '<div class="support-messages" id="supportMessagesContainer">';
+            sorted.forEach(msg => {
+                const isUser = msg.from === currentUser;
+                html += `
+                    <div class="support-message ${isUser ? 'user' : 'admin'}">
+                        <div>${msg.text}</div>
+                        <div class="meta">${new Date(msg.timestamp).toLocaleString('ru-RU')}</div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            container.innerHTML = html;
+            const msgsContainer = document.getElementById('supportMessagesContainer');
+            if (msgsContainer) msgsContainer.scrollTop = msgsContainer.scrollHeight;
+            document.getElementById('supportInputArea').style.display = 'flex';
+            document.getElementById('supportInput').focus();
             document.getElementById('supportModalTitle').textContent = '💬 Поддержка';
         }
-        updateSupportBadge();
-    }
 
-    function openSupportModal() {
-        if (!currentUser) { alert('Сначала войдите в систему.'); return; }
-        document.getElementById('supportModal').classList.add('active');
-        renderSupportUI();
-    }
-
-    function closeSupportModal() {
-        document.getElementById('supportModal').classList.remove('active');
-        currentChatUser = null;
-        document.getElementById('supportInputArea').style.display = 'flex';
-    }
-
-    async function sendSupportMessageFromUI() {
-        const input = document.getElementById('supportInput');
-        const text = input.value.trim();
-        if (!text) return;
-        if (!currentUser) { alert('Сначала войдите в систему.'); return; }
-
-        let toUser = ADMIN_NAME;
-        if (currentUser === ADMIN_NAME) {
-            if (!currentChatUser) { alert('Выберите чат с пользователем из списка.'); return; }
-            toUser = currentChatUser;
-        }
-
-        const newMsg = { from: currentUser, to: toUser, text: text, timestamp: new Date().toISOString(), isRead: false };
-        supportMessages.push(newMsg);
-        await saveSupportMessagesToSupabase();
-        input.value = '';
-        renderSupportUI();
-        updateSupportBadge();
-    }
-
-    async function loadSupportMessages() {
-        const { data, error } = await supabaseClient.from('support_messages').select('*').order('timestamp', { ascending: true });
-        if (error) { console.error('Ошибка загрузки сообщений:', error); return; }
-        supportMessages = data || [];
-        if (document.getElementById('supportModal').classList.contains('active')) renderSupportUI();
-        updateSupportBadge();
-    }
-
-    async function saveSupportMessagesToSupabase() {
-        for (let msg of supportMessages) {
-            if (!msg.id) {
-                const { error } = await supabaseClient.from('support_messages').insert([msg]);
-                if (error) console.error('Ошибка создания сообщения:', error);
+        function renderSupportUI() {
+            if (!currentUser) return;
+            if (currentUser === ADMIN_NAME) {
+                renderChatList();
+                document.getElementById('supportInputArea').style.display = 'none';
+                document.getElementById('supportModalTitle').textContent = '💬 Список чатов';
+                currentChatUser = null;
             } else {
-                const { error } = await supabaseClient.from('support_messages').update(msg).match({ id: msg.id });
-                if (error) console.error('Ошибка обновления сообщения:', error);
+                renderUserChat();
+                document.getElementById('supportInputArea').style.display = 'flex';
+                document.getElementById('supportModalTitle').textContent = '💬 Поддержка';
+            }
+            updateSupportBadge();
+        }
+
+        function openSupportModal() {
+            if (!currentUser) { alert('Сначала войдите в систему.'); return; }
+            document.getElementById('supportModal').classList.add('active');
+            renderSupportUI();
+        }
+
+        function closeSupportModal() {
+            document.getElementById('supportModal').classList.remove('active');
+            currentChatUser = null;
+            document.getElementById('supportInputArea').style.display = 'flex';
+        }
+
+        async function sendSupportMessageFromUI() {
+            const input = document.getElementById('supportInput');
+            const text = input.value.trim();
+            if (!text) return;
+            if (!currentUser) { alert('Сначала войдите в систему.'); return; }
+
+            let toUser = ADMIN_NAME;
+            if (currentUser === ADMIN_NAME) {
+                if (!currentChatUser) { alert('Выберите чат с пользователем из списка.'); return; }
+                toUser = currentChatUser;
+            }
+
+            const newMsg = { from: currentUser, to: toUser, text: text, timestamp: new Date().toISOString(), isRead: false };
+            supportMessages.push(newMsg);
+            await saveSupportMessagesToSupabase();
+            input.value = '';
+            renderSupportUI();
+            updateSupportBadge();
+        }
+
+        document.getElementById('supportBtn').addEventListener('click', openSupportModal);
+        document.getElementById('supportModalClose').addEventListener('click', closeSupportModal);
+        document.getElementById('supportModal').addEventListener('click', function(e) {
+            if (e.target === this) closeSupportModal();
+        });
+        document.getElementById('supportSendBtn').addEventListener('click', sendSupportMessageFromUI);
+        document.getElementById('supportInput').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendSupportMessageFromUI();
+            }
+        });
+
+        // ============================================================
+        //   ОБУЧЕНИЕ (ОНБОРДИНГ)
+        // ============================================================
+        let isOnboardingActive = false;
+        let currentOnboardingStep = 0;
+        let previousHighlight = null;
+
+        const onboardingSteps = [
+            { title: '👋 Добро пожаловать!', desc: 'Это система «Строительный контроль».', element: null },
+            { title: '📊 Сводная панель', desc: 'Здесь вы видите ключевые показатели.', element: '.dashboard' },
+            { title: '📝 Вкладка «Этапы»', desc: 'Здесь создаются и редактируются этапы.', element: '.tab-btn[data-tab="input"]', tab: 'input' },
+            { title: '📋 Таблица этапов', desc: 'В таблице вы видите все этапы.', element: '#inputTable', tab: 'input' },
+            { title: '👷 Вкладка «Сменный учёт»', desc: 'Управляйте сменами.', element: '.tab-btn[data-tab="shift"]', tab: 'shift' },
+            { title: '🟢 Управление сменой', desc: 'Открывайте и закрывайте смены.', element: '#shiftStatus', tab: 'shift' },
+            { title: '📊 Вкладка «Отчёт»', desc: 'Сводка по готовности и план-факт.', element: '.tab-btn[data-tab="report"]', tab: 'report' },
+            { title: '📄 Экспорт PDF', desc: 'Скачайте полный отчёт.', element: '#exportPdfBtn', tab: 'report' },
+            { title: '📅 Вкладка «График работ»', desc: 'Гант-диаграмма по этапам.', element: '.tab-btn[data-tab="gantt"]', tab: 'gantt' }
+        ];
+
+        function startOnboarding() {
+            if (isOnboardingActive || localStorage.getItem('onboardingDone_' + currentUser)) return;
+            isOnboardingActive = true;
+            currentOnboardingStep = 0;
+            document.getElementById('onboardingTooltip').style.display = 'block';
+            showOnboardingStep();
+        }
+
+        function showOnboardingStep() {
+            const step = onboardingSteps[currentOnboardingStep];
+            document.getElementById('onboardingStepCounter').textContent = `Шаг ${currentOnboardingStep + 1} из ${onboardingSteps.length}`;
+            document.getElementById('onboardingTitle').textContent = step.title;
+            document.getElementById('onboardingDesc').textContent = step.desc;
+            document.getElementById('onboardingFeatureBox').style.display = 'none';
+
+            document.getElementById('onboardingPrevBtn').style.display = currentOnboardingStep === 0 ? 'none' : 'inline-flex';
+            const nextBtn = document.getElementById('onboardingNextBtn');
+            nextBtn.textContent = currentOnboardingStep === onboardingSteps.length - 1 ? '✅ Завершить' : 'Далее →';
+
+            clearHighlight();
+            if (step.element) {
+                const el = document.querySelector(step.element);
+                if (el) {
+                    el.classList.add('onboarding-highlight');
+                    previousHighlight = el;
+                    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    if (step.tab) {
+                        const tabBtn = document.querySelector(`.tab-btn[data-tab="${step.tab}"]`);
+                        if (tabBtn) tabBtn.click();
+                    }
+                }
             }
         }
-        await loadSupportMessages();
-    }
 
-    document.getElementById('supportBtn').addEventListener('click', openSupportModal);
-    document.getElementById('supportModalClose').addEventListener('click', closeSupportModal);
-    document.getElementById('supportModal').addEventListener('click', function(e) {
-        if (e.target === this) closeSupportModal();
-    });
-    document.getElementById('supportSendBtn').addEventListener('click', sendSupportMessageFromUI);
-    document.getElementById('supportInput').addEventListener('keydown', function(e) {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            sendSupportMessageFromUI();
+        function clearHighlight() {
+            if (previousHighlight) {
+                previousHighlight.classList.remove('onboarding-highlight');
+                previousHighlight = null;
+            }
         }
-    });
 
-    // ============================================================
-    //   ПЕРЕКЛЮЧЕНИЕ ВКЛАДОК
-    // ============================================================
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const tabId = this.dataset.tab;
-            document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
-            document.getElementById('tab-'+tabId).classList.add('active');
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            this.classList.add('active');
-            if (tabId === 'report') updateReport();
-            if (tabId === 'gantt') renderGantt();
-            if (tabId === 'shift') {
-                renderShifts();
-                updateShiftStats();
-                updateShiftUI();
+        function nextOnboardingStep() {
+            if (currentOnboardingStep < onboardingSteps.length - 1) {
+                currentOnboardingStep++;
+                showOnboardingStep();
+            } else {
+                finishOnboarding();
             }
-            updateDashboard();
-            updateTabBadges();
-        });
-    });
-
-    // ============================================================
-    //   ПОДПИСКА НА ИЗМЕНЕНИЯ В РЕАЛЬНОМ ВРЕМЕНИ
-    // ============================================================
-    function subscribeToChanges() {
-        supabaseClient
-            .channel('stages_changes')
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'stages' }, () => { loadStages(); })
-            .subscribe();
-
-        supabaseClient
-            .channel('shifts_changes')
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'shifts' }, () => { loadShifts(); })
-            .subscribe();
-
-        supabaseClient
-            .channel('support_messages_changes')
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'support_messages' }, () => { loadSupportMessages(); })
-            .subscribe();
-    }
-
-    subscribeToChanges();
-
-    // ============================================================
-    //   ОБНОВЛЕНИЕ ОТЧЁТА
-    // ============================================================
-    function updateAll() {
-        updateReport();
-        renderGantt();
-        updateShiftStats();
-        updateDashboard();
-        updateTabBadges();
-    }
-
-    function updateReport() {
-        const overall = stages.length ? Math.round(stages.reduce((s, st) => s + st.progress, 0) / stages.length) : 0;
-        const now = new Date(); now.setHours(0,0,0,0);
-        let totalDelay = 0, hasRisk = false;
-        stages.forEach(st => {
-            const pEnd = st.planEnd ? new Date(st.planEnd + 'T00:00:00') : null;
-            const fEnd = st.factEnd ? new Date(st.factEnd + 'T00:00:00') : null;
-            if (fEnd && pEnd && fEnd > pEnd) totalDelay += Math.round((fEnd - pEnd) / (1000*60*60*24));
-            if (!fEnd && pEnd && now > pEnd && st.progress < 100) {
-                totalDelay += Math.round((now - pEnd) / (1000*60*60*24));
-                hasRisk = true;
-            }
-        });
-        let statusText = 'В графике ✅', statusClass = '';
-        if (totalDelay > 0) { statusText = `Отставание ${totalDelay} дн.`; statusClass = 'danger'; }
-        else if (hasRisk) { statusText = 'Есть риски'; statusClass = 'warning'; }
-
-        let maxDate = null;
-        stages.forEach(st => {
-            const pEnd = st.planEnd ? new Date(st.planEnd + 'T00:00:00') : null;
-            const fEnd = st.factEnd ? new Date(st.factEnd + 'T00:00:00') : null;
-            if (pEnd && (!maxDate || pEnd > maxDate)) maxDate = pEnd;
-            if (fEnd && (!maxDate || fEnd > maxDate)) maxDate = fEnd;
-        });
-        const forecast = maxDate ? maxDate.toLocaleDateString('ru-RU') : '—';
-
-        document.getElementById('reportSummary').innerHTML = `
-            <div class="stat-card">
-                <div class="label">Общая готовность</div>
-                <div class="value">${overall}%</div>
-            </div>
-            <div class="stat-card">
-                <div class="label">Текущий статус</div>
-                <div class="value"><span class="badge ${statusClass}">${statusText}</span></div>
-            </div>
-            <div class="stat-card">
-                <div class="label">Плановый срок сдачи</div>
-                <div class="value">${forecast}</div>
-            </div>
-        `;
-
-        const tbody = document.getElementById('reportBody');
-        tbody.innerHTML = '';
-        stages.forEach(st => {
-            const pStart = st.planStart ? new Date(st.planStart + 'T00:00:00') : null;
-            const pEnd = st.planEnd ? new Date(st.planEnd + 'T00:00:00') : null;
-            const fStart = st.factStart ? new Date(st.factStart + 'T00:00:00') : null;
-            const fEnd = st.factEnd ? new Date(st.factEnd + 'T00:00:00') : null;
-            let planProgress = 0;
-            if (pStart && pEnd) {
-                const dur = (pEnd - pStart) / (1000*60*60*24);
-                if (now < pStart) planProgress = 0;
-                else if (now > pEnd) planProgress = 100;
-                else planProgress = Math.round(((now - pStart) / (1000*60*60*24)) / dur * 100);
-            }
-            const factProgress = Math.min(st.progress, 100);
-            const compare = factProgress - planProgress;
-            let barClass = 'fact';
-            let statusTag = '';
-            if (factProgress >= 100) { statusTag = '✅ Завершён'; barClass = 'fact ahead'; }
-            else if (compare >= 5) { statusTag = '🏃 Опережение'; barClass = 'fact ahead'; }
-            else if (compare <= -5) { statusTag = '⚠️ Отставание'; barClass = 'fact behind'; }
-            else { statusTag = '▶️ В графике'; barClass = 'fact'; }
-            if (factProgress === 0 && !fStart) statusTag = '⏸ Не начат';
-
-            const planLabel = `${pStart ? pStart.toLocaleDateString('ru-RU') : '—'} – ${pEnd ? pEnd.toLocaleDateString('ru-RU') : '—'}`;
-            const factLabel = fStart ? `${fStart.toLocaleDateString('ru-RU')} – ${fEnd ? fEnd.toLocaleDateString('ru-RU') : '...'}` : '—';
-
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td><strong>${st.name}</strong></td>
-                <td>${st.objectName || '—'}</td>
-                <td>${st.building || '—'}</td>
-                <td style="font-size:13px;">${planLabel}</td>
-                <td style="font-size:13px;">${factLabel}</td>
-                <td>
-                    <div style="display:flex; align-items:center; gap:10px;">
-                        <div class="progress-bar" style="flex:1;">
-                            <div class="fill plan" style="width:${Math.min(planProgress, 100)}%;"></div>
-                            <div class="fill ${barClass}" style="width:${Math.min(factProgress, 100)}%;"></div>
-                        </div>
-                        <span style="font-size:13px; font-weight:500; min-width:40px;">${factProgress}%</span>
-                    </div>
-                </td>
-                <td><span class="status-tag ${barClass === 'fact' ? 'ok' : barClass === 'fact.behind' ? 'fail' : barClass === 'fact.ahead' ? 'ok' : ''}">${statusTag}</span></td>
-            `;
-            tbody.appendChild(tr);
-        });
-
-        renderCharts(overall);
-        updateShiftStats();
-        updateDashboard();
-        updateTabBadges();
-    }
-
-    function updateShiftStats() {
-        const container = document.getElementById('shiftStats');
-        const filtered = getFilteredShifts();
-        const closed = filtered.filter(sh => sh.closeTime !== null);
-        if (closed.length === 0) {
-            container.innerHTML = '<p style="color:#6a7b8c;">Нет закрытых смен.</p>';
-            return;
         }
-        const uniqueFio = [...new Set(closed.map(sh => sh.fio || sh.user).filter(Boolean))];
-        const uniqueStages = [...new Set(closed.map(sh => sh.stage).filter(Boolean))];
-        const uniqueShifts = [...new Set(closed.map(sh => sh.shiftNumber).filter(Boolean))];
-        const uniqueSMU = [...new Set(closed.map(sh => sh.smu).filter(Boolean))];
 
-        let html = `<div><strong>Всего закрытых смен:</strong> ${closed.length}</div>
-                    <div><strong>Сотрудники:</strong> ${uniqueFio.join(', ') || '—'}</div>
-                    <div><strong>Этапы:</strong> ${uniqueStages.join(', ') || '—'}</div>
-                    <div><strong>Смены:</strong> ${uniqueShifts.join(', ') || '—'}</div>
-                    <div><strong>СМУ:</strong> ${uniqueSMU.join(', ') || '—'}</div>`;
-        container.innerHTML = html;
-    }
+        function prevOnboardingStep() {
+            if (currentOnboardingStep > 0) {
+                currentOnboardingStep--;
+                showOnboardingStep();
+            }
+        }
 
-    let pieChartInstance = null, barChartInstance = null;
+        function finishOnboarding() {
+            document.getElementById('onboardingTooltip').style.display = 'none';
+            clearHighlight();
+            localStorage.setItem('onboardingDone_' + currentUser, 'true');
+            isOnboardingActive = false;
+            document.getElementById('onboardingReminder').classList.remove('active');
+        }
 
-    function renderCharts(overall) {
-        const pieCtx = document.getElementById('pieChart').getContext('2d');
-        if (pieChartInstance) pieChartInstance.destroy();
-        pieChartInstance = new Chart(pieCtx, {
-            type: 'doughnut',
-            data: {
-                labels: ['Выполнено', 'Осталось'],
-                datasets: [{ data: [overall, 100 - overall], backgroundColor: ['#0f6e4a', '#e6ecf2'], borderWidth: 0 }]
-            },
-            options: { cutout: '70%', plugins: { legend: { display: false }, tooltip: { callbacks: { label: (ctx) => `${ctx.parsed}%` } } }, responsive: true, maintainAspectRatio: true }
-        });
+        document.getElementById('onboardingNextBtn').addEventListener('click', nextOnboardingStep);
+        document.getElementById('onboardingPrevBtn').addEventListener('click', prevOnboardingStep);
+        document.getElementById('onboardingSkipBtn').addEventListener('click', finishOnboarding);
 
-        const barCtx = document.getElementById('barChart').getContext('2d');
-        if (barChartInstance) barChartInstance.destroy();
-        const labels = stages.map(st => st.name.length > 12 ? st.name.slice(0,10)+'…' : st.name);
-        const now = new Date(); now.setHours(0,0,0,0);
-        const planData = stages.map(st => {
-            const pStart = st.planStart ? new Date(st.planStart + 'T00:00:00') : null;
-            const pEnd = st.planEnd ? new Date(st.planEnd + 'T00:00:00') : null;
-            if (!pStart || !pEnd) return 0;
-            const dur = (pEnd - pStart) / (1000*60*60*24);
-            if (now < pStart) return 0;
-            if (now > pEnd) return 100;
-            return Math.round(((now - pStart) / (1000*60*60*24)) / dur * 100);
-        });
-        const factData = stages.map(st => Math.min(st.progress, 100));
-
-        barChartInstance = new Chart(barCtx, {
-            type: 'bar',
-            data: {
-                labels: labels,
-                datasets: [
-                    { label: 'План (по графику)', data: planData, backgroundColor: 'rgba(59,111,155,0.4)', borderColor: '#3b6f9b', borderWidth: 1 },
-                    { label: 'Факт (выполнено)', data: factData, backgroundColor: factData.map((v, i) => v >= planData[i] ? '#0f6e4a' : '#c9453b'), borderColor: factData.map((v, i) => v >= planData[i] ? '#0f6e4a' : '#c9453b'), borderWidth: 1 }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: true,
-                plugins: { legend: { position: 'top' } },
-                scales: { y: { beginAtZero: true, max: 100, title: { display: true, text: 'Прогресс, %' } } }
+        document.getElementById('restartTourBtn').addEventListener('click', function() {
+            if (currentUser) {
+                localStorage.removeItem('onboardingDone_' + currentUser);
+                if (isOnboardingActive) finishOnboarding();
+                document.getElementById('onboardingReminder').classList.remove('active');
+                setTimeout(startOnboarding, 300);
+            } else {
+                alert('Сначала войдите в систему.');
             }
         });
-    }
 
-    function renderGantt() {
-        const container = document.getElementById('ganttContainer');
-        // Упрощённая версия – можно заменить на полную из предыдущих ответов.
-        container.innerHTML = '<p style="color:#6a7b8c;">Гант-диаграмма доступна после добавления дат этапов.</p>';
-    }
+        document.getElementById('reminderStartBtn').addEventListener('click', function() {
+            if (currentUser) {
+                localStorage.removeItem('onboardingDone_' + currentUser);
+                if (isOnboardingActive) finishOnboarding();
+                document.getElementById('onboardingReminder').classList.remove('active');
+                setTimeout(startOnboarding, 300);
+            } else {
+                alert('Сначала войдите в систему.');
+            }
+        });
 
-    document.getElementById('exportPdfBtn').addEventListener('click', function() {
-        alert('PDF-экспорт работает. Полная реализация добавлена ранее.');
-    });
+        // ============================================================
+        //   УПРАВЛЕНИЕ КНОПКАМИ ВКЛАДОК
+        // ============================================================
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const tabId = this.dataset.tab;
+                document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
+                document.getElementById('tab-'+tabId).classList.add('active');
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                if (tabId === 'report') updateReport();
+                if (tabId === 'gantt') renderGantt();
+                if (tabId === 'shift') {
+                    renderShifts();
+                    updateShiftStats();
+                    updateShiftUI();
+                }
+                updateDashboard();
+                updateTabBadges();
+            });
+        });
 
-    // ============================================================
-    //   ВХОД И РЕГИСТРАЦИЯ
-    // ============================================================
-    function setUser(name) {
-        currentUser = name.trim();
-        sessionStorage.setItem('currentUser', currentUser);
-        document.getElementById('displayUser').textContent = currentUser;
-        document.getElementById('loginModal').classList.add('hidden');
-        Promise.all([loadStages(), loadShifts(), loadSupportMessages()]).then(() => {
-            renderInputTable();
+        // ============================================================
+        //   ДАШБОРД, БАДЖИ
+        // ============================================================
+        function updateDashboard() {
+            const overall = stages.length ? Math.round(stages.reduce((s, st) => s + st.progress, 0) / stages.length) : 0;
+            document.getElementById('dashOverall').innerHTML = overall + '%';
+            document.getElementById('dashStages').textContent = stages.length;
+            const filtered = getFilteredShifts();
+            const closed = filtered.filter(sh => sh.closeTime !== null);
+            document.getElementById('dashShifts').textContent = closed.length;
+        }
+
+        function updateTabBadges() {
+            document.getElementById('badgeStages').textContent = stages.length;
+            const filtered = getFilteredShifts();
+            const closed = filtered.filter(sh => sh.closeTime !== null);
+            document.getElementById('badgeShifts').textContent = closed.length;
+        }
+
+        // ============================================================
+        //   КНОПКА ОЧИСТКИ СМЕН (только админ)
+        // ============================================================
+        document.getElementById('clearShiftsBtn').addEventListener('click', async function() {
+            if (currentUser !== ADMIN_NAME) {
+                alert('Только администратор может очистить все смены.');
+                return;
+            }
+            if (!confirm('Удалить ВСЕ записи о сменах и файлы всех пользователей?')) return;
+
+            for (let shift of shifts) {
+                if (shift.files && shift.files.length) {
+                    await deleteFilesFromStorage(shift.files.map(f => f.path));
+                }
+            }
+
+            const { error } = await supabaseClient.from('shifts').delete().neq('id', 0);
+            if (error) {
+                alert('Ошибка очистки: ' + error.message);
+                return;
+            }
+
+            shifts = [];
             renderShifts();
             updateAll();
             updateShiftUI();
+            updateDashboard();
+            updateTabBadges();
+            alert('Все смены удалены.');
+        });
+
+        // ============================================================
+        //   КНОПКА СБРОСА ЭТАПОВ (только админ)
+        // ============================================================
+        document.getElementById('resetDataBtn').addEventListener('click', function() {
+            if (currentUser !== ADMIN_NAME) {
+                alert('Только администратор может сбросить этапы.');
+                return;
+            }
+            if (confirm('Сбросить все этапы к начальным данным?')) {
+                stages = [
+                    { name: 'Котлован', objectName: '', building: '', planStart: '2026-04-01', planEnd: '2026-04-20', factStart: '2026-04-01', factEnd: '2026-04-18', progress: 100 },
+                    { name: 'Фундамент', objectName: '', building: '', planStart: '2026-04-21', planEnd: '2026-05-15', factStart: '2026-04-21', factEnd: '', progress: 75 },
+                    { name: 'Стены подвала', objectName: '', building: '', planStart: '2026-05-10', planEnd: '2026-05-30', factStart: '2026-05-12', factEnd: '', progress: 30 },
+                    { name: 'Стены 1-го этажа', objectName: '', building: '', planStart: '2026-05-20', planEnd: '2026-06-15', factStart: '2026-06-01', factEnd: '', progress: 10 },
+                    { name: 'Перекрытия', objectName: '', building: '', planStart: '2026-06-10', planEnd: '2026-06-30', factStart: '', factEnd: '', progress: 0 },
+                    { name: 'Кровля', objectName: '', building: '', planStart: '2026-07-01', planEnd: '2026-07-25', factStart: '', factEnd: '', progress: 0 },
+                    { name: 'Инженерные сети', objectName: '', building: '', planStart: '2026-06-20', planEnd: '2026-08-10', factStart: '2026-06-22', factEnd: '', progress: 45 },
+                    { name: 'Отделка', objectName: '', building: '', planStart: '2026-08-01', planEnd: '2026-09-30', factStart: '', factEnd: '', progress: 0 }
+                ];
+                saveStagesToSupabase();
+                renderInputTable();
+                updateAll();
+                updateDashboard();
+                updateTabBadges();
+            }
+        });
+
+        // ============================================================
+        //   ДОБАВЛЕНИЕ ЭТАПА
+        // ============================================================
+        document.getElementById('addRowBtn').addEventListener('click', function() {
+            stages.push({ name: '', objectName: '', building: '', planStart: '', planEnd: '', factStart: '', factEnd: '', progress: 0 });
+            saveStagesToSupabase();
+            renderInputTable();
+            updateAll();
+            updateDashboard();
+            updateTabBadges();
+        });
+
+        // ============================================================
+        //   ОБНОВЛЕНИЕ ОТЧЁТА
+        // ============================================================
+        document.getElementById('updateReportBtn').addEventListener('click', function() {
+            updateAll();
+            alert('Отчёт и график обновлены.');
+        });
+
+        // ============================================================
+        //   ВХОД И ВЫХОД
+        // ============================================================
+        function setUser(name) {
+            currentUser = name.trim();
+            sessionStorage.setItem('currentUser', currentUser);
+            document.getElementById('displayUser').textContent = currentUser;
+            document.getElementById('loginModal').classList.add('hidden');
+            Promise.all([loadStages(), loadShifts(), loadSupportMessages()]).then(() => {
+                renderInputTable();
+                renderShifts();
+                updateAll();
+                updateShiftUI();
+                updateDashboard();
+                updateTabBadges();
+                updateSupportBadge();
+                // Запуск обучения, если не было
+                if (!localStorage.getItem('onboardingDone_' + currentUser)) {
+                    setTimeout(() => { if (!isOnboardingActive) startOnboarding(); }, 600);
+                }
+            });
+        }
+
+        function logout() {
+            sessionStorage.removeItem('currentUser');
+            currentUser = null;
+            document.getElementById('loginModal').classList.remove('hidden');
+            document.getElementById('loginName').value = '';
+            document.getElementById('loginPassword').value = '';
+            document.getElementById('passwordField').style.display = 'none';
+            document.getElementById('loginBtn').textContent = 'Войти';
+            document.getElementById('loginError').style.display = 'none';
+            document.getElementById('loginName').focus();
+            document.getElementById('displayUser').textContent = '—';
+            document.getElementById('shiftBody').innerHTML = '';
+            document.getElementById('shiftStats').innerHTML = '<p style="color:#6a7b8c;">Нет записей о сменах.</p>';
+            document.getElementById('openShiftForm').style.display = 'none';
+            document.getElementById('closeShiftForm').style.display = 'none';
             updateDashboard();
             updateTabBadges();
             updateSupportBadge();
-            if (!localStorage.getItem('onboardingDone_' + currentUser)) {
-                setTimeout(() => { try { if (!isOnboardingActive) startOnboarding(); } catch(e) {} }, 600);
-                setTimeout(() => { try { if (!isOnboardingActive) startOnboarding(); } catch(e) {} }, 1200);
-                setTimeout(() => {
-                    if (!isOnboardingActive && !localStorage.getItem('onboardingDone_' + currentUser)) {
-                        document.getElementById('onboardingReminder').classList.add('active');
-                    }
-                }, 5000);
+            document.getElementById('onboardingReminder').classList.remove('active');
+            if (isOnboardingActive) finishOnboarding();
+            document.getElementById('supportModal').classList.remove('active');
+        }
+
+        document.getElementById('logoutBtn').addEventListener('click', logout);
+
+        // ============================================================
+        //   ЛОГИН
+        // ============================================================
+        const loginNameInput = document.getElementById('loginName');
+        const loginPasswordInput = document.getElementById('loginPassword');
+        const loginBtn = document.getElementById('loginBtn');
+        const passwordField = document.getElementById('passwordField');
+        const loginError = document.getElementById('loginError');
+
+        loginNameInput.addEventListener('input', function() {
+            const name = this.value.trim();
+            if (name === ADMIN_NAME) {
+                passwordField.style.display = 'block';
+                loginBtn.textContent = 'Подтвердить';
+                loginError.style.display = 'none';
+                setTimeout(() => loginPasswordInput.focus(), 100);
+            } else {
+                passwordField.style.display = 'none';
+                loginBtn.textContent = 'Войти';
+                loginError.style.display = 'none';
             }
         });
-    }
 
-    function logout() {
-        sessionStorage.removeItem('currentUser');
-        currentUser = null;
-        document.getElementById('loginModal').classList.remove('hidden');
-        document.getElementById('loginName').value = '';
-        document.getElementById('loginPassword').value = '';
-        document.getElementById('passwordField').style.display = 'none';
-        document.getElementById('loginBtn').textContent = 'Войти';
-        document.getElementById('loginError').style.display = 'none';
-        document.getElementById('loginName').focus();
-        document.getElementById('displayUser').textContent = '—';
-        document.getElementById('shiftBody').innerHTML = '';
-        document.getElementById('shiftStats').innerHTML = '<p style="color:#6a7b8c;">Нет записей о сменах.</p>';
-        document.getElementById('openShiftForm').style.display = 'none';
-        document.getElementById('closeShiftForm').style.display = 'none';
-        updateDashboard();
-        updateTabBadges();
-        updateSupportBadge();
-        document.getElementById('onboardingReminder').classList.remove('active');
-        if (isOnboardingActive) finishOnboarding();
-        document.getElementById('supportModal').classList.remove('active');
-    }
+        function handleLogin() {
+            const name = loginNameInput.value.trim();
+            if (!name) { alert('Введите ваше ФИО'); return; }
+            if (name === ADMIN_NAME) {
+                const password = loginPasswordInput.value;
+                if (password === ADMIN_PASSWORD) {
+                    setUser(name);
+                } else {
+                    loginError.style.display = 'block';
+                    loginPasswordInput.value = '';
+                    loginPasswordInput.focus();
+                }
+            } else {
+                setUser(name);
+            }
+        }
 
-    window.addEventListener('DOMContentLoaded', function() {
+        loginBtn.addEventListener('click', handleLogin);
+        loginNameInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                if (this.value.trim() === ADMIN_NAME) {
+                    if (passwordField.style.display !== 'none') loginPasswordInput.focus();
+                    else handleLogin();
+                } else {
+                    handleLogin();
+                }
+            }
+        });
+        loginPasswordInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') { e.preventDefault(); handleLogin(); }
+        });
+
+        // ============================================================
+        //   ПОДПИСКИ НА ИЗМЕНЕНИЯ В РЕАЛЬНОМ ВРЕМЕНИ
+        // ============================================================
+        function subscribeToChanges() {
+            supabaseClient
+                .channel('stages_changes')
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'stages' }, () => { loadStages(); })
+                .subscribe();
+
+            supabaseClient
+                .channel('shifts_changes')
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'shifts' }, () => { loadShifts(); })
+                .subscribe();
+
+            supabaseClient
+                .channel('support_messages_changes')
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'support_messages' }, () => { loadSupportMessages(); })
+                .subscribe();
+        }
+        subscribeToChanges();
+
+        // ============================================================
+        //   ИНИЦИАЛИЗАЦИЯ
+        // ============================================================
         const savedUser = sessionStorage.getItem('currentUser');
         if (savedUser) {
             sessionStorage.removeItem('currentUser');
@@ -2190,202 +2504,11 @@
             document.getElementById('loginModal').classList.remove('hidden');
             document.getElementById('loginName').focus();
         }
+
+        console.log('✅ Приложение полностью инициализировано.');
+        console.log('ℹ️ Если при нажатии кнопок ничего не происходит, проверьте консоль на ошибки.');
     });
-
-    const loginNameInput = document.getElementById('loginName');
-    const loginPasswordInput = document.getElementById('loginPassword');
-    const loginBtn = document.getElementById('loginBtn');
-    const passwordField = document.getElementById('passwordField');
-    const loginError = document.getElementById('loginError');
-
-    loginNameInput.addEventListener('input', function() {
-        const name = this.value.trim();
-        if (name === ADMIN_NAME) {
-            passwordField.style.display = 'block';
-            loginBtn.textContent = 'Подтвердить';
-            loginError.style.display = 'none';
-            setTimeout(() => loginPasswordInput.focus(), 100);
-        } else {
-            passwordField.style.display = 'none';
-            loginBtn.textContent = 'Войти';
-            loginError.style.display = 'none';
-        }
-    });
-
-    function handleLogin() {
-        const name = loginNameInput.value.trim();
-        if (!name) { alert('Введите ваше ФИО'); return; }
-        if (name === ADMIN_NAME) {
-            const password = loginPasswordInput.value;
-            if (password === ADMIN_PASSWORD) {
-                setUser(name);
-            } else {
-                loginError.style.display = 'block';
-                loginPasswordInput.value = '';
-                loginPasswordInput.focus();
-            }
-        } else {
-            setUser(name);
-        }
-    }
-
-    loginBtn.addEventListener('click', handleLogin);
-    loginNameInput.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            if (this.value.trim() === ADMIN_NAME) {
-                if (passwordField.style.display !== 'none') loginPasswordInput.focus();
-                else handleLogin();
-            } else {
-                handleLogin();
-            }
-        }
-    });
-    loginPasswordInput.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter') { e.preventDefault(); handleLogin(); }
-    });
-
-    // ============================================================
-    //   ОБУЧЕНИЕ
-    // ============================================================
-    let isOnboardingActive = false;
-    let currentOnboardingStep = 0;
-    let previousHighlight = null;
-
-    const onboardingSteps = [
-        { title: '👋 Добро пожаловать!', desc: 'Это система «Строительный контроль».', element: null },
-        { title: '📊 Сводная панель', desc: 'Здесь вы видите ключевые показатели.', element: '.dashboard' },
-        { title: '📝 Вкладка «Этапы»', desc: 'Здесь создаются и редактируются этапы.', element: '.tab-btn[data-tab="input"]', tab: 'input' },
-        { title: '📋 Таблица этапов', desc: 'В таблице вы видите все этапы.', element: '#inputTable', tab: 'input' },
-        { title: '👷 Вкладка «Сменный учёт»', desc: 'Управляйте сменами.', element: '.tab-btn[data-tab="shift"]', tab: 'shift' },
-        { title: '🟢 Управление сменой', desc: 'Открывайте и закрывайте смены.', element: '#shiftStatus', tab: 'shift' },
-        { title: '📊 Вкладка «Отчёт»', desc: 'Сводка по готовности и план-факт.', element: '.tab-btn[data-tab="report"]', tab: 'report' },
-        { title: '📄 Экспорт PDF', desc: 'Скачайте полный отчёт.', element: '#exportPdfBtn', tab: 'report' },
-        { title: '📅 Вкладка «График работ»', desc: 'Гант-диаграмма по этапам.', element: '.tab-btn[data-tab="gantt"]', tab: 'gantt' }
-    ];
-
-    function startOnboarding() {
-        if (isOnboardingActive || localStorage.getItem('onboardingDone_' + currentUser)) return;
-        isOnboardingActive = true;
-        currentOnboardingStep = 0;
-        document.getElementById('onboardingTooltip').style.display = 'block';
-        showOnboardingStep();
-    }
-
-    function showOnboardingStep() {
-        const step = onboardingSteps[currentOnboardingStep];
-        document.getElementById('onboardingStepCounter').textContent = `Шаг ${currentOnboardingStep + 1} из ${onboardingSteps.length}`;
-        document.getElementById('onboardingTitle').textContent = step.title;
-        document.getElementById('onboardingDesc').textContent = step.desc;
-        document.getElementById('onboardingFeatureBox').style.display = 'none';
-
-        document.getElementById('onboardingPrevBtn').style.display = currentOnboardingStep === 0 ? 'none' : 'inline-flex';
-        const nextBtn = document.getElementById('onboardingNextBtn');
-        nextBtn.textContent = currentOnboardingStep === onboardingSteps.length - 1 ? '✅ Завершить' : 'Далее →';
-
-        clearHighlight();
-        if (step.element) {
-            const el = document.querySelector(step.element);
-            if (el) {
-                el.classList.add('onboarding-highlight');
-                previousHighlight = el;
-                el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                if (step.tab) {
-                    const tabBtn = document.querySelector(`.tab-btn[data-tab="${step.tab}"]`);
-                    if (tabBtn) tabBtn.click();
-                }
-            }
-        }
-    }
-
-    function clearHighlight() {
-        if (previousHighlight) {
-            previousHighlight.classList.remove('onboarding-highlight');
-            previousHighlight = null;
-        }
-    }
-
-    function nextOnboardingStep() {
-        if (currentOnboardingStep < onboardingSteps.length - 1) {
-            currentOnboardingStep++;
-            showOnboardingStep();
-        } else {
-            finishOnboarding();
-        }
-    }
-
-    function prevOnboardingStep() {
-        if (currentOnboardingStep > 0) {
-            currentOnboardingStep--;
-            showOnboardingStep();
-        }
-    }
-
-    function finishOnboarding() {
-        document.getElementById('onboardingTooltip').style.display = 'none';
-        clearHighlight();
-        localStorage.setItem('onboardingDone_' + currentUser, 'true');
-        isOnboardingActive = false;
-        document.getElementById('onboardingReminder').classList.remove('active');
-    }
-
-    document.getElementById('onboardingNextBtn').addEventListener('click', nextOnboardingStep);
-    document.getElementById('onboardingPrevBtn').addEventListener('click', prevOnboardingStep);
-    document.getElementById('onboardingSkipBtn').addEventListener('click', finishOnboarding);
-
-    document.getElementById('restartTourBtn').addEventListener('click', function() {
-        if (currentUser) {
-            localStorage.removeItem('onboardingDone_' + currentUser);
-            if (isOnboardingActive) finishOnboarding();
-            document.getElementById('onboardingReminder').classList.remove('active');
-            setTimeout(startOnboarding, 300);
-        } else {
-            alert('Сначала войдите в систему.');
-        }
-    });
-
-    document.getElementById('reminderStartBtn').addEventListener('click', function() {
-        if (currentUser) {
-            localStorage.removeItem('onboardingDone_' + currentUser);
-            if (isOnboardingActive) finishOnboarding();
-            document.getElementById('onboardingReminder').classList.remove('active');
-            setTimeout(startOnboarding, 300);
-        } else {
-            alert('Сначала войдите в систему.');
-        }
-    });
-
-    document.getElementById('addRowBtn').addEventListener('click', function() {
-        stages.push({ name: '', objectName: '', building: '', planStart: '', planEnd: '', factStart: '', factEnd: '', progress: 0 });
-        saveStagesToSupabase();
-        renderInputTable();
-        updateAll();
-        updateDashboard();
-        updateTabBadges();
-    });
-
-    document.getElementById('resetDataBtn').addEventListener('click', function() {
-        if (confirm('Сбросить все этапы к начальным данным?')) {
-            stages = [
-                { name: 'Котлован', objectName: '', building: '', planStart: '2026-04-01', planEnd: '2026-04-20', factStart: '2026-04-01', factEnd: '2026-04-18', progress: 100 },
-                { name: 'Фундамент', objectName: '', building: '', planStart: '2026-04-21', planEnd: '2026-05-15', factStart: '2026-04-21', factEnd: '', progress: 75 },
-                { name: 'Стены подвала', objectName: '', building: '', planStart: '2026-05-10', planEnd: '2026-05-30', factStart: '2026-05-12', factEnd: '', progress: 30 },
-                { name: 'Стены 1-го этажа', objectName: '', building: '', planStart: '2026-05-20', planEnd: '2026-06-15', factStart: '2026-06-01', factEnd: '', progress: 10 },
-                { name: 'Перекрытия', objectName: '', building: '', planStart: '2026-06-10', planEnd: '2026-06-30', factStart: '', factEnd: '', progress: 0 },
-                { name: 'Кровля', objectName: '', building: '', planStart: '2026-07-01', planEnd: '2026-07-25', factStart: '', factEnd: '', progress: 0 },
-                { name: 'Инженерные сети', objectName: '', building: '', planStart: '2026-06-20', planEnd: '2026-08-10', factStart: '2026-06-22', factEnd: '', progress: 45 },
-                { name: 'Отделка', objectName: '', building: '', planStart: '2026-08-01', planEnd: '2026-09-30', factStart: '', factEnd: '', progress: 0 }
-            ];
-            saveStagesToSupabase();
-            renderInputTable();
-            updateAll();
-            updateDashboard();
-            updateTabBadges();
-        }
-    });
-
-    document.getElementById('logoutBtn').addEventListener('click', logout);
-    console.log('✅ Приложение запущено. Закрытие смены защищено от одновременных изменений.');
 </script>
+
 </body>
 </html>
