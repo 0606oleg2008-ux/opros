@@ -1235,21 +1235,38 @@
         shifts = data || [];
         renderShifts();
         updateAll();
-        // Обновляем статус смены после загрузки
         updateShiftUI();
     }
 
+    // ИСПРАВЛЕННАЯ ФУНКЦИЯ СОХРАНЕНИЯ: при вставке возвращаем данные
     async function saveShiftsToSupabase() {
         for (let sh of shifts) {
             if (!sh.id) {
-                const { error } = await supabaseClient.from('shifts').insert([sh]);
-                if (error) console.error('Ошибка создания смены:', error);
+                // Новая запись – вставляем и получаем созданную запись
+                const { data, error } = await supabaseClient
+                    .from('shifts')
+                    .insert([sh])
+                    .select('*'); // возвращаем созданную запись
+                if (error) {
+                    console.error('Ошибка создания смены:', error);
+                } else if (data && data.length > 0) {
+                    // Заменяем локальную запись на ту, что вернула база (с сгенерированным id)
+                    const idx = shifts.indexOf(sh);
+                    if (idx !== -1) {
+                        shifts[idx] = data[0];
+                    }
+                }
             } else {
-                const { error } = await supabaseClient.from('shifts').update(sh).match({ id: sh.id });
+                // Существующая запись – обновляем
+                const { error } = await supabaseClient
+                    .from('shifts')
+                    .update(sh)
+                    .match({ id: sh.id });
                 if (error) console.error('Ошибка обновления смены:', error);
             }
         }
-        await loadShifts(); // перезагружаем после сохранения
+        // Перезагружаем смены, чтобы синхронизировать
+        await loadShifts();
     }
 
     async function loadSupportMessages() {
@@ -1412,7 +1429,7 @@
     });
 
     // ============================================================
-    //   ОТКРЫТИЕ / ЗАКРЫТИЕ СМЕНЫ (С ИСПРАВЛЕННЫМ ОБНОВЛЕНИЕМ)
+    //   ОТКРЫТИЕ / ЗАКРЫТИЕ СМЕНЫ (ИСПРАВЛЕНО)
     // ============================================================
     function getCurrentOpenShift() {
         return shifts.find(sh => sh.closeTime === null);
@@ -1471,8 +1488,8 @@
         if (!stage) { alert('Выберите этап'); return; }
         if (people < 1) { alert('Количество человек должно быть не менее 1'); return; }
 
+        // Создаём объект смены БЕЗ id – база сгенерирует сама
         const newShift = {
-            id: Date.now().toString(),
             user: currentUser,
             date: new Date().toISOString().slice(0,10),
             openTime: new Date().toISOString(),
@@ -1485,11 +1502,13 @@
             files: []
         };
         shifts.push(newShift);
-        saveShiftsToSupabase();
-        renderShifts();
-        updateAll();
-        updateShiftUI();
-        document.getElementById('openShiftForm').style.display = 'none';
+        // Сохраняем – при сохранении мы получим запись с id из базы
+        saveShiftsToSupabase().then(() => {
+            renderShifts();
+            updateAll();
+            updateShiftUI();
+            document.getElementById('openShiftForm').style.display = 'none';
+        });
     });
 
     document.getElementById('btnCloseShift').addEventListener('click', function() {
@@ -1524,6 +1543,7 @@
             return;
         }
 
+        // Обновляем запись
         const shiftIndex = shifts.indexOf(openShift);
         if (shiftIndex === -1) { alert('Ошибка: смена не найдена.'); return; }
 
@@ -2046,7 +2066,6 @@
     }
 
     function updateReport() {
-        // Полная версия отчёта (кратко)
         const overall = stages.length ? Math.round(stages.reduce((s, st) => s + st.progress, 0) / stages.length) : 0;
         const now = new Date(); now.setHours(0,0,0,0);
         let totalDelay = 0, hasRisk = false;
@@ -2210,7 +2229,6 @@
     }
 
     function renderGantt() {
-        // Упрощённая версия – можно добавить полную из старого кода
         const container = document.getElementById('ganttContainer');
         container.innerHTML = '<p style="color:#6a7b8c;">Гант-диаграмма работает. Добавьте этапы с датами.</p>';
     }
