@@ -9,7 +9,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        /* ===== СТИЛИ (ПОЛНАЯ ВЕРСИЯ) ===== */
+        /* ===== ВСЕ СТИЛИ (ПОЛНАЯ ВЕРСИЯ, СОКРАЩЕНА ДЛЯ ЧИТАЕМОСТИ) ===== */
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
         body {
             background: linear-gradient(145deg, #e8edf5 0%, #d5dde8 100%);
@@ -1018,6 +1018,7 @@
             </div>
         </div>
 
+        <!-- Форма открытия смены -->
         <div class="shift-action-form" id="openShiftForm">
             <div class="field">
                 <label>Этап</label>
@@ -1043,6 +1044,7 @@
             <button class="btn btn-outline" id="cancelOpenBtn">Отмена</button>
         </div>
 
+        <!-- Форма закрытия смены -->
         <div class="shift-action-form" id="closeShiftForm">
             <div class="field">
                 <label>Файлы (фото/видео) *</label>
@@ -1229,6 +1231,7 @@
         await loadStages();
     }
 
+    // ===== ЗАГРУЗКА СМЕН =====
     async function loadShifts() {
         const { data, error } = await supabaseClient.from('shifts').select('*').order('openTime', { ascending: false });
         if (error) { console.error('Ошибка загрузки смен:', error); return; }
@@ -1238,7 +1241,7 @@
         updateShiftUI();
     }
 
-    // ИСПРАВЛЕННАЯ ФУНКЦИЯ СОХРАНЕНИЯ: при вставке возвращаем данные
+    // ===== СОХРАНЕНИЕ СМЕН (КЛЮЧЕВОЕ ИСПРАВЛЕНИЕ) =====
     async function saveShiftsToSupabase() {
         for (let sh of shifts) {
             if (!sh.id) {
@@ -1246,190 +1249,35 @@
                 const { data, error } = await supabaseClient
                     .from('shifts')
                     .insert([sh])
-                    .select('*'); // возвращаем созданную запись
+                    .select('*');
                 if (error) {
                     console.error('Ошибка создания смены:', error);
+                    alert('Ошибка создания смены: ' + error.message);
+                    return;
                 } else if (data && data.length > 0) {
-                    // Заменяем локальную запись на ту, что вернула база (с сгенерированным id)
                     const idx = shifts.indexOf(sh);
                     if (idx !== -1) {
                         shifts[idx] = data[0];
                     }
                 }
             } else {
-                // Существующая запись – обновляем
+                // Обновление существующей записи
                 const { error } = await supabaseClient
                     .from('shifts')
                     .update(sh)
                     .match({ id: sh.id });
-                if (error) console.error('Ошибка обновления смены:', error);
+                if (error) {
+                    console.error('Ошибка обновления смены:', error);
+                    alert('Ошибка обновления смены: ' + error.message);
+                    return;
+                }
             }
         }
-        // Перезагружаем смены, чтобы синхронизировать
         await loadShifts();
     }
 
-    async function loadSupportMessages() {
-        const { data, error } = await supabaseClient.from('support_messages').select('*').order('timestamp', { ascending: true });
-        if (error) { console.error('Ошибка загрузки сообщений:', error); return; }
-        supportMessages = data || [];
-        if (document.getElementById('supportModal').classList.contains('active')) renderSupportUI();
-        updateSupportBadge();
-    }
-
-    async function saveSupportMessagesToSupabase() {
-        for (let msg of supportMessages) {
-            if (!msg.id) {
-                const { error } = await supabaseClient.from('support_messages').insert([msg]);
-                if (error) console.error('Ошибка создания сообщения:', error);
-            } else {
-                const { error } = await supabaseClient.from('support_messages').update(msg).match({ id: msg.id });
-                if (error) console.error('Ошибка обновления сообщения:', error);
-            }
-        }
-        await loadSupportMessages();
-    }
-
     // ============================================================
-    //   ЗАГРУЗКА ФАЙЛОВ В STORAGE
-    // ============================================================
-    async function uploadFilesToStorage(shiftId, files) {
-        const uploaded = [];
-        for (let file of files) {
-            const filePath = `${shiftId}/${Date.now()}_${file.name}`;
-            const { error } = await supabaseClient.storage.from(BUCKET_NAME).upload(filePath, file);
-            if (error) { console.error('Ошибка загрузки файла:', error); continue; }
-            const { data: publicUrlData } = supabaseClient.storage.from(BUCKET_NAME).getPublicUrl(filePath);
-            uploaded.push({ name: file.name, type: file.type, url: publicUrlData.publicUrl, path: filePath });
-        }
-        return uploaded;
-    }
-
-    async function deleteFilesFromStorage(filePaths) {
-        for (let path of filePaths) {
-            const { error } = await supabaseClient.storage.from(BUCKET_NAME).remove([path]);
-            if (error) console.error('Ошибка удаления файла:', error);
-        }
-    }
-
-    // ============================================================
-    //   ВХОД / ВЫХОД
-    // ============================================================
-    function setUser(name) {
-        currentUser = name.trim();
-        sessionStorage.setItem('currentUser', currentUser);
-        document.getElementById('displayUser').textContent = currentUser;
-        document.getElementById('loginModal').classList.add('hidden');
-        Promise.all([loadStages(), loadShifts(), loadSupportMessages()]).then(() => {
-            renderInputTable();
-            renderShifts();
-            updateAll();
-            updateShiftUI();
-            updateDashboard();
-            updateTabBadges();
-            updateSupportBadge();
-            if (!localStorage.getItem('onboardingDone_' + currentUser)) {
-                setTimeout(() => { try { if (!isOnboardingActive) startOnboarding(); } catch(e) {} }, 600);
-                setTimeout(() => { try { if (!isOnboardingActive) startOnboarding(); } catch(e) {} }, 1200);
-                setTimeout(() => {
-                    if (!isOnboardingActive && !localStorage.getItem('onboardingDone_' + currentUser)) {
-                        document.getElementById('onboardingReminder').classList.add('active');
-                    }
-                }, 5000);
-            }
-        });
-    }
-
-    function logout() {
-        sessionStorage.removeItem('currentUser');
-        currentUser = null;
-        document.getElementById('loginModal').classList.remove('hidden');
-        document.getElementById('loginName').value = '';
-        document.getElementById('loginPassword').value = '';
-        document.getElementById('passwordField').style.display = 'none';
-        document.getElementById('loginBtn').textContent = 'Войти';
-        document.getElementById('loginError').style.display = 'none';
-        document.getElementById('loginName').focus();
-        document.getElementById('displayUser').textContent = '—';
-        document.getElementById('shiftBody').innerHTML = '';
-        document.getElementById('shiftStats').innerHTML = '<p style="color:#6a7b8c;">Нет записей о сменах.</p>';
-        document.getElementById('openShiftForm').style.display = 'none';
-        document.getElementById('closeShiftForm').style.display = 'none';
-        updateDashboard();
-        updateTabBadges();
-        updateSupportBadge();
-        document.getElementById('onboardingReminder').classList.remove('active');
-        if (isOnboardingActive) finishOnboarding();
-        document.getElementById('supportModal').classList.remove('active');
-    }
-
-    window.addEventListener('DOMContentLoaded', function() {
-        const savedUser = sessionStorage.getItem('currentUser');
-        if (savedUser) {
-            sessionStorage.removeItem('currentUser');
-            document.getElementById('loginModal').classList.remove('hidden');
-            document.getElementById('loginName').focus();
-        } else {
-            document.getElementById('loginModal').classList.remove('hidden');
-            document.getElementById('loginName').focus();
-        }
-    });
-
-    const loginNameInput = document.getElementById('loginName');
-    const loginPasswordInput = document.getElementById('loginPassword');
-    const loginBtn = document.getElementById('loginBtn');
-    const passwordField = document.getElementById('passwordField');
-    const loginError = document.getElementById('loginError');
-
-    loginNameInput.addEventListener('input', function() {
-        const name = this.value.trim();
-        if (name === ADMIN_NAME) {
-            passwordField.style.display = 'block';
-            loginBtn.textContent = 'Подтвердить';
-            loginError.style.display = 'none';
-            setTimeout(() => loginPasswordInput.focus(), 100);
-        } else {
-            passwordField.style.display = 'none';
-            loginBtn.textContent = 'Войти';
-            loginError.style.display = 'none';
-        }
-    });
-
-    function handleLogin() {
-        const name = loginNameInput.value.trim();
-        if (!name) { alert('Введите ваше ФИО'); return; }
-        if (name === ADMIN_NAME) {
-            const password = loginPasswordInput.value;
-            if (password === ADMIN_PASSWORD) {
-                setUser(name);
-            } else {
-                loginError.style.display = 'block';
-                loginPasswordInput.value = '';
-                loginPasswordInput.focus();
-            }
-        } else {
-            setUser(name);
-        }
-    }
-
-    loginBtn.addEventListener('click', handleLogin);
-    loginNameInput.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            if (this.value.trim() === ADMIN_NAME) {
-                if (passwordField.style.display !== 'none') loginPasswordInput.focus();
-                else handleLogin();
-            } else {
-                handleLogin();
-            }
-        }
-    });
-    loginPasswordInput.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter') { e.preventDefault(); handleLogin(); }
-    });
-
-    // ============================================================
-    //   ОТКРЫТИЕ / ЗАКРЫТИЕ СМЕНЫ (ИСПРАВЛЕНО)
+    //   ОТКРЫТИЕ / ЗАКРЫТИЕ СМЕНЫ (ИСПРАВЛЕННОЕ)
     // ============================================================
     function getCurrentOpenShift() {
         return shifts.find(sh => sh.closeTime === null);
@@ -1488,7 +1336,6 @@
         if (!stage) { alert('Выберите этап'); return; }
         if (people < 1) { alert('Количество человек должно быть не менее 1'); return; }
 
-        // Создаём объект смены БЕЗ id – база сгенерирует сама
         const newShift = {
             user: currentUser,
             date: new Date().toISOString().slice(0,10),
@@ -1502,13 +1349,17 @@
             files: []
         };
         shifts.push(newShift);
-        // Сохраняем – при сохранении мы получим запись с id из базы
-        saveShiftsToSupabase().then(() => {
-            renderShifts();
-            updateAll();
-            updateShiftUI();
-            document.getElementById('openShiftForm').style.display = 'none';
-        });
+        saveShiftsToSupabase()
+            .then(() => {
+                renderShifts();
+                updateAll();
+                updateShiftUI();
+                document.getElementById('openShiftForm').style.display = 'none';
+            })
+            .catch(err => {
+                console.error('Ошибка сохранения:', err);
+                alert('Не удалось открыть смену. Проверьте консоль и политики RLS.');
+            });
     });
 
     document.getElementById('btnCloseShift').addEventListener('click', function() {
@@ -1543,7 +1394,6 @@
             return;
         }
 
-        // Обновляем запись
         const shiftIndex = shifts.indexOf(openShift);
         if (shiftIndex === -1) { alert('Ошибка: смена не найдена.'); return; }
 
@@ -1559,6 +1409,28 @@
         document.getElementById('closeShiftForm').style.display = 'none';
         alert('✅ Смена успешно закрыта! Файлы сохранены в облаке.');
     });
+
+    // ============================================================
+    //   ЗАГРУЗКА ФАЙЛОВ В STORAGE
+    // ============================================================
+    async function uploadFilesToStorage(shiftId, files) {
+        const uploaded = [];
+        for (let file of files) {
+            const filePath = `${shiftId}/${Date.now()}_${file.name}`;
+            const { error } = await supabaseClient.storage.from(BUCKET_NAME).upload(filePath, file);
+            if (error) { console.error('Ошибка загрузки файла:', error); continue; }
+            const { data: publicUrlData } = supabaseClient.storage.from(BUCKET_NAME).getPublicUrl(filePath);
+            uploaded.push({ name: file.name, type: file.type, url: publicUrlData.publicUrl, path: filePath });
+        }
+        return uploaded;
+    }
+
+    async function deleteFilesFromStorage(filePaths) {
+        for (let path of filePaths) {
+            const { error } = await supabaseClient.storage.from(BUCKET_NAME).remove([path]);
+            if (error) console.error('Ошибка удаления файла:', error);
+        }
+    }
 
     // ============================================================
     //   РЕНДЕРИНГ ТАБЛИЦ
@@ -1997,6 +1869,27 @@
         updateSupportBadge();
     }
 
+    async function loadSupportMessages() {
+        const { data, error } = await supabaseClient.from('support_messages').select('*').order('timestamp', { ascending: true });
+        if (error) { console.error('Ошибка загрузки сообщений:', error); return; }
+        supportMessages = data || [];
+        if (document.getElementById('supportModal').classList.contains('active')) renderSupportUI();
+        updateSupportBadge();
+    }
+
+    async function saveSupportMessagesToSupabase() {
+        for (let msg of supportMessages) {
+            if (!msg.id) {
+                const { error } = await supabaseClient.from('support_messages').insert([msg]);
+                if (error) console.error('Ошибка создания сообщения:', error);
+            } else {
+                const { error } = await supabaseClient.from('support_messages').update(msg).match({ id: msg.id });
+                if (error) console.error('Ошибка обновления сообщения:', error);
+            }
+        }
+        await loadSupportMessages();
+    }
+
     document.getElementById('supportBtn').addEventListener('click', openSupportModal);
     document.getElementById('supportModalClose').addEventListener('click', closeSupportModal);
     document.getElementById('supportModal').addEventListener('click', function(e) {
@@ -2267,6 +2160,122 @@
     });
 
     document.getElementById('logoutBtn').addEventListener('click', logout);
+
+    // ============================================================
+    //   ВХОД / ВЫХОД (ОБРАБОТЧИКИ)
+    // ============================================================
+    function setUser(name) {
+        currentUser = name.trim();
+        sessionStorage.setItem('currentUser', currentUser);
+        document.getElementById('displayUser').textContent = currentUser;
+        document.getElementById('loginModal').classList.add('hidden');
+        Promise.all([loadStages(), loadShifts(), loadSupportMessages()]).then(() => {
+            renderInputTable();
+            renderShifts();
+            updateAll();
+            updateShiftUI();
+            updateDashboard();
+            updateTabBadges();
+            updateSupportBadge();
+            if (!localStorage.getItem('onboardingDone_' + currentUser)) {
+                setTimeout(() => { try { if (!isOnboardingActive) startOnboarding(); } catch(e) {} }, 600);
+                setTimeout(() => { try { if (!isOnboardingActive) startOnboarding(); } catch(e) {} }, 1200);
+                setTimeout(() => {
+                    if (!isOnboardingActive && !localStorage.getItem('onboardingDone_' + currentUser)) {
+                        document.getElementById('onboardingReminder').classList.add('active');
+                    }
+                }, 5000);
+            }
+        });
+    }
+
+    function logout() {
+        sessionStorage.removeItem('currentUser');
+        currentUser = null;
+        document.getElementById('loginModal').classList.remove('hidden');
+        document.getElementById('loginName').value = '';
+        document.getElementById('loginPassword').value = '';
+        document.getElementById('passwordField').style.display = 'none';
+        document.getElementById('loginBtn').textContent = 'Войти';
+        document.getElementById('loginError').style.display = 'none';
+        document.getElementById('loginName').focus();
+        document.getElementById('displayUser').textContent = '—';
+        document.getElementById('shiftBody').innerHTML = '';
+        document.getElementById('shiftStats').innerHTML = '<p style="color:#6a7b8c;">Нет записей о сменах.</p>';
+        document.getElementById('openShiftForm').style.display = 'none';
+        document.getElementById('closeShiftForm').style.display = 'none';
+        updateDashboard();
+        updateTabBadges();
+        updateSupportBadge();
+        document.getElementById('onboardingReminder').classList.remove('active');
+        if (isOnboardingActive) finishOnboarding();
+        document.getElementById('supportModal').classList.remove('active');
+    }
+
+    window.addEventListener('DOMContentLoaded', function() {
+        const savedUser = sessionStorage.getItem('currentUser');
+        if (savedUser) {
+            sessionStorage.removeItem('currentUser');
+            document.getElementById('loginModal').classList.remove('hidden');
+            document.getElementById('loginName').focus();
+        } else {
+            document.getElementById('loginModal').classList.remove('hidden');
+            document.getElementById('loginName').focus();
+        }
+    });
+
+    const loginNameInput = document.getElementById('loginName');
+    const loginPasswordInput = document.getElementById('loginPassword');
+    const loginBtn = document.getElementById('loginBtn');
+    const passwordField = document.getElementById('passwordField');
+    const loginError = document.getElementById('loginError');
+
+    loginNameInput.addEventListener('input', function() {
+        const name = this.value.trim();
+        if (name === ADMIN_NAME) {
+            passwordField.style.display = 'block';
+            loginBtn.textContent = 'Подтвердить';
+            loginError.style.display = 'none';
+            setTimeout(() => loginPasswordInput.focus(), 100);
+        } else {
+            passwordField.style.display = 'none';
+            loginBtn.textContent = 'Войти';
+            loginError.style.display = 'none';
+        }
+    });
+
+    function handleLogin() {
+        const name = loginNameInput.value.trim();
+        if (!name) { alert('Введите ваше ФИО'); return; }
+        if (name === ADMIN_NAME) {
+            const password = loginPasswordInput.value;
+            if (password === ADMIN_PASSWORD) {
+                setUser(name);
+            } else {
+                loginError.style.display = 'block';
+                loginPasswordInput.value = '';
+                loginPasswordInput.focus();
+            }
+        } else {
+            setUser(name);
+        }
+    }
+
+    loginBtn.addEventListener('click', handleLogin);
+    loginNameInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            if (this.value.trim() === ADMIN_NAME) {
+                if (passwordField.style.display !== 'none') loginPasswordInput.focus();
+                else handleLogin();
+            } else {
+                handleLogin();
+            }
+        }
+    });
+    loginPasswordInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') { e.preventDefault(); handleLogin(); }
+    });
 
     // ============================================================
     //   ОБУЧЕНИЕ
