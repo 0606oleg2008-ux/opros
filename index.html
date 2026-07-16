@@ -9,6 +9,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
+        /* ===== ВСЕ СТИЛИ (ПОЛНЫЙ НАБОР) ===== */
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
         body { background: #e8edf5; min-height: 100vh; padding: 20px; }
         .container { max-width: 1400px; margin: 0 auto; background: rgba(255,255,255,0.85); backdrop-filter: blur(10px); border-radius: 32px; box-shadow: 0 20px 60px rgba(0,0,0,0.1); padding: 25px 30px 35px; }
@@ -571,7 +572,7 @@
     });
 
     // ================================================================
-    //   ЗАКРЫТИЕ СМЕНЫ С ЗАГРУЗКОЙ ФАЙЛОВ
+    //   ЗАКРЫТИЕ СМЕНЫ С ЗАГРУЗКОЙ ФАЙЛОВ (ИСПРАВЛЕННАЯ ВЕРСИЯ)
     // ================================================================
     document.getElementById('btnCloseShift').addEventListener('click', function() {
         const myOpen = getMyOpenShifts();
@@ -648,22 +649,31 @@
             if (files.length > 0) {
                 uploadedFiles = await uploadFilesToStorage(selectedId, files);
             }
+            // Явно формируем объект обновления
             const updateData = {
-                closeTime: new Date().toISOString(),
+                closeTime: new Date().toISOString(), // гарантированно строка
                 files: uploadedFiles,
                 note: note
             };
-            const { error } = await supabaseClient.from('shifts').update(updateData).match({ id: selectedId, closeTime: null });
+            console.log('Обновление смены:', updateData);
+            const { data, error } = await supabaseClient
+                .from('shifts')
+                .update(updateData)
+                .match({ id: selectedId, closeTime: null })
+                .select(); // возвращаем обновлённую запись
             if (error) {
+                console.error('Ошибка обновления:', error);
                 alert('Ошибка закрытия смены: ' + error.message);
                 btn.textContent = '✅ Подтвердить закрытие';
                 btn.disabled = false;
                 return;
             }
+            console.log('Смена закрыта:', data);
             await loadShifts();
             document.getElementById('closeShiftForm').style.display = 'none';
             alert('✅ Смена закрыта! Файлы сохранены.');
         } catch (err) {
+            console.error('Ошибка:', err);
             alert('Ошибка: ' + err.message);
         } finally {
             btn.textContent = '✅ Подтвердить закрытие';
@@ -1012,7 +1022,7 @@
     });
 
     // ================================================================
-    //   ОТЧЁТ, ГАНТТ, PDF, ДАШБОРД (без изменений)
+    //   ОТЧЁТ, ГАНТТ, PDF, ДАШБОРД
     // ================================================================
     function updateReport() {
         const overall = stages.length ? Math.round(stages.reduce((s, st) => s + st.progress, 0) / stages.length) : 0;
@@ -1289,7 +1299,7 @@
     });
 
     // ================================================================
-    //   ОБУЧЕНИЕ (ТУР) — короткая версия
+    //   ОБУЧЕНИЕ (ТУР)
     // ================================================================
     let isOnboardingActive = false;
     let currentOnboardingStep = 0;
