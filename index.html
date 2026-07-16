@@ -9,7 +9,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        /* ===== ВСЕ СТИЛИ (ПОЛНЫЙ НАБОР) ===== */
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
         body { background: #e8edf5; min-height: 100vh; padding: 20px; }
         .container { max-width: 1400px; margin: 0 auto; background: rgba(255,255,255,0.85); backdrop-filter: blur(10px); border-radius: 32px; box-shadow: 0 20px 60px rgba(0,0,0,0.1); padding: 25px 30px 35px; }
@@ -349,7 +348,7 @@
 
 <script>
     // ================================================================
-    //   ПОДКЛЮЧЕНИЕ К SUPABASE (ВАШИ КЛЮЧИ)
+    //   ПОДКЛЮЧЕНИЕ К SUPABASE
     // ================================================================
     const SUPABASE_URL = 'https://unlehvbjsoxcbdcybkbd.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVubGVodmJqc294Y2JkY3lia2JkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQwODQxMTgsImV4cCI6MjA5OTY2MDExOH0.zWH5M2PcdW5WFiowvPWVhTDnmwKkBzaiN6aDlMSVyAU';
@@ -373,7 +372,7 @@
     const STAGE_NAMES = ['Котлован','Фундамент','Стены подвала','Стены 1-го этажа','Перекрытия','Кровля','Инженерные сети','Отделка','Благоустройство'];
 
     // ================================================================
-    //   ЗАГРУЗКА ДАННЫХ ИЗ SUPABASE
+    //   ЗАГРУЗКА ДАННЫХ
     // ================================================================
     async function loadStages() {
         const { data, error } = await supabaseClient.from('stages').select('*').order('id', { ascending: true });
@@ -402,15 +401,22 @@
     }
 
     // ================================================================
-    //   СОХРАНЕНИЕ ДАННЫХ В SUPABASE
+    //   СОХРАНЕНИЕ ДАННЫХ (С ОЧИСТКОЙ ПУСТЫХ ДАТ)
     // ================================================================
     async function saveStagesToSupabase() {
         for (let stage of stages) {
-            if (!stage.id) {
-                const { error } = await supabaseClient.from('stages').insert([stage]);
+            const cleanStage = {
+                ...stage,
+                planStart: stage.planStart && stage.planStart.trim() !== '' ? stage.planStart : null,
+                planEnd: stage.planEnd && stage.planEnd.trim() !== '' ? stage.planEnd : null,
+                factStart: stage.factStart && stage.factStart.trim() !== '' ? stage.factStart : null,
+                factEnd: stage.factEnd && stage.factEnd.trim() !== '' ? stage.factEnd : null
+            };
+            if (!cleanStage.id) {
+                const { error } = await supabaseClient.from('stages').insert([cleanStage]);
                 if (error) console.error('Ошибка вставки этапа:', error);
             } else {
-                const { error } = await supabaseClient.from('stages').update(stage).match({ id: stage.id });
+                const { error } = await supabaseClient.from('stages').update(cleanStage).match({ id: cleanStage.id });
                 if (error) console.error('Ошибка обновления этапа:', error);
             }
         }
@@ -444,7 +450,7 @@
     }
 
     // ================================================================
-    //   УДАЛЕНИЕ ФАЙЛОВ ИЗ STORAGE
+    //   УДАЛЕНИЕ ФАЙЛОВ
     // ================================================================
     async function deleteFilesFromStorage(paths) {
         if (!paths || paths.length === 0) return;
@@ -455,7 +461,7 @@
     }
 
     // ================================================================
-    //   ОБНОВЛЕНИЕ СПИСКА ЭТАПОВ В ФОРМЕ ОТКРЫТИЯ СМЕНЫ
+    //   ОБНОВЛЕНИЕ СПИСКА ЭТАПОВ
     // ================================================================
     function updateStageSelect() {
         const select = document.getElementById('openStage');
@@ -473,7 +479,7 @@
     }
 
     // ================================================================
-    //   УПРАВЛЕНИЕ СМЕНАМИ (МНОЖЕСТВЕННЫЕ)
+    //   УПРАВЛЕНИЕ СМЕНАМИ
     // ================================================================
     function getOpenShifts() {
         return shifts.filter(sh => sh.closeTime === null);
@@ -565,7 +571,7 @@
     });
 
     // ================================================================
-    //   ЗАКРЫТИЕ СМЕНЫ С ЗАГРУЗКОЙ ФАЙЛОВ В STORAGE
+    //   ЗАКРЫТИЕ СМЕНЫ С ЗАГРУЗКОЙ ФАЙЛОВ
     // ================================================================
     document.getElementById('btnCloseShift').addEventListener('click', function() {
         const myOpen = getMyOpenShifts();
@@ -1213,7 +1219,16 @@
     //   КНОПКИ
     // ================================================================
     document.getElementById('addRowBtn').addEventListener('click', function() {
-        stages.push({ name: '', objectName: '', building: '', planStart: '', planEnd: '', factStart: '', factEnd: '', progress: 0 });
+        stages.push({
+            name: '',
+            objectName: '',
+            building: '',
+            planStart: null,
+            planEnd: null,
+            factStart: null,
+            factEnd: null,
+            progress: 0
+        });
         saveStagesToSupabase();
         renderInputTable();
         updateStageSelect();
@@ -1228,13 +1243,13 @@
         supabaseClient.from('stages').delete().neq('id', 0).then(() => {
             stages = [
                 { name: 'Котлован', objectName: '', building: '', planStart: '2026-04-01', planEnd: '2026-04-20', factStart: '2026-04-01', factEnd: '2026-04-18', progress: 100 },
-                { name: 'Фундамент', objectName: '', building: '', planStart: '2026-04-21', planEnd: '2026-05-15', factStart: '2026-04-21', factEnd: '', progress: 75 },
-                { name: 'Стены подвала', objectName: '', building: '', planStart: '2026-05-10', planEnd: '2026-05-30', factStart: '2026-05-12', factEnd: '', progress: 30 },
-                { name: 'Стены 1-го этажа', objectName: '', building: '', planStart: '2026-05-20', planEnd: '2026-06-15', factStart: '2026-06-01', factEnd: '', progress: 10 },
-                { name: 'Перекрытия', objectName: '', building: '', planStart: '2026-06-10', planEnd: '2026-06-30', factStart: '', factEnd: '', progress: 0 },
-                { name: 'Кровля', objectName: '', building: '', planStart: '2026-07-01', planEnd: '2026-07-25', factStart: '', factEnd: '', progress: 0 },
-                { name: 'Инженерные сети', objectName: '', building: '', planStart: '2026-06-20', planEnd: '2026-08-10', factStart: '2026-06-22', factEnd: '', progress: 45 },
-                { name: 'Отделка', objectName: '', building: '', planStart: '2026-08-01', planEnd: '2026-09-30', factStart: '', factEnd: '', progress: 0 }
+                { name: 'Фундамент', objectName: '', building: '', planStart: '2026-04-21', planEnd: '2026-05-15', factStart: '2026-04-21', factEnd: null, progress: 75 },
+                { name: 'Стены подвала', objectName: '', building: '', planStart: '2026-05-10', planEnd: '2026-05-30', factStart: '2026-05-12', factEnd: null, progress: 30 },
+                { name: 'Стены 1-го этажа', objectName: '', building: '', planStart: '2026-05-20', planEnd: '2026-06-15', factStart: '2026-06-01', factEnd: null, progress: 10 },
+                { name: 'Перекрытия', objectName: '', building: '', planStart: '2026-06-10', planEnd: '2026-06-30', factStart: null, factEnd: null, progress: 0 },
+                { name: 'Кровля', objectName: '', building: '', planStart: '2026-07-01', planEnd: '2026-07-25', factStart: null, factEnd: null, progress: 0 },
+                { name: 'Инженерные сети', objectName: '', building: '', planStart: '2026-06-20', planEnd: '2026-08-10', factStart: '2026-06-22', factEnd: null, progress: 45 },
+                { name: 'Отделка', objectName: '', building: '', planStart: '2026-08-01', planEnd: '2026-09-30', factStart: null, factEnd: null, progress: 0 }
             ];
             saveStagesToSupabase();
             renderInputTable();
@@ -1274,7 +1289,7 @@
     });
 
     // ================================================================
-    //   ОБУЧЕНИЕ (ТУР)
+    //   ОБУЧЕНИЕ (ТУР) — короткая версия
     // ================================================================
     let isOnboardingActive = false;
     let currentOnboardingStep = 0;
@@ -1289,7 +1304,7 @@
         { title: '🟢 Управление сменами', desc: 'Нажмите «Открыть смену», заполните данные. При закрытии выберите конкретную смену из списка.', element: '#shiftStatus', tab: 'shift' },
         { title: '📊 Вкладка «Отчёт»', desc: 'Сводка по готовности, план-факт, диаграммы и детальная таблица.', element: '.tab-btn[data-tab="report"]', tab: 'report' },
         { title: '📄 Экспорт PDF', desc: 'Скачайте полный отчёт с таблицами и статистикой.', element: '#exportPdfBtn', tab: 'report' },
-        { title: '📅 Вкладка «График работ»', desc: 'Гант-диаграмма по этапам. План и факт отображаются в виде полос.', element: '.tab-btn[data-tab="gantt"]', tab: 'gantt' }
+        { title: '📅 Вкладка «График работ»', desc: 'Гант-диаграмма по этапам.', element: '.tab-btn[data-tab="gantt"]', tab: 'gantt' }
     ];
 
     function startOnboarding() {
@@ -1479,7 +1494,7 @@
     document.getElementById('logoutBtn').addEventListener('click', logout);
 
     // ================================================================
-    //   ПОДПИСКА НА ИЗМЕНЕНИЯ В РЕАЛЬНОМ ВРЕМЕНИ
+    //   ПОДПИСКА НА ИЗМЕНЕНИЯ (REALTIME)
     // ================================================================
     function subscribeToChanges() {
         supabaseClient
