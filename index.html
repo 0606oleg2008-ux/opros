@@ -1,14 +1,16 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Строительный контроль (множественные смены)</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Строительный контроль (Supabase)</title>
+    <!-- Библиотеки -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        /* ===== СТИЛИ (полный набор) ===== */
+        /* ===== ВСЕ СТИЛИ (полный набор) ===== */
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
         body { background: #e8edf5; min-height: 100vh; padding: 20px; }
         .container { max-width: 1400px; margin: 0 auto; background: rgba(255,255,255,0.85); backdrop-filter: blur(10px); border-radius: 32px; box-shadow: 0 20px 60px rgba(0,0,0,0.1); padding: 25px 30px 35px; }
@@ -225,7 +227,7 @@
 <!-- ОСНОВНОЙ ИНТЕРФЕЙС -->
 <div class="container" id="mainContainer">
     <div class="header">
-        <div><h1>🏗️ Строительный контроль</h1><div class="sub">Множественные смены с файлами, поддержка, обучение</div></div>
+        <div><h1>🏗️ Строительный контроль</h1><div class="sub">Синхронизация через Supabase</div></div>
         <div class="user-info">
             <span class="name" id="displayUser">—</span>
             <button class="btn-logout" id="logoutBtn">Выйти</button>
@@ -247,7 +249,7 @@
 
     <!-- ВКЛАДКА ЭТАПЫ -->
     <div id="tab-input" class="tab-content active">
-        <p style="color:#5e6f7e; margin-bottom:12px;">Добавляйте, редактируйте и удаляйте этапы.</p>
+        <p style="color:#5e6f7e; margin-bottom:12px;">Добавляйте, редактируйте и удаляйте этапы. Изменения синхронизируются.</p>
         <div style="overflow-x:auto;">
             <table class="input-table" id="inputTable">
                 <thead><tr><th>Название</th><th>Объект</th><th>Дом/корпус</th><th>План старт</th><th>План финиш</th><th>Факт старт</th><th>Факт финиш</th><th>Прогресс, %</th><th></th></tr></thead>
@@ -331,33 +333,33 @@
 <div class="onboarding-tooltip" id="onboardingTooltip" style="display:none;">
     <div class="step-counter" id="onboardingStepCounter">Шаг 1 из 9</div>
     <h3 id="onboardingTitle">Добро пожаловать!</h3>
-    <p id="onboardingDesc">Локальная версия с множественными сменами, загрузкой файлов, поддержкой и обучением.</p>
-    <div id="onboardingFeatureBox" class="onboarding-feature-box"><h4>✨ Дополнительные возможности</h4><ul id="onboardingFeatureList"></ul></div>
+    <p id="onboardingDesc">Версия с синхронизацией через Supabase.</p>
     <div class="btn-group">
         <button class="btn btn-outline" id="onboardingSkipBtn">Пропустить</button>
         <button class="btn btn-outline" id="onboardingPrevBtn" style="display:none;">← Назад</button>
         <button class="btn btn-primary" id="onboardingNextBtn">Далее →</button>
     </div>
 </div>
-
-<!-- НАПОМИНАНИЕ ОБ ОБУЧЕНИИ -->
 <div class="onboarding-reminder" id="onboardingReminder" style="display:none;">
     <p>❓ Запустите обучение, нажав на кнопку с вопросительным знаком справа внизу.</p>
     <button class="btn btn-primary" id="reminderStartBtn" style="padding:4px 16px;font-size:13px;">Запустить обучение</button>
 </div>
 
-<!-- КНОПКА ПОДДЕРЖКИ -->
 <button class="support-btn" id="supportBtn">💬<span class="badge-support hidden" id="supportBadge">0</span></button>
-
-<!-- КНОПКА ПЕРЕЗАПУСКА ОБУЧЕНИЯ -->
 <button class="restart-tour-btn" id="restartTourBtn">❓</button>
 
 <script>
 // ================================================================
-//   ЛОКАЛЬНАЯ ВЕРСИЯ С МНОЖЕСТВЕННЫМИ СМЕНАМИ, ПОДДЕРЖКОЙ И ОБУЧЕНИЕМ
+//   ПОДКЛЮЧЕНИЕ К SUPABASE (ВАШИ КЛЮЧИ)
 // ================================================================
+const SUPABASE_URL = 'https://unlehvbjsoxcbdcybkbd.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVubGVodmJqc294Y2JkY3lia2JkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQwODQxMTgsImV4cCI6MjA5OTY2MDExOH0.zWH5M2PcdW5WFiowvPWVhTDnmwKkBzaiN6aDlMSVyAU';
+const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const BUCKET_NAME = 'shift-files';
 
-// --- ПЕРЕМЕННЫЕ ---
+// ================================================================
+//   ПЕРЕМЕННЫЕ
+// ================================================================
 let currentUser = null;
 const ADMIN_NAME = 'Леухин Олег Павлович';
 const ADMIN_PASSWORD = 'OlegMolodoy()!';
@@ -371,45 +373,92 @@ let currentChatUser = null;
 
 const STAGE_NAMES = ['Котлован','Фундамент','Стены подвала','Стены 1-го этажа','Перекрытия','Кровля','Инженерные сети','Отделка','Благоустройство'];
 
-// --- ЗАГРУЗКА / СОХРАНЕНИЕ ДАННЫХ ---
-function loadData() {
-    const savedStages = localStorage.getItem('stages');
-    if (savedStages) {
-        try { stages = JSON.parse(savedStages); } catch(e) { stages = []; }
-    } else {
-        stages = [
-            { name: 'Котлован', objectName: '', building: '', planStart: '2026-04-01', planEnd: '2026-04-20', factStart: '2026-04-01', factEnd: '2026-04-18', progress: 100 },
-            { name: 'Фундамент', objectName: '', building: '', planStart: '2026-04-21', planEnd: '2026-05-15', factStart: '2026-04-21', factEnd: '', progress: 75 },
-            { name: 'Стены подвала', objectName: '', building: '', planStart: '2026-05-10', planEnd: '2026-05-30', factStart: '2026-05-12', factEnd: '', progress: 30 },
-            { name: 'Стены 1-го этажа', objectName: '', building: '', planStart: '2026-05-20', planEnd: '2026-06-15', factStart: '2026-06-01', factEnd: '', progress: 10 },
-            { name: 'Перекрытия', objectName: '', building: '', planStart: '2026-06-10', planEnd: '2026-06-30', factStart: '', factEnd: '', progress: 0 },
-            { name: 'Кровля', objectName: '', building: '', planStart: '2026-07-01', planEnd: '2026-07-25', factStart: '', factEnd: '', progress: 0 },
-            { name: 'Инженерные сети', objectName: '', building: '', planStart: '2026-06-20', planEnd: '2026-08-10', factStart: '2026-06-22', factEnd: '', progress: 45 },
-            { name: 'Отделка', objectName: '', building: '', planStart: '2026-08-01', planEnd: '2026-09-30', factStart: '', factEnd: '', progress: 0 }
-        ];
-        saveStages();
+// ================================================================
+//   ЗАГРУЗКА ДАННЫХ ИЗ SUPABASE
+// ================================================================
+async function loadStages() {
+    const { data, error } = await supabase.from('stages').select('*').order('id', { ascending: true });
+    if (error) { console.error('Ошибка загрузки этапов:', error); return; }
+    stages = data || [];
+    renderInputTable();
+    updateStageSelect();
+    updateAll();
+}
+
+async function loadShifts() {
+    const { data, error } = await supabase.from('shifts').select('*').order('openTime', { ascending: false });
+    if (error) { console.error('Ошибка загрузки смен:', error); return; }
+    shifts = data || [];
+    renderShifts();
+    updateAll();
+    updateShiftUI();
+}
+
+async function loadSupportMessages() {
+    const { data, error } = await supabase.from('support_messages').select('*').order('timestamp', { ascending: true });
+    if (error) { console.error('Ошибка загрузки сообщений:', error); return; }
+    supportMessages = data || [];
+    if (document.getElementById('supportModal').classList.contains('active')) renderSupportUI();
+    updateSupportBadge();
+}
+
+// ================================================================
+//   СОХРАНЕНИЕ ДАННЫХ В SUPABASE
+// ================================================================
+async function saveStagesToSupabase() {
+    // Для каждого этапа: если нет id — вставка, если есть — обновление
+    for (let stage of stages) {
+        if (!stage.id) {
+            const { error } = await supabase.from('stages').insert([stage]);
+            if (error) console.error('Ошибка вставки этапа:', error);
+        } else {
+            const { error } = await supabase.from('stages').update(stage).match({ id: stage.id });
+            if (error) console.error('Ошибка обновления этапа:', error);
+        }
     }
-    const savedShifts = localStorage.getItem('shifts');
-    if (savedShifts) {
-        try { shifts = JSON.parse(savedShifts); } catch(e) { shifts = []; }
-    } else {
-        shifts = [];
-        saveShifts();
+    await loadStages();
+}
+
+async function saveShiftsToSupabase() {
+    for (let shift of shifts) {
+        if (!shift.id) {
+            const { error } = await supabase.from('shifts').insert([shift]);
+            if (error) console.error('Ошибка вставки смены:', error);
+        } else {
+            const { error } = await supabase.from('shifts').update(shift).match({ id: shift.id });
+            if (error) console.error('Ошибка обновления смены:', error);
+        }
     }
-    const savedSupport = localStorage.getItem('supportMessages');
-    if (savedSupport) {
-        try { supportMessages = JSON.parse(savedSupport); } catch(e) { supportMessages = []; }
-    } else {
-        supportMessages = [];
-        saveSupportMessages();
+    await loadShifts();
+}
+
+async function saveSupportMessagesToSupabase() {
+    for (let msg of supportMessages) {
+        if (!msg.id) {
+            const { error } = await supabase.from('support_messages').insert([msg]);
+            if (error) console.error('Ошибка вставки сообщения:', error);
+        } else {
+            const { error } = await supabase.from('support_messages').update(msg).match({ id: msg.id });
+            if (error) console.error('Ошибка обновления сообщения:', error);
+        }
+    }
+    await loadSupportMessages();
+}
+
+// ================================================================
+//   УДАЛЕНИЕ ФАЙЛОВ ИЗ STORAGE
+// ================================================================
+async function deleteFilesFromStorage(paths) {
+    if (!paths || paths.length === 0) return;
+    for (let path of paths) {
+        const { error } = await supabase.storage.from(BUCKET_NAME).remove([path]);
+        if (error) console.error('Ошибка удаления файла:', path, error);
     }
 }
 
-function saveStages() { localStorage.setItem('stages', JSON.stringify(stages)); }
-function saveShifts() { localStorage.setItem('shifts', JSON.stringify(shifts)); }
-function saveSupportMessages() { localStorage.setItem('supportMessages', JSON.stringify(supportMessages)); }
-
-// --- ОБНОВЛЕНИЕ СПИСКА ЭТАПОВ ---
+// ================================================================
+//   ОБНОВЛЕНИЕ СПИСКА ЭТАПОВ В ФОРМЕ ОТКРЫТИЯ СМЕНЫ
+// ================================================================
 function updateStageSelect() {
     const select = document.getElementById('openStage');
     const currentVal = select.value;
@@ -425,7 +474,9 @@ function updateStageSelect() {
     }
 }
 
-// --- УПРАВЛЕНИЕ СМЕНАМИ (множественные) ---
+// ================================================================
+//   УПРАВЛЕНИЕ СМЕНАМИ (МНОЖЕСТВЕННЫЕ)
+// ================================================================
 function getOpenShifts() {
     return shifts.filter(sh => sh.closeTime === null);
 }
@@ -455,7 +506,9 @@ function updateShiftUI() {
     document.getElementById('closeShiftForm').style.display = 'none';
 }
 
-// --- ОТКРЫТИЕ СМЕНЫ (без ограничений) ---
+// ================================================================
+//   ОТКРЫТИЕ СМЕНЫ
+// ================================================================
 document.getElementById('btnOpenShift').addEventListener('click', function() {
     if (!currentUser) { alert('Вы не авторизованы.'); return; }
     updateStageSelect();
@@ -469,7 +522,8 @@ document.getElementById('btnOpenShift').addEventListener('click', function() {
 document.getElementById('cancelOpenBtn').addEventListener('click', function() {
     document.getElementById('openShiftForm').style.display = 'none';
 });
-document.getElementById('confirmOpenBtn').addEventListener('click', function() {
+
+document.getElementById('confirmOpenBtn').addEventListener('click', async function() {
     if (!currentUser) { alert('Вы не авторизованы.'); return; }
     const stage = document.getElementById('openStage').value;
     const shiftNumber = document.getElementById('openShiftNumber').value.trim() || '—';
@@ -479,8 +533,11 @@ document.getElementById('confirmOpenBtn').addEventListener('click', function() {
     if (!stage) { alert('Выберите этап'); return; }
     if (people < 1) { alert('Количество человек не менее 1'); return; }
 
+    // Генерируем уникальный ID для смены
+    const shiftId = Date.now() + '-' + Math.random().toString(36).substr(2, 6);
+
     const newShift = {
-        id: Date.now() + Math.random().toString(36).substr(2, 6),
+        id: shiftId,
         user: currentUser,
         date: new Date().toISOString().slice(0,10),
         openTime: new Date().toISOString(),
@@ -492,16 +549,28 @@ document.getElementById('confirmOpenBtn').addEventListener('click', function() {
         note: note,
         files: []
     };
-    shifts.push(newShift);
-    saveShifts();
-    renderShifts();
-    updateAll();
-    updateShiftUI();
+
+    const btn = this;
+    btn.textContent = '⏳ Сохранение...';
+    btn.disabled = true;
+
+    const { data, error } = await supabase.from('shifts').insert([newShift]).select();
+    btn.textContent = '✅ Подтвердить открытие';
+    btn.disabled = false;
+
+    if (error) {
+        alert('Ошибка открытия смены: ' + error.message);
+        return;
+    }
+    // После вставки обновим локальный массив и UI
+    await loadShifts();
     document.getElementById('openShiftForm').style.display = 'none';
     alert('✅ Смена открыта!');
 });
 
-// --- ЗАКРЫТИЕ СМЕНЫ (выбор конкретной) ---
+// ================================================================
+//   ЗАКРЫТИЕ СМЕНЫ С ЗАГРУЗКОЙ ФАЙЛОВ В STORAGE
+// ================================================================
 document.getElementById('btnCloseShift').addEventListener('click', function() {
     const myOpen = getMyOpenShifts();
     if (myOpen.length === 0) {
@@ -526,22 +595,22 @@ document.getElementById('cancelCloseBtn').addEventListener('click', function() {
     document.getElementById('closeShiftForm').style.display = 'none';
 });
 
-function readFiles(files) {
-    return new Promise((resolve, reject) => {
-        const results = [];
-        let loaded = 0;
-        if (files.length === 0) { resolve(results); return; }
-        for (let file of files) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                results.push({ name: file.name, type: file.type, data: e.target.result });
-                loaded++;
-                if (loaded === files.length) resolve(results);
-            };
-            reader.onerror = function(e) { reject(e); };
-            reader.readAsDataURL(file);
-        }
-    });
+// Функция загрузки файлов в Storage
+async function uploadFilesToStorage(shiftId, files) {
+    const uploaded = [];
+    for (let file of files) {
+        const filePath = `${shiftId}/${Date.now()}_${file.name}`;
+        const { error } = await supabase.storage.from(BUCKET_NAME).upload(filePath, file);
+        if (error) { console.error('Ошибка загрузки файла:', error); continue; }
+        const { data: publicUrlData } = supabase.storage.from(BUCKET_NAME).getPublicUrl(filePath);
+        uploaded.push({
+            name: file.name,
+            type: file.type,
+            url: publicUrlData.publicUrl,
+            path: filePath
+        });
+    }
+    return uploaded;
 }
 
 document.getElementById('confirmCloseBtn').addEventListener('click', async function() {
@@ -550,6 +619,7 @@ document.getElementById('confirmCloseBtn').addEventListener('click', async funct
         alert('Выберите смену для закрытия.');
         return;
     }
+    // Находим смену в локальном массиве
     const shiftIndex = shifts.findIndex(sh => sh.id === selectedId);
     if (shiftIndex === -1) {
         alert('Смена не найдена. Возможно, она уже закрыта.');
@@ -572,27 +642,40 @@ document.getElementById('confirmCloseBtn').addEventListener('click', async funct
     const btn = this;
     btn.textContent = '⏳ Закрытие...';
     btn.disabled = true;
+
     try {
-        let fileData = [];
-        if (files.length > 0) fileData = await readFiles(files);
-        shifts[shiftIndex].closeTime = new Date().toISOString();
-        shifts[shiftIndex].files = fileData;
-        if (note) shifts[shiftIndex].note = note;
-        saveShifts();
-        renderShifts();
-        updateAll();
-        updateShiftUI();
+        let uploadedFiles = [];
+        if (files.length > 0) {
+            uploadedFiles = await uploadFilesToStorage(selectedId, files);
+        }
+        // Обновляем запись: closeTime, files, note
+        const updateData = {
+            closeTime: new Date().toISOString(),
+            files: uploadedFiles,
+            note: note
+        };
+        const { error } = await supabase.from('shifts').update(updateData).match({ id: selectedId, closeTime: null });
+        if (error) {
+            alert('Ошибка закрытия смены: ' + error.message);
+            btn.textContent = '✅ Подтвердить закрытие';
+            btn.disabled = false;
+            return;
+        }
+        // Перезагружаем смены
+        await loadShifts();
         document.getElementById('closeShiftForm').style.display = 'none';
         alert('✅ Смена закрыта! Файлы сохранены.');
     } catch (err) {
-        alert('Ошибка при чтении файлов: ' + err.message);
+        alert('Ошибка: ' + err.message);
     } finally {
         btn.textContent = '✅ Подтвердить закрытие';
         btn.disabled = false;
     }
 });
 
-// --- РЕНДЕРИНГ ЭТАПОВ ---
+// ================================================================
+//   РЕНДЕРИНГ ТАБЛИЦЫ ЭТАПОВ
+// ================================================================
 function renderInputTable() {
     const tbody = document.getElementById('inputBody');
     tbody.innerHTML = '';
@@ -613,6 +696,8 @@ function renderInputTable() {
         `;
         tbody.appendChild(tr);
     });
+
+    // Сохранение изменений при вводе
     document.querySelectorAll('#inputBody input').forEach(inp => {
         inp.addEventListener('input', function() {
             const idx = parseInt(this.dataset.idx);
@@ -620,28 +705,36 @@ function renderInputTable() {
             let value = this.value;
             if (field === 'progress') value = parseFloat(value) || 0;
             stages[idx][field] = value;
-            saveStages();
+            saveStagesToSupabase();
             updateDashboard();
             updateTabBadges();
             updateAll();
         });
     });
+
+    // Удаление этапа
     document.querySelectorAll('#inputBody .del-btn').forEach(btn => {
         btn.addEventListener('click', function() {
             const idx = parseInt(this.dataset.idx);
             if (!confirm(`Удалить этап "${stages[idx].name}"?`)) return;
+            const stageId = stages[idx].id;
             stages.splice(idx, 1);
-            saveStages();
-            renderInputTable();
-            updateStageSelect();
-            updateAll();
-            updateDashboard();
-            updateTabBadges();
+            // Удаляем из БД
+            supabase.from('stages').delete().match({ id: stageId }).then(() => {
+                saveStagesToSupabase();
+                renderInputTable();
+                updateStageSelect();
+                updateAll();
+                updateDashboard();
+                updateTabBadges();
+            });
         });
     });
 }
 
-// --- РЕНДЕРИНГ СМЕН ---
+// ================================================================
+//   РЕНДЕРИНГ СМЕН
+// ================================================================
 function renderShifts() {
     const filtered = getFilteredShifts();
     const tbody = document.getElementById('shiftBody');
@@ -671,6 +764,8 @@ function renderShifts() {
         `;
         tbody.appendChild(tr);
     });
+
+    // Просмотр файлов (открываем ссылки в новой вкладке или модалке)
     document.querySelectorAll('#shiftBody .view-btn').forEach(btn => {
         btn.addEventListener('click', function() {
             const idx = parseInt(this.dataset.idx);
@@ -680,21 +775,36 @@ function renderShifts() {
                 alert('Вы можете просматривать только свои файлы.');
                 return;
             }
-            openFileModal(shift.files);
+            if (shift.files && shift.files.length > 0) {
+                // Открываем в новой вкладке первый файл или модалку
+                // Для простоты откроем первый файл, но можно сделать модалку с галереей.
+                window.open(shift.files[0].url, '_blank');
+            } else {
+                alert('Нет файлов.');
+            }
         });
     });
+
+    // Удаление смены
     document.querySelectorAll('#shiftBody .del-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
+        btn.addEventListener('click', async function() {
             const idx = parseInt(this.dataset.idx);
             const shift = shifts[idx];
             if (currentUser !== ADMIN_NAME && shift.user !== currentUser) {
                 alert('Вы можете удалять только свои записи.');
                 return;
             }
-            if (!confirm('Удалить запись о смене?')) return;
-            shifts.splice(idx, 1);
-            saveShifts();
-            renderShifts();
+            if (!confirm('Удалить запись о смене? Это также удалит загруженные файлы.')) return;
+            if (shift.files && shift.files.length) {
+                const paths = shift.files.map(f => f.path);
+                await deleteFilesFromStorage(paths);
+            }
+            const { error } = await supabase.from('shifts').delete().match({ id: shift.id });
+            if (error) {
+                alert('Ошибка удаления: ' + error.message);
+                return;
+            }
+            await loadShifts();
             updateAll();
             updateShiftUI();
             updateDashboard();
@@ -709,37 +819,9 @@ function getFilteredShifts() {
     return shifts.filter(sh => sh.user === currentUser);
 }
 
-// --- МОДАЛКА ПРОСМОТРА ФАЙЛОВ ---
-function openFileModal(files) {
-    if (!files || files.length === 0) { alert('Нет файлов.'); return; }
-    const modal = document.getElementById('fileModal');
-    const grid = document.getElementById('fileGrid');
-    grid.innerHTML = '';
-    files.forEach(f => {
-        const item = document.createElement('div');
-        item.className = 'file-item';
-        let content = '';
-        if (f.type && f.type.startsWith('image/')) {
-            content = `<img src="${f.data}" alt="${f.name}" class="modal-img" onclick="this.classList.toggle('fullscreen')" style="max-width:100%;max-height:280px;cursor:pointer;">`;
-        } else if (f.type && f.type.startsWith('video/')) {
-            content = `<video controls src="${f.data}" style="max-width:100%;max-height:280px;"></video>`;
-        } else {
-            content = `<div>Невозможно отобразить файл: ${f.name}</div>`;
-        }
-        item.innerHTML = `${content}<div class="file-name">${f.name}</div>`;
-        grid.appendChild(item);
-    });
-    document.getElementById('fileModalTitle').textContent = 'Файлы смены';
-    modal.classList.add('active');
-}
-document.getElementById('fileModalClose').addEventListener('click', function() {
-    document.getElementById('fileModal').classList.remove('active');
-});
-document.getElementById('fileModal').addEventListener('click', function(e) {
-    if (e.target === this) this.classList.remove('active');
-});
-
-// --- ПОДДЕРЖКА (ЧАТ) ---
+// ================================================================
+//   ПОДДЕРЖКА (ЧАТ)
+// ================================================================
 function updateSupportBadge() {
     const badge = document.getElementById('supportBadge');
     if (!currentUser) { badge.classList.add('hidden'); return; }
@@ -811,7 +893,7 @@ function openChatWithUser(user) {
     messages.forEach(msg => {
         if (msg.from === user && !msg.isRead) {
             msg.isRead = true;
-            saveSupportMessages();
+            saveSupportMessagesToSupabase();
         }
     });
     updateSupportBadge();
@@ -902,7 +984,7 @@ document.getElementById('supportModal').addEventListener('click', function(e) {
         document.getElementById('supportInputArea').style.display = 'flex';
     }
 });
-document.getElementById('supportSendBtn').addEventListener('click', function() {
+document.getElementById('supportSendBtn').addEventListener('click', async function() {
     const input = document.getElementById('supportInput');
     const text = input.value.trim();
     if (!text) return;
@@ -915,15 +997,19 @@ document.getElementById('supportSendBtn').addEventListener('click', function() {
     }
 
     const newMsg = {
-        from: currentUser,
-        to: toUser,
+        from_user: currentUser,
+        to_user: toUser,
         text: text,
         timestamp: new Date().toISOString(),
         isRead: false
     };
-    supportMessages.push(newMsg);
-    saveSupportMessages();
+    const { error } = await supabase.from('support_messages').insert([newMsg]);
+    if (error) {
+        alert('Ошибка отправки: ' + error.message);
+        return;
+    }
     input.value = '';
+    await loadSupportMessages();
     renderSupportUI();
     updateSupportBadge();
 });
@@ -934,7 +1020,9 @@ document.getElementById('supportInput').addEventListener('keydown', function(e) 
     }
 });
 
-// --- ОТЧЁТ ---
+// ================================================================
+//   ОТЧЁТ, ГАНТТ, PDF, ДАШБОРД (без изменений)
+// ================================================================
 function updateReport() {
     const overall = stages.length ? Math.round(stages.reduce((s, st) => s + st.progress, 0) / stages.length) : 0;
     const totalFact = stages.filter(s => s.factStart && s.factEnd).length;
@@ -1035,7 +1123,6 @@ function renderGantt() {
 
 function updateAll() { updateReport(); renderGantt(); updateShiftStats(); updateDashboard(); updateTabBadges(); }
 
-// --- ДАШБОРД ---
 function updateDashboard() {
     const overall = stages.length ? Math.round(stages.reduce((s, st) => s + st.progress, 0) / stages.length) : 0;
     document.getElementById('dashOverall').innerHTML = overall + '%';
@@ -1051,7 +1138,9 @@ function updateTabBadges() {
     document.getElementById('badgeShifts').textContent = closed.length;
 }
 
-// --- PDF ---
+// ================================================================
+//   PDF
+// ================================================================
 document.getElementById('exportPdfBtn').addEventListener('click', function() {
     if (!stages.length) { alert('Нет данных для экспорта.'); return; }
     const overall = stages.length ? Math.round(stages.reduce((s, st) => s + st.progress, 0) / stages.length) : 0;
@@ -1117,7 +1206,9 @@ document.getElementById('exportPdfBtn').addEventListener('click', function() {
     alert('✅ PDF начал скачивание.');
 });
 
-// --- ВКЛАДКИ ---
+// ================================================================
+//   ВКЛАДКИ
+// ================================================================
 document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.addEventListener('click', function() {
         const tabId = this.dataset.tab;
@@ -1133,10 +1224,12 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
     });
 });
 
-// --- КНОПКИ ---
+// ================================================================
+//   КНОПКИ
+// ================================================================
 document.getElementById('addRowBtn').addEventListener('click', function() {
     stages.push({ name: '', objectName: '', building: '', planStart: '', planEnd: '', factStart: '', factEnd: '', progress: 0 });
-    saveStages();
+    saveStagesToSupabase();
     renderInputTable();
     updateStageSelect();
     updateAll();
@@ -1147,23 +1240,26 @@ document.getElementById('addRowBtn').addEventListener('click', function() {
 document.getElementById('resetDataBtn').addEventListener('click', function() {
     if (currentUser !== ADMIN_NAME) { alert('Только администратор может сбросить этапы.'); return; }
     if (!confirm('Сбросить все этапы к начальным данным? (текущие будут удалены)')) return;
-    stages = [
-        { name: 'Котлован', objectName: '', building: '', planStart: '2026-04-01', planEnd: '2026-04-20', factStart: '2026-04-01', factEnd: '2026-04-18', progress: 100 },
-        { name: 'Фундамент', objectName: '', building: '', planStart: '2026-04-21', planEnd: '2026-05-15', factStart: '2026-04-21', factEnd: '', progress: 75 },
-        { name: 'Стены подвала', objectName: '', building: '', planStart: '2026-05-10', planEnd: '2026-05-30', factStart: '2026-05-12', factEnd: '', progress: 30 },
-        { name: 'Стены 1-го этажа', objectName: '', building: '', planStart: '2026-05-20', planEnd: '2026-06-15', factStart: '2026-06-01', factEnd: '', progress: 10 },
-        { name: 'Перекрытия', objectName: '', building: '', planStart: '2026-06-10', planEnd: '2026-06-30', factStart: '', factEnd: '', progress: 0 },
-        { name: 'Кровля', objectName: '', building: '', planStart: '2026-07-01', planEnd: '2026-07-25', factStart: '', factEnd: '', progress: 0 },
-        { name: 'Инженерные сети', objectName: '', building: '', planStart: '2026-06-20', planEnd: '2026-08-10', factStart: '2026-06-22', factEnd: '', progress: 45 },
-        { name: 'Отделка', objectName: '', building: '', planStart: '2026-08-01', planEnd: '2026-09-30', factStart: '', factEnd: '', progress: 0 }
-    ];
-    saveStages();
-    renderInputTable();
-    updateStageSelect();
-    updateAll();
-    updateDashboard();
-    updateTabBadges();
-    alert('Этапы сброшены.');
+    // Удаляем все существующие этапы
+    supabase.from('stages').delete().neq('id', 0).then(() => {
+        stages = [
+            { name: 'Котлован', objectName: '', building: '', planStart: '2026-04-01', planEnd: '2026-04-20', factStart: '2026-04-01', factEnd: '2026-04-18', progress: 100 },
+            { name: 'Фундамент', objectName: '', building: '', planStart: '2026-04-21', planEnd: '2026-05-15', factStart: '2026-04-21', factEnd: '', progress: 75 },
+            { name: 'Стены подвала', objectName: '', building: '', planStart: '2026-05-10', planEnd: '2026-05-30', factStart: '2026-05-12', factEnd: '', progress: 30 },
+            { name: 'Стены 1-го этажа', objectName: '', building: '', planStart: '2026-05-20', planEnd: '2026-06-15', factStart: '2026-06-01', factEnd: '', progress: 10 },
+            { name: 'Перекрытия', objectName: '', building: '', planStart: '2026-06-10', planEnd: '2026-06-30', factStart: '', factEnd: '', progress: 0 },
+            { name: 'Кровля', objectName: '', building: '', planStart: '2026-07-01', planEnd: '2026-07-25', factStart: '', factEnd: '', progress: 0 },
+            { name: 'Инженерные сети', objectName: '', building: '', planStart: '2026-06-20', planEnd: '2026-08-10', factStart: '2026-06-22', factEnd: '', progress: 45 },
+            { name: 'Отделка', objectName: '', building: '', planStart: '2026-08-01', planEnd: '2026-09-30', factStart: '', factEnd: '', progress: 0 }
+        ];
+        saveStagesToSupabase();
+        renderInputTable();
+        updateStageSelect();
+        updateAll();
+        updateDashboard();
+        updateTabBadges();
+        alert('Этапы сброшены.');
+    });
 });
 
 document.getElementById('updateReportBtn').addEventListener('click', function() {
@@ -1171,12 +1267,23 @@ document.getElementById('updateReportBtn').addEventListener('click', function() 
     alert('✅ Отчёт обновлён.');
 });
 
-document.getElementById('clearShiftsBtn').addEventListener('click', function() {
+document.getElementById('clearShiftsBtn').addEventListener('click', async function() {
     if (currentUser !== ADMIN_NAME) { alert('Только администратор может очистить все смены.'); return; }
-    if (!confirm('Удалить ВСЕ записи о сменах?')) return;
-    shifts = [];
-    saveShifts();
-    renderShifts();
+    if (!confirm('Удалить ВСЕ записи о сменах и файлы?')) return;
+    // Сначала удаляем все файлы из Storage
+    for (let shift of shifts) {
+        if (shift.files && shift.files.length) {
+            const paths = shift.files.map(f => f.path);
+            await deleteFilesFromStorage(paths);
+        }
+    }
+    // Удаляем все записи из таблицы
+    const { error } = await supabase.from('shifts').delete().neq('id', '');
+    if (error) {
+        alert('Ошибка очистки: ' + error.message);
+        return;
+    }
+    await loadShifts();
     updateAll();
     updateShiftUI();
     updateDashboard();
@@ -1192,9 +1299,9 @@ let currentOnboardingStep = 0;
 let previousHighlight = null;
 
 const onboardingSteps = [
-    { title: '👋 Добро пожаловать!', desc: 'Это локальная версия «Строительного контроля».', element: null },
+    { title: '👋 Добро пожаловать!', desc: 'Это синхронизируемая версия «Строительного контроля».', element: null },
     { title: '📊 Сводная панель', desc: 'Ключевые показатели: общая готовность, количество этапов и закрытых смен.', element: '.dashboard' },
-    { title: '📝 Вкладка «Этапы»', desc: 'Создание и редактирование этапов. Изменения сохраняются автоматически.', element: '.tab-btn[data-tab="input"]', tab: 'input' },
+    { title: '📝 Вкладка «Этапы»', desc: 'Создание и редактирование этапов. Изменения синхронизируются.', element: '.tab-btn[data-tab="input"]', tab: 'input' },
     { title: '📋 Таблица этапов', desc: 'Все этапы с датами и прогрессом. Можно удалять.', element: '#inputTable', tab: 'input' },
     { title: '👷 Вкладка «Сменный учёт»', desc: 'Открывайте и закрывайте смены. Можно открыть несколько одновременно.', element: '.tab-btn[data-tab="shift"]', tab: 'shift' },
     { title: '🟢 Управление сменами', desc: 'Нажмите «Открыть смену», заполните данные. При закрытии выберите конкретную смену из списка.', element: '#shiftStatus', tab: 'shift' },
@@ -1294,29 +1401,33 @@ document.getElementById('reminderStartBtn').addEventListener('click', function()
     }
 });
 
-// --- ВХОД / ВЫХОД ---
+// ================================================================
+//   ВХОД / ВЫХОД
+// ================================================================
 function setUser(name) {
     currentUser = name.trim();
     sessionStorage.setItem('currentUser', currentUser);
     document.getElementById('displayUser').textContent = currentUser;
     document.getElementById('loginModal').classList.add('hidden');
-    loadData();
-    renderInputTable();
-    updateStageSelect();
-    renderShifts();
-    updateAll();
-    updateShiftUI();
-    updateDashboard();
-    updateTabBadges();
-    updateSupportBadge();
-    if (!localStorage.getItem('onboardingDone_'+currentUser)) {
-        setTimeout(() => { if (!isOnboardingActive) startOnboarding(); }, 600);
-        setTimeout(() => {
-            if (!isOnboardingActive && !localStorage.getItem('onboardingDone_'+currentUser)) {
-                document.getElementById('onboardingReminder').classList.add('active');
-            }
-        }, 5000);
-    }
+    // Загружаем данные
+    Promise.all([loadStages(), loadShifts(), loadSupportMessages()]).then(() => {
+        renderInputTable();
+        updateStageSelect();
+        renderShifts();
+        updateAll();
+        updateShiftUI();
+        updateDashboard();
+        updateTabBadges();
+        updateSupportBadge();
+        if (!localStorage.getItem('onboardingDone_'+currentUser)) {
+            setTimeout(() => { if (!isOnboardingActive) startOnboarding(); }, 600);
+            setTimeout(() => {
+                if (!isOnboardingActive && !localStorage.getItem('onboardingDone_'+currentUser)) {
+                    document.getElementById('onboardingReminder').classList.add('active');
+                }
+            }, 5000);
+        }
+    });
 }
 
 function logout() {
@@ -1386,7 +1497,31 @@ loginPasswordInput.addEventListener('keydown', function(e) {
 
 document.getElementById('logoutBtn').addEventListener('click', logout);
 
-// --- ИНИЦИАЛИЗАЦИЯ ---
+// ================================================================
+//   ПОДПИСКА НА ИЗМЕНЕНИЯ В РЕАЛЬНОМ ВРЕМЕНИ
+// ================================================================
+function subscribeToChanges() {
+    supabase
+        .channel('stages_changes')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'stages' }, () => { loadStages(); })
+        .subscribe();
+
+    supabase
+        .channel('shifts_changes')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'shifts' }, () => { loadShifts(); })
+        .subscribe();
+
+    supabase
+        .channel('support_messages_changes')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'support_messages' }, () => { loadSupportMessages(); })
+        .subscribe();
+}
+
+subscribeToChanges();
+
+// ================================================================
+//   ИНИЦИАЛИЗАЦИЯ
+// ================================================================
 window.addEventListener('DOMContentLoaded', function() {
     const savedUser = sessionStorage.getItem('currentUser');
     if (savedUser) {
@@ -1397,7 +1532,7 @@ window.addEventListener('DOMContentLoaded', function() {
         document.getElementById('loginModal').classList.remove('hidden');
         document.getElementById('loginName').focus();
     }
-    console.log('✅ Локальная версия с множественными сменами загружена.');
+    console.log('✅ Supabase версия загружена.');
 });
 </script>
 </body>
