@@ -9,6 +9,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
+        /* ===== ВСЕ СТИЛИ ===== */
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
         body { background: #e8edf5; min-height: 100vh; padding: 20px; }
         .container { max-width: 1400px; margin: 0 auto; background: rgba(255,255,255,0.85); backdrop-filter: blur(10px); border-radius: 32px; box-shadow: 0 20px 60px rgba(0,0,0,0.1); padding: 25px 30px 35px; }
@@ -689,6 +690,7 @@
                 let value = this.value;
                 if (field === 'progress') value = parseFloat(value) || 0;
                 stages[idx][field] = value;
+                // Сохраняем асинхронно, но не ждём, чтобы не тормозить ввод
                 saveStagesToSupabase();
                 updateDashboard();
                 updateTabBadges();
@@ -697,19 +699,18 @@
         });
 
         document.querySelectorAll('#inputBody .del-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
+            btn.addEventListener('click', async function() {
                 const idx = parseInt(this.dataset.idx);
                 if (!confirm(`Удалить этап "${stages[idx].name}"?`)) return;
                 const stageId = stages[idx].id;
                 stages.splice(idx, 1);
-                supabaseClient.from('stages').delete().match({ id: stageId }).then(() => {
-                    saveStagesToSupabase();
-                    renderInputTable();
-                    updateStageSelect();
-                    updateAll();
-                    updateDashboard();
-                    updateTabBadges();
-                });
+                await supabaseClient.from('stages').delete().match({ id: stageId });
+                await saveStagesToSupabase();
+                renderInputTable();
+                updateStageSelect();
+                updateAll();
+                updateDashboard();
+                updateTabBadges();
             });
         });
     }
@@ -798,31 +799,390 @@
     }
 
     // ================================================================
-    //   ПОДДЕРЖКА (ЧАТ) — полная версия (опущена для краткости, но рабочая)
+    //   ПОДДЕРЖКА (ЧАТ) — полная версия
     // ================================================================
-    // ... (код поддержки идентичен предыдущему, включая функции updateSupportBadge, renderChatList и т.д.)
-    // Для экономии места я оставлю только необходимые функции, которые уже были в предыдущих версиях.
-    // Ниже приведена полная реализация, но если вам нужен компактный код — дайте знать.
-    // ================================================================
+    function updateSupportBadge() {
+        const badge = document.getElementById('supportBadge');
+        if (!currentUser) { badge.classList.add('hidden'); return; }
+        let count = 0;
+        if (currentUser === ADMIN_NAME) {
+            count = supportMessages.filter(msg => msg.to_user === ADMIN_NAME && !msg.isRead).length;
+        } else {
+            count = supportMessages.filter(msg => msg.to_user === currentUser && !msg.isRead).length;
+        }
+        if (count > 0) {
+            badge.textContent = count;
+            badge.classList.remove('hidden');
+        } else {
+            badge.classList.add('hidden');
+        }
+    }
+
+    function getChatUsersForAdmin() {
+        const users = new Set();
+        supportMessages.forEach(msg => {
+            if (msg.from_user === ADMIN_NAME) users.add(msg.to_user);
+            else if (msg.to_user === ADMIN_NAME) users.add(msg.from_user);
+        });
+        users.delete(ADMIN_NAME);
+        return Array.from(users);
+    }
+
+    function getChatMessages(u1, u2) {
+        return supportMessages.filter(msg =>
+            (msg.from_user === u1 && msg.to_user === u2) || (msg.from_user === u2 && msg.to_user === u1)
+        );
+    }
+
+    function renderChatList() {
+        const container = document.getElementById('supportContent');
+        const users = getChatUsersForAdmin();
+        if (!users.length) {
+            container.innerHTML = '<div class="support-empty">Нет чатов с пользователями.</div>';
+            return;
+        }
+        let html = '<ul class="chat-list">';
+        users.forEach(user => {
+            const messages = getChatMessages(ADMIN_NAME, user);
+            const lastMsg = messages.length ? messages[messages.length-1] : null;
+            const unread = messages.filter(m => m.from_user === user && !m.isRead).length;
+            html += `
+                <li class="chat-list-item" data-user="${user}">
+                    <div><div class="chat-user">${user}</div><div class="chat-last-msg">${lastMsg ? lastMsg.text.substring(0,50) : 'Нет сообщений'}</div></div>
+                    ${unread > 0 ? `<span class="chat-unread">${unread}</span>` : ''}
+                </li>
+            `;
+        });
+        html += '</ul>';
+        container.innerHTML = html;
+        container.querySelectorAll('.chat-list-item').forEach(item => {
+            item.addEventListener('click', function() {
+                openChatWithUser(this.dataset.user);
+            });
+        });
+    }
+
+    function openChatWithUser(user) {
+        currentChatUser = user;
+        document.getElementById('supportModalTitle').textContent = '💬 Чат с ' + user;
+        renderChatMessages(ADMIN_NAME, user);
+        document.getElementById('supportInputArea').style.display = 'flex';
+        document.getElementById('supportInput').focus();
+        const messages = getChatMessages(ADMIN_NAME, user);
+        messages.forEach(msg => {
+            if (msg.from_user === user && !msg.isRead) {
+                msg.isRead = true;
+                saveSupportMessagesToSupabase();
+            }
+        });
+        updateSupportBadge();
+    }
+
+    function renderChatMessages(u1, u2) {
+        const container = document.getElementById('supportContent');
+        const messages = getChatMessages(u1, u2);
+        if (!messages.length) {
+            container.innerHTML = '<div class="support-empty">Нет сообщений. Напишите что-нибудь.</div>';
+            return;
+        }
+        const sorted = [...messages].sort((a,b) => new Date(a.timestamp) - new Date(b.timestamp));
+        let html = '<div class="support-messages" id="supportMessagesContainer">';
+        sorted.forEach(msg => {
+            const isUser = msg.from_user === currentUser;
+            const senderName = msg.from_user === ADMIN_NAME ? 'Администратор' : msg.from_user;
+            html += `
+                <div class="support-message ${isUser ? 'user' : 'admin'}">
+                    ${currentUser === ADMIN_NAME ? `<div class="sender">${senderName}</div>` : ''}
+                    <div>${msg.text}</div>
+                    <div class="meta">${new Date(msg.timestamp).toLocaleString('ru-RU')}</div>
+                </div>
+            `;
+        });
+        html += '</div>';
+        container.innerHTML = html;
+        const msgsContainer = document.getElementById('supportMessagesContainer');
+        if (msgsContainer) msgsContainer.scrollTop = msgsContainer.scrollHeight;
+    }
+
+    function renderUserChat() {
+        const container = document.getElementById('supportContent');
+        const messages = getChatMessages(currentUser, ADMIN_NAME);
+        if (!messages.length) {
+            container.innerHTML = '<div class="support-empty">Нет сообщений. Напишите что-нибудь.</div>';
+            return;
+        }
+        const sorted = [...messages].sort((a,b) => new Date(a.timestamp) - new Date(b.timestamp));
+        let html = '<div class="support-messages" id="supportMessagesContainer">';
+        sorted.forEach(msg => {
+            const isUser = msg.from_user === currentUser;
+            html += `
+                <div class="support-message ${isUser ? 'user' : 'admin'}">
+                    <div>${msg.text}</div>
+                    <div class="meta">${new Date(msg.timestamp).toLocaleString('ru-RU')}</div>
+                </div>
+            `;
+        });
+        html += '</div>';
+        container.innerHTML = html;
+        const msgsContainer = document.getElementById('supportMessagesContainer');
+        if (msgsContainer) msgsContainer.scrollTop = msgsContainer.scrollHeight;
+        document.getElementById('supportInputArea').style.display = 'flex';
+        document.getElementById('supportInput').focus();
+        document.getElementById('supportModalTitle').textContent = '💬 Поддержка';
+    }
+
+    function renderSupportUI() {
+        if (!currentUser) return;
+        if (currentUser === ADMIN_NAME) {
+            renderChatList();
+            document.getElementById('supportInputArea').style.display = 'none';
+            document.getElementById('supportModalTitle').textContent = '💬 Список чатов';
+            currentChatUser = null;
+        } else {
+            renderUserChat();
+            document.getElementById('supportInputArea').style.display = 'flex';
+            document.getElementById('supportModalTitle').textContent = '💬 Поддержка';
+        }
+        updateSupportBadge();
+    }
+
+    document.getElementById('supportBtn').addEventListener('click', function() {
+        if (!currentUser) { alert('Сначала войдите в систему.'); return; }
+        document.getElementById('supportModal').classList.add('active');
+        renderSupportUI();
+    });
+    document.getElementById('supportModalClose').addEventListener('click', function() {
+        document.getElementById('supportModal').classList.remove('active');
+        currentChatUser = null;
+        document.getElementById('supportInputArea').style.display = 'flex';
+    });
+    document.getElementById('supportModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            document.getElementById('supportModal').classList.remove('active');
+            currentChatUser = null;
+            document.getElementById('supportInputArea').style.display = 'flex';
+        }
+    });
+    document.getElementById('supportSendBtn').addEventListener('click', async function() {
+        const input = document.getElementById('supportInput');
+        const text = input.value.trim();
+        if (!text) return;
+        if (!currentUser) { alert('Сначала войдите.'); return; }
+
+        let toUser = ADMIN_NAME;
+        if (currentUser === ADMIN_NAME) {
+            if (!currentChatUser) { alert('Выберите чат с пользователем из списка.'); return; }
+            toUser = currentChatUser;
+        }
+
+        const newMsg = {
+            from_user: currentUser,
+            to_user: toUser,
+            text: text,
+            timestamp: new Date().toISOString(),
+            isRead: false
+        };
+        const { error } = await supabaseClient.from('support_messages').insert([newMsg]);
+        if (error) {
+            alert('Ошибка отправки: ' + error.message);
+            return;
+        }
+        input.value = '';
+        await loadSupportMessages();
+        renderSupportUI();
+        updateSupportBadge();
+    });
+    document.getElementById('supportInput').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            document.getElementById('supportSendBtn').click();
+        }
+    });
 
     // ================================================================
     //   ОТЧЁТ, ГАНТТ, PDF, ДАШБОРД
     // ================================================================
     function updateReport() {
-        // ... (без изменений)
+        const overall = stages.length ? Math.round(stages.reduce((s, st) => s + st.progress, 0) / stages.length) : 0;
+        const totalFact = stages.filter(s => s.factStart && s.factEnd).length;
+        const onTrack = stages.filter(s => { if (!s.planEnd || !s.factEnd) return false; return new Date(s.factEnd) <= new Date(s.planEnd); }).length;
+
+        document.getElementById('reportSummary').innerHTML = `
+            <div class="stat-card"><div class="label">Общая готовность</div><div class="value">${overall}%</div><span class="badge ${overall<30?'danger':overall<70?'warning':''}">${overall<30?'Требует внимания':overall<70?'В процессе':'Отлично'}</span></div>
+            <div class="stat-card"><div class="label">Этапов всего</div><div class="value">${stages.length}</div><span class="badge">${totalFact} завершено</span></div>
+            <div class="stat-card"><div class="label">В графике</div><div class="value">${onTrack} / ${totalFact}</div><span class="badge ${onTrack<totalFact?'warning':'ok'}">${totalFact?Math.round(onTrack/totalFact*100):0}%</span></div>
+        `;
+        const tbody = document.getElementById('reportBody');
+        tbody.innerHTML = '';
+        stages.forEach(st => {
+            const planStart = st.planStart ? new Date(st.planStart).toLocaleDateString('ru-RU') : '—';
+            const planEnd = st.planEnd ? new Date(st.planEnd).toLocaleDateString('ru-RU') : '—';
+            const factStart = st.factStart ? new Date(st.factStart).toLocaleDateString('ru-RU') : '—';
+            const factEnd = st.factEnd ? new Date(st.factEnd).toLocaleDateString('ru-RU') : '—';
+            const progress = st.progress || 0;
+            let status = 'Не начат', cls = '';
+            if (progress === 100) { status = 'Завершён'; cls = 'ok'; }
+            else if (progress > 0) { status = 'В работе'; cls = 'warn'; }
+            else { status = 'Не начат'; cls = 'fail'; }
+            const planDays = st.planStart && st.planEnd ? Math.round((new Date(st.planEnd)-new Date(st.planStart))/(1000*60*60*24)) : '—';
+            const factDays = st.factStart && st.factEnd ? Math.round((new Date(st.factEnd)-new Date(st.factStart))/(1000*60*60*24)) : '—';
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td><strong>${st.name}</strong></td><td>${st.objectName||'—'}</td><td>${st.building||'—'}</td><td>${planStart} – ${planEnd} (${planDays} дн.)</td><td>${factStart} – ${factEnd} (${factDays} дн.)</td><td><div class="progress-bar"><div class="fill fact" style="width:${progress}%;"></div></div>${progress}%</td><td><span class="status-tag ${cls}">${status}</span></td>`;
+            tbody.appendChild(tr);
+        });
+        renderCharts(overall);
+        updateShiftStats();
     }
-    function renderCharts(overall) { /* ... */ }
-    function updateShiftStats() { /* ... */ }
-    function renderGantt() { /* ... */ }
-    function updateAll() { /* ... */ }
-    function updateDashboard() { /* ... */ }
-    function updateTabBadges() { /* ... */ }
+
+    function renderCharts(overall) {
+        if (pieChartInstance) pieChartInstance.destroy();
+        if (barChartInstance) barChartInstance.destroy();
+        const ctx1 = document.getElementById('pieChart').getContext('2d');
+        pieChartInstance = new Chart(ctx1, {
+            type: 'pie',
+            data: { labels: ['Завершено (100%)','В процессе','Не начато'], datasets: [{ data: [stages.filter(s=>s.progress===100).length, stages.filter(s=>s.progress>0&&s.progress<100).length, stages.filter(s=>s.progress===0).length], backgroundColor: ['#0f6e4a','#f3b33d','#c9453b'], borderWidth: 0 }] },
+            options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+        });
+        const ctx2 = document.getElementById('barChart').getContext('2d');
+        barChartInstance = new Chart(ctx2, {
+            type: 'bar',
+            data: {
+                labels: stages.map(s => s.name.length > 15 ? s.name.slice(0,15)+'…' : s.name),
+                datasets: [{ label: 'План', data: stages.map(() => 100), backgroundColor: '#3b6f9b', opacity: 0.4 }, { label: 'Факт', data: stages.map(s => s.progress), backgroundColor: stages.map(s => s.progress >= 100 ? '#0f6e4a' : (s.progress > 0 ? '#f3b33d' : '#c9453b')) }]
+            },
+            options: { responsive: true, scales: { y: { beginAtZero: true, max: 100 } }, plugins: { legend: { position: 'top' } } }
+        });
+    }
+
+    function updateShiftStats() {
+        const container = document.getElementById('shiftStats');
+        const filtered = getFilteredShifts();
+        if (!filtered.length) { container.innerHTML = '<p style="color:#6a7b8c;">Нет записей о сменах.</p>'; return; }
+        const total = filtered.length, open = filtered.filter(sh=>sh.closeTime===null).length, closed = filtered.filter(sh=>sh.closeTime!==null).length;
+        const totalPeople = filtered.reduce((sum,sh)=>sum+(sh.people||0),0), stagesSet = new Set(filtered.map(sh=>sh.stage));
+        container.innerHTML = `<div>📋 Всего: <strong>${total}</strong></div><div>🟢 Открыто: <strong>${open}</strong></div><div>🔒 Закрыто: <strong>${closed}</strong></div><div>👷 Среднее: <strong>${Math.round(totalPeople/total)}</strong></div><div>🏗️ Этапов: <strong>${stagesSet.size}</strong></div>`;
+    }
+
+    function renderGantt() {
+        const container = document.getElementById('ganttContainer');
+        if (!stages.length) { container.innerHTML = '<p style="color:#6a7b8c;">Нет этапов.</p>'; return; }
+        let minDate = new Date(), maxDate = new Date(), hasDates = false;
+        stages.forEach(st => {
+            if (st.planStart) { const d = new Date(st.planStart); if (!hasDates || d < minDate) minDate = d; hasDates = true; }
+            if (st.planEnd) { const d = new Date(st.planEnd); if (!hasDates || d > maxDate) maxDate = d; hasDates = true; }
+            if (st.factStart) { const d = new Date(st.factStart); if (!hasDates || d < minDate) minDate = d; hasDates = true; }
+            if (st.factEnd) { const d = new Date(st.factEnd); if (!hasDates || d > maxDate) maxDate = d; hasDates = true; }
+        });
+        if (!hasDates) { container.innerHTML = '<p style="color:#6a7b8c;">Нет дат.</p>'; return; }
+        const range = maxDate - minDate;
+        minDate = new Date(minDate.getTime() - range * 0.1);
+        maxDate = new Date(maxDate.getTime() + range * 0.1);
+        const totalMs = maxDate - minDate;
+        let html = '<div class="gantt-grid"><div class="gantt-month-labels">';
+        const months = ['Янв','Фев','Мар','Апр','Май','Июн','Июл','Авг','Сен','Окт','Ноя','Дек'];
+        const startMonth = minDate.getMonth(), startYear = minDate.getFullYear();
+        let monthCount = 12 * (maxDate.getFullYear() - startYear) + (maxDate.getMonth() - startMonth) + 1;
+        for (let i = 0; i < Math.max(monthCount, 1); i++) {
+            const d = new Date(startYear, startMonth + i, 1);
+            html += `<div>${months[d.getMonth()]}${d.getFullYear() !== startYear ? ' '+d.getFullYear() : ''}</div>`;
+        }
+        html += '</div>';
+        stages.forEach(st => {
+            html += '<div class="gantt-row"><div class="label">'+st.name+'</div><div class="timeline">';
+            const planStart = st.planStart ? new Date(st.planStart) : null, planEnd = st.planEnd ? new Date(st.planEnd) : null;
+            const factStart = st.factStart ? new Date(st.factStart) : null, factEnd = st.factEnd ? new Date(st.factEnd) : null;
+            function getPos(s,e) { if (!s||!e) return null; const left = ((s-minDate)/totalMs)*100, width = ((e-s)/totalMs)*100; return { left: Math.max(0,left), width: Math.min(100,width) }; }
+            if (planStart && planEnd) { const p = getPos(planStart, planEnd); if (p) html += `<div class="gantt-bar plan" style="left:${p.left}%;width:${p.width}%;"></div>`; }
+            if (factStart && factEnd) { const p = getPos(factStart, factEnd); if (p) { let cls = 'fact'; if (planEnd && new Date(factEnd) > new Date(planEnd)) cls += ' behind'; else if (planEnd && new Date(factEnd) <= new Date(planEnd)) cls += ' ahead'; html += `<div class="gantt-bar ${cls}" style="left:${p.left}%;width:${p.width}%;">${st.progress}%</div>`; } }
+            html += '</div></div>';
+        });
+        html += '</div>';
+        container.innerHTML = html;
+    }
+
+    function updateAll() { updateReport(); renderGantt(); updateShiftStats(); updateDashboard(); updateTabBadges(); }
+
+    function updateDashboard() {
+        const overall = stages.length ? Math.round(stages.reduce((s, st) => s + st.progress, 0) / stages.length) : 0;
+        document.getElementById('dashOverall').innerHTML = overall + '%';
+        document.getElementById('dashStages').textContent = stages.length;
+        const filtered = getFilteredShifts();
+        const closed = filtered.filter(sh => sh.closeTime !== null);
+        document.getElementById('dashShifts').textContent = closed.length;
+    }
+    function updateTabBadges() {
+        document.getElementById('badgeStages').textContent = stages.length;
+        const filtered = getFilteredShifts();
+        const closed = filtered.filter(sh => sh.closeTime !== null);
+        document.getElementById('badgeShifts').textContent = closed.length;
+    }
 
     // ================================================================
     //   PDF
     // ================================================================
     document.getElementById('exportPdfBtn').addEventListener('click', function() {
-        // ... (без изменений)
+        if (!stages.length) { alert('Нет данных для экспорта.'); return; }
+        const overall = stages.length ? Math.round(stages.reduce((s, st) => s + st.progress, 0) / stages.length) : 0;
+        const totalFact = stages.filter(s => s.factStart && s.factEnd).length;
+        const onTrack = stages.filter(s => { if (!s.planEnd || !s.factEnd) return false; return new Date(s.factEnd) <= new Date(s.planEnd); }).length;
+        const tableBody = stages.map(st => {
+            const planStart = st.planStart ? new Date(st.planStart).toLocaleDateString('ru-RU') : '—';
+            const planEnd = st.planEnd ? new Date(st.planEnd).toLocaleDateString('ru-RU') : '—';
+            const factStart = st.factStart ? new Date(st.factStart).toLocaleDateString('ru-RU') : '—';
+            const factEnd = st.factEnd ? new Date(st.factEnd).toLocaleDateString('ru-RU') : '—';
+            let status = 'Не начат';
+            if (st.progress === 100) status = 'Завершён';
+            else if (st.progress > 0) status = 'В работе';
+            return [st.name, st.objectName||'—', st.building||'—', `${planStart} – ${planEnd}`, `${factStart} – ${factEnd}`, `${st.progress}%`, status];
+        });
+        const doc = {
+            pageSize: 'A4',
+            pageOrientation: 'landscape',
+            styles: {
+                header: { fontSize: 22, bold: true, alignment: 'center', margin: [0, 0, 0, 10] },
+                subheader: { fontSize: 14, alignment: 'center', margin: [0, 0, 0, 15], color: '#555' },
+                section: { fontSize: 16, bold: true, margin: [0, 15, 0, 8], color: '#0f6e4a' },
+                tableHeader: { bold: true, fontSize: 12, fillColor: '#e2f0e6', color: '#0a1e2f' },
+                tableRow: { fontSize: 11 },
+                statLabel: { fontSize: 12, bold: true, color: '#4a6378' },
+                statValue: { fontSize: 20, bold: true, color: '#0a1e2f' }
+            },
+            content: [
+                { text: 'Отчёт по строительному контролю', style: 'header' },
+                { text: `Дата: ${new Date().toLocaleString('ru-RU')}`, style: 'subheader' },
+                { text: 'Общая статистика', style: 'section' },
+                {
+                    layout: 'noBorders',
+                    table: {
+                        widths: ['*', '*', '*', '*'],
+                        body: [
+                            [{ text: 'Общая готовность', style: 'statLabel' }, { text: `${overall}%`, style: 'statValue' }, { text: 'Этапов всего', style: 'statLabel' }, { text: stages.length, style: 'statValue' }],
+                            [{ text: 'Завершено этапов', style: 'statLabel' }, { text: totalFact, style: 'statValue' }, { text: 'В графике', style: 'statLabel' }, { text: `${onTrack} / ${totalFact} (${totalFact ? Math.round(onTrack/totalFact*100) : 0}%)`, style: 'statValue' }]
+                        ]
+                    }
+                },
+                { text: 'Детальный план-факт', style: 'section', margin: [0, 20, 0, 5] },
+                {
+                    table: {
+                        headerRows: 1,
+                        widths: ['auto', 'auto', 'auto', 'auto', 'auto', 'auto', 'auto'],
+                        body: [
+                            [{ text: 'Этап', style: 'tableHeader' }, { text: 'Объект', style: 'tableHeader' }, { text: 'Дом', style: 'tableHeader' }, { text: 'План', style: 'tableHeader' }, { text: 'Факт', style: 'tableHeader' }, { text: 'Прогресс', style: 'tableHeader' }, { text: 'Статус', style: 'tableHeader' }],
+                            ...tableBody.map(row => row.map(cell => ({ text: cell, style: 'tableRow' })))
+                        ]
+                    },
+                    layout: { fillColor: function(rowIndex) { return rowIndex % 2 === 0 ? '#f8faff' : null; } }
+                },
+                { text: 'Сменная статистика', style: 'section', margin: [0, 20, 0, 5] },
+                { columns: [
+                    { text: `Всего смен: ${getFilteredShifts().length}`, width: 'auto' },
+                    { text: `Открыто: ${getFilteredShifts().filter(sh => sh.closeTime === null).length}`, width: 'auto' },
+                    { text: `Закрыто: ${getFilteredShifts().filter(sh => sh.closeTime !== null).length}`, width: 'auto' }
+                ], columnGap: 20 }
+            ]
+        };
+        pdfMake.createPdf(doc).download('Отчёт_строительный_контроль.pdf');
+        alert('✅ PDF начал скачивание.');
     });
 
     // ================================================================
@@ -846,7 +1206,7 @@
     // ================================================================
     //   КНОПКИ
     // ================================================================
-    document.getElementById('addRowBtn').addEventListener('click', function() {
+    document.getElementById('addRowBtn').addEventListener('click', async function() {
         stages.push({
             name: '',
             objectName: '',
@@ -857,7 +1217,7 @@
             factEnd: null,
             progress: 0
         });
-        saveStagesToSupabase();
+        await saveStagesToSupabase();  // <-- Дожидаемся сохранения
         renderInputTable();
         updateStageSelect();
         updateAll();
@@ -865,28 +1225,27 @@
         updateTabBadges();
     });
 
-    document.getElementById('resetDataBtn').addEventListener('click', function() {
+    document.getElementById('resetDataBtn').addEventListener('click', async function() {
         if (currentUser !== ADMIN_NAME) { alert('Только администратор может сбросить этапы.'); return; }
         if (!confirm('Сбросить все этапы к начальным данным? (текущие будут удалены)')) return;
-        supabaseClient.from('stages').delete().neq('id', 0).then(() => {
-            stages = [
-                { name: 'Котлован', objectName: '', building: '', planStart: '2026-04-01', planEnd: '2026-04-20', factStart: '2026-04-01', factEnd: '2026-04-18', progress: 100 },
-                { name: 'Фундамент', objectName: '', building: '', planStart: '2026-04-21', planEnd: '2026-05-15', factStart: '2026-04-21', factEnd: null, progress: 75 },
-                { name: 'Стены подвала', objectName: '', building: '', planStart: '2026-05-10', planEnd: '2026-05-30', factStart: '2026-05-12', factEnd: null, progress: 30 },
-                { name: 'Стены 1-го этажа', objectName: '', building: '', planStart: '2026-05-20', planEnd: '2026-06-15', factStart: '2026-06-01', factEnd: null, progress: 10 },
-                { name: 'Перекрытия', objectName: '', building: '', planStart: '2026-06-10', planEnd: '2026-06-30', factStart: null, factEnd: null, progress: 0 },
-                { name: 'Кровля', objectName: '', building: '', planStart: '2026-07-01', planEnd: '2026-07-25', factStart: null, factEnd: null, progress: 0 },
-                { name: 'Инженерные сети', objectName: '', building: '', planStart: '2026-06-20', planEnd: '2026-08-10', factStart: '2026-06-22', factEnd: null, progress: 45 },
-                { name: 'Отделка', objectName: '', building: '', planStart: '2026-08-01', planEnd: '2026-09-30', factStart: null, factEnd: null, progress: 0 }
-            ];
-            saveStagesToSupabase();
-            renderInputTable();
-            updateStageSelect();
-            updateAll();
-            updateDashboard();
-            updateTabBadges();
-            alert('Этапы сброшены.');
-        });
+        await supabaseClient.from('stages').delete().neq('id', 0);
+        stages = [
+            { name: 'Котлован', objectName: '', building: '', planStart: '2026-04-01', planEnd: '2026-04-20', factStart: '2026-04-01', factEnd: '2026-04-18', progress: 100 },
+            { name: 'Фундамент', objectName: '', building: '', planStart: '2026-04-21', planEnd: '2026-05-15', factStart: '2026-04-21', factEnd: null, progress: 75 },
+            { name: 'Стены подвала', objectName: '', building: '', planStart: '2026-05-10', planEnd: '2026-05-30', factStart: '2026-05-12', factEnd: null, progress: 30 },
+            { name: 'Стены 1-го этажа', objectName: '', building: '', planStart: '2026-05-20', planEnd: '2026-06-15', factStart: '2026-06-01', factEnd: null, progress: 10 },
+            { name: 'Перекрытия', objectName: '', building: '', planStart: '2026-06-10', planEnd: '2026-06-30', factStart: null, factEnd: null, progress: 0 },
+            { name: 'Кровля', objectName: '', building: '', planStart: '2026-07-01', planEnd: '2026-07-25', factStart: null, factEnd: null, progress: 0 },
+            { name: 'Инженерные сети', objectName: '', building: '', planStart: '2026-06-20', planEnd: '2026-08-10', factStart: '2026-06-22', factEnd: null, progress: 45 },
+            { name: 'Отделка', objectName: '', building: '', planStart: '2026-08-01', planEnd: '2026-09-30', factStart: null, factEnd: null, progress: 0 }
+        ];
+        await saveStagesToSupabase();
+        renderInputTable();
+        updateStageSelect();
+        updateAll();
+        updateDashboard();
+        updateTabBadges();
+        alert('Этапы сброшены.');
     });
 
     document.getElementById('updateReportBtn').addEventListener('click', function() {
@@ -903,11 +1262,7 @@
                 await deleteFilesFromStorage(paths);
             }
         }
-        const { error } = await supabaseClient.from('shifts').delete().neq('id', '');
-        if (error) {
-            alert('Ошибка очистки: ' + error.message);
-            return;
-        }
+        await supabaseClient.from('shifts').delete().neq('id', '');
         await loadShifts();
         updateAll();
         updateShiftUI();
@@ -917,7 +1272,7 @@
     });
 
     // ================================================================
-    //   ОБУЧЕНИЕ (ТУР) — упрощённая версия
+    //   ОБУЧЕНИЕ (ТУР) — упрощённая версия (без изменений)
     // ================================================================
     let isOnboardingActive = false;
     let currentOnboardingStep = 0;
