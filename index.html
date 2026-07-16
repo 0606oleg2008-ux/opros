@@ -1,395 +1,106 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Строительный контроль</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Строительный контроль (локальная версия)</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        /* ===== ОСНОВНЫЕ СТИЛИ (полная версия) ===== */
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
-        body {
-            background: linear-gradient(145deg, #e8edf5 0%, #d5dde8 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            background: rgba(255,255,255,0.85);
-            backdrop-filter: blur(10px);
-            border-radius: 32px;
-            box-shadow: 0 20px 60px rgba(0,20,40,0.12), 0 8px 24px rgba(0,0,0,0.04);
-            padding: 25px 30px 35px;
-            border: 1px solid rgba(255,255,255,0.6);
-        }
-        h1 { font-size: 28px; font-weight: 700; color: #0a1e2f; letter-spacing: -0.5px; }
-        .sub { color: #4a6378; font-weight: 500; margin-bottom: 20px; }
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            border-bottom: 2px solid rgba(0,40,70,0.06);
-            padding-bottom: 16px;
-            margin-bottom: 20px;
-        }
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
+        /* ===== ВСЕ СТИЛИ (ТЕ ЖЕ, ЧТО В ПРЕДЫДУЩЕЙ ВЕРСИИ) ===== */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
+        body { background: #e8edf5; min-height: 100vh; padding: 20px; }
+        .container { max-width: 1400px; margin: 0 auto; background: rgba(255,255,255,0.85); backdrop-filter: blur(10px); border-radius: 32px; box-shadow: 0 20px 60px rgba(0,0,0,0.1); padding: 25px 30px 35px; }
+        h1 { font-size: 28px; color: #0a1e2f; }
+        .sub { color: #4a6378; margin-bottom: 20px; }
+        .header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; border-bottom: 2px solid #eef2f6; padding-bottom: 16px; margin-bottom: 20px; }
+        .user-info { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
         .user-info .name { font-weight: 600; color: #0f6e4a; background: #e2f0e6; padding: 4px 16px; border-radius: 30px; }
-        .user-info .btn-logout {
-            background: transparent;
-            border: 1px solid #bcc9d6;
-            padding: 5px 18px;
-            border-radius: 30px;
-            cursor: pointer;
-            font-weight: 500;
-            color: #2a4055;
-            transition: 0.2s;
-        }
-        .user-info .btn-logout:hover { background: #e2e8f0; border-color: #8a9cb0; }
-        .user-info .btn-outline {
-            background: transparent;
-            border: 2px solid #0f6e4a;
-            color: #0f6e4a;
-            padding: 4px 12px;
-            font-size: 13px;
-            border-radius: 30px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: 0.2s;
-        }
-        .user-info .btn-outline:hover { background: #0f6e4a; color: #fff; }
-
-        .dashboard {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-            gap: 12px;
-            background: #f5f9ff;
-            border-radius: 16px;
-            padding: 14px 20px;
-            margin-bottom: 24px;
-            border: 1px solid #e6ecf2;
-        }
+        .user-info .btn-logout { background: transparent; border: 1px solid #bcc9d6; padding: 5px 18px; border-radius: 30px; cursor: pointer; font-weight: 500; color: #2a4055; }
+        .user-info .btn-logout:hover { background: #e2e8f0; }
+        .dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; background: #f5f9ff; border-radius: 16px; padding: 14px 20px; margin-bottom: 24px; }
         .dashboard-item { text-align: center; }
-        .dashboard-item .dash-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.3px; color: #4a6378; font-weight: 600; }
-        .dashboard-item .dash-value { font-size: 22px; font-weight: 700; color: #0a1e2f; margin-top: 2px; }
-
-        .tabs {
-            display: flex;
-            gap: 6px;
-            border-bottom: 2px solid rgba(0,40,70,0.06);
-            margin-bottom: 24px;
-            flex-wrap: wrap;
-        }
-        .tab-btn {
-            padding: 12px 24px;
-            background: transparent;
-            border: none;
-            font-size: 15px;
-            font-weight: 600;
-            color: #4a6378;
-            cursor: pointer;
-            border-bottom: 3px solid transparent;
-            transition: 0.25s ease;
-            border-radius: 12px 12px 0 0;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .tab-btn:hover { background: rgba(26,127,74,0.06); color: #0f6e4a; }
+        .dashboard-item .dash-label { font-size: 11px; text-transform: uppercase; color: #4a6378; font-weight: 600; }
+        .dashboard-item .dash-value { font-size: 22px; font-weight: 700; color: #0a1e2f; }
+        .tabs { display: flex; gap: 6px; border-bottom: 2px solid #eef2f6; margin-bottom: 24px; flex-wrap: wrap; }
+        .tab-btn { padding: 12px 24px; background: transparent; border: none; font-size: 15px; font-weight: 600; color: #4a6378; cursor: pointer; border-bottom: 3px solid transparent; transition: 0.25s; }
+        .tab-btn:hover { color: #0f6e4a; }
         .tab-btn.active { color: #0f6e4a; border-bottom-color: #0f6e4a; background: rgba(26,127,74,0.06); }
         .tab-btn .badge-count { background: #dce3eb; color: #1a3347; font-size: 11px; font-weight: 700; padding: 0 8px; border-radius: 30px; line-height: 18px; }
         .tab-btn.active .badge-count { background: #0f6e4a; color: #fff; }
-
         .tab-content { display: none; animation: fadeIn 0.3s ease; }
         .tab-content.active { display: block; }
         @keyframes fadeIn { 0% { opacity: 0; transform: translateY(6px); } 100% { opacity: 1; transform: translateY(0); } }
-
-        .input-table {
-            width: 100%;
-            border-collapse: separate;
-            border-spacing: 0;
-            font-size: 14px;
-            margin-top: 12px;
-            border-radius: 16px;
-            overflow: hidden;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.02);
-        }
-        .input-table th {
-            background: #f2f6fc;
-            padding: 12px 10px;
-            text-align: left;
-            font-weight: 600;
-            color: #1a3347;
-            border-bottom: 2px solid #dce3eb;
-        }
-        .input-table td {
-            padding: 8px 10px;
-            border-bottom: 1px solid #eef2f6;
-            vertical-align: middle;
-        }
+        .input-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 14px; margin-top: 12px; border-radius: 16px; overflow: hidden; }
+        .input-table th { background: #f2f6fc; padding: 12px 10px; text-align: left; font-weight: 600; color: #1a3347; border-bottom: 2px solid #dce3eb; }
+        .input-table td { padding: 8px 10px; border-bottom: 1px solid #eef2f6; vertical-align: middle; }
         .input-table tr:last-child td { border-bottom: none; }
-        .input-table input, .input-table select {
-            width: 100%;
-            padding: 8px 10px;
-            border: 1px solid #dce3eb;
-            border-radius: 8px;
-            font-size: 13px;
-            background: #fafcfe;
-            transition: 0.2s;
-        }
+        .input-table input, .input-table select { width: 100%; padding: 8px 10px; border: 1px solid #dce3eb; border-radius: 8px; font-size: 13px; background: #fafcfe; }
         .input-table input:focus, .input-table select:focus { border-color: #0f6e4a; outline: none; box-shadow: 0 0 0 3px rgba(26,127,74,0.12); }
         .input-table .del-btn { background: none; border: none; color: #b33636; font-size: 18px; cursor: pointer; }
         .input-table .del-btn:hover { transform: scale(1.2); }
         .input-table .view-btn { background: none; border: none; color: #2b6f9b; font-size: 18px; cursor: pointer; }
-        .input-table .view-btn:hover { transform: scale(1.1); }
-
         .btn-group { margin: 20px 0 12px; display: flex; gap: 12px; flex-wrap: wrap; }
-        .btn {
-            padding: 10px 26px;
-            border: none;
-            border-radius: 30px;
-            font-weight: 600;
-            font-size: 14px;
-            cursor: pointer;
-            transition: 0.2s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
+        .btn { padding: 10px 26px; border: none; border-radius: 30px; font-weight: 600; font-size: 14px; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 8px; }
         .btn-primary { background: #0f6e4a; color: #fff; box-shadow: 0 4px 12px rgba(15,110,74,0.25); }
-        .btn-primary:hover { background: #0a5438; transform: translateY(-2px); box-shadow: 0 6px 16px rgba(15,110,74,0.35); }
-        .btn-success { background: #1f5a7d; color: #fff; box-shadow: 0 4px 12px rgba(31,90,125,0.25); }
+        .btn-primary:hover { background: #0a5438; transform: translateY(-2px); }
+        .btn-success { background: #1f5a7d; color: #fff; }
         .btn-success:hover { background: #15405a; transform: translateY(-2px); }
         .btn-outline { background: transparent; border: 2px solid #0f6e4a; color: #0f6e4a; }
         .btn-outline:hover { background: #0f6e4a; color: #fff; }
-        .btn-danger { background: #c9453b; color: #fff; box-shadow: 0 4px 12px rgba(201,69,59,0.25); }
+        .btn-danger { background: #c9453b; color: #fff; }
         .btn-danger:hover { background: #b33636; transform: translateY(-2px); }
         .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
-
-        .report-summary {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin: 20px 0 30px;
-        }
-        .stat-card {
-            background: linear-gradient(145deg, #f8faff, #edf2f9);
-            border-radius: 20px;
-            padding: 20px 24px;
-            box-shadow: 0 8px 24px rgba(0,20,40,0.06), 0 2px 6px rgba(0,0,0,0.02);
-            border: 1px solid rgba(255,255,255,0.7);
-            transition: 0.25s ease;
-        }
-        .stat-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(0,20,40,0.10); }
-        .stat-card .label { font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: #4a6378; font-weight: 600; }
-        .stat-card .value { font-size: 34px; font-weight: 700; color: #0a1e2f; margin-top: 4px; }
+        .report-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin: 20px 0 30px; }
+        .stat-card { background: #f8faff; border-radius: 20px; padding: 20px 24px; border: 1px solid #eef2f8; }
+        .stat-card .label { font-size: 12px; text-transform: uppercase; color: #4a6378; font-weight: 600; }
+        .stat-card .value { font-size: 34px; font-weight: 700; color: #0a1e2f; }
         .stat-card .badge { display: inline-block; padding: 4px 16px; border-radius: 30px; font-size: 14px; font-weight: 600; background: #ddf0e3; color: #0f6e3f; }
         .stat-card .badge.warning { background: #fff3d6; color: #a86b1a; }
         .stat-card .badge.danger { background: #fce4e4; color: #b33636; }
-
-        .shift-stats {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 16px 30px;
-            background: #f5f9ff;
-            padding: 16px 24px;
-            border-radius: 16px;
-            margin: 10px 0 20px;
-            border: 1px solid #e6ecf2;
-        }
+        .shift-stats { display: flex; flex-wrap: wrap; gap: 16px 30px; background: #f5f9ff; padding: 16px 24px; border-radius: 16px; margin: 10px 0 20px; border: 1px solid #e6ecf2; }
         .shift-stats div { font-size: 14px; color: #1a3347; }
         .shift-stats strong { font-weight: 600; color: #0a1e2f; }
-
-        .chart-row {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 30px;
-            margin: 30px 0 20px;
-        }
-        .chart-box {
-            flex: 1 1 280px;
-            background: #f8faff;
-            border-radius: 20px;
-            padding: 18px 20px;
-            border: 1px solid #eef2f8;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.02);
-        }
+        .chart-row { display: flex; flex-wrap: wrap; gap: 30px; margin: 30px 0 20px; }
+        .chart-box { flex: 1 1 280px; background: #f8faff; border-radius: 20px; padding: 18px 20px; border: 1px solid #eef2f8; }
         .chart-box h3 { font-size: 16px; font-weight: 500; margin-bottom: 12px; color: #1a3347; }
-
-        .report-table {
-            width: 100%;
-            border-collapse: separate;
-            border-spacing: 0;
-            font-size: 14px;
-            margin: 20px 0;
-            border-radius: 16px;
-            overflow: hidden;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.02);
-        }
-        .report-table th {
-            background: #f2f6fc;
-            padding: 14px 12px;
-            text-align: left;
-            font-weight: 600;
-            color: #1a3347;
-            border-bottom: 2px solid #dce3eb;
-        }
-        .report-table td {
-            padding: 14px 12px;
-            border-bottom: 1px solid #eef2f6;
-            vertical-align: middle;
-        }
+        .report-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 14px; margin: 20px 0; border-radius: 16px; overflow: hidden; }
+        .report-table th { background: #f2f6fc; padding: 14px 12px; text-align: left; font-weight: 600; color: #1a3347; border-bottom: 2px solid #dce3eb; }
+        .report-table td { padding: 14px 12px; border-bottom: 1px solid #eef2f6; vertical-align: middle; }
         .report-table tr:last-child td { border-bottom: none; }
         .report-table tr:hover td { background: #f8faff; }
-
-        .progress-bar {
-            background: #e6ecf2;
-            height: 10px;
-            border-radius: 10px;
-            overflow: hidden;
-            min-width: 100px;
-        }
-        .progress-bar .fill {
-            height: 100%;
-            border-radius: 10px;
-            transition: width 0.4s;
-        }
-        .fill.plan { background: #3b6f9b; opacity: 0.4; }
+        .progress-bar { background: #e6ecf2; height: 10px; border-radius: 10px; overflow: hidden; min-width: 100px; }
+        .progress-bar .fill { height: 100%; border-radius: 10px; transition: width 0.4s; }
         .fill.fact { background: #0f6e4a; }
-        .fill.fact.behind { background: #c9453b; }
-        .fill.fact.ahead { background: #0f6e4a; }
-
-        .status-tag {
-            font-size: 12px;
-            font-weight: 600;
-            padding: 4px 14px;
-            border-radius: 30px;
-            display: inline-block;
-            background: #eef2f6;
-            color: #2a4055;
-        }
+        .status-tag { font-size: 12px; font-weight: 600; padding: 4px 14px; border-radius: 30px; display: inline-block; background: #eef2f6; color: #2a4055; }
         .status-tag.ok { background: #ddf0e3; color: #0f6e3f; }
         .status-tag.warn { background: #fff3d6; color: #a86b1a; }
         .status-tag.fail { background: #fce4e4; color: #b33636; }
-
         .gantt-container { margin: 20px 0; overflow-x: auto; }
-        .gantt-legend {
-            display: flex;
-            gap: 24px;
-            margin-bottom: 16px;
-            font-size: 14px;
-            flex-wrap: wrap;
-        }
+        .gantt-legend { display: flex; gap: 24px; margin-bottom: 16px; font-size: 14px; flex-wrap: wrap; }
         .gantt-legend .color-box { width: 20px; height: 12px; border-radius: 4px; display: inline-block; }
-        .gantt-grid { position: relative; min-width: 700px; }
-        .gantt-row {
-            display: flex;
-            align-items: center;
-            border-bottom: 1px solid #eef2f6;
-            min-height: 44px;
-        }
-        .gantt-row .label {
-            width: 180px;
-            min-width: 180px;
-            padding-right: 16px;
-            font-weight: 500;
-            font-size: 13px;
-            color: #1a3347;
-        }
-        .gantt-row .timeline {
-            flex: 1;
-            position: relative;
-            height: 32px;
-            background: #f5f9ff;
-            border-radius: 8px;
-            margin: 4px 0;
-        }
-        .gantt-bar {
-            position: absolute;
-            top: 4px;
-            height: 24px;
-            border-radius: 6px;
-            opacity: 0.85;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 11px;
-            color: #fff;
-            font-weight: 500;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            padding: 0 6px;
-        }
+        .gantt-grid { min-width: 700px; }
+        .gantt-row { display: flex; align-items: center; border-bottom: 1px solid #eef2f6; min-height: 44px; }
+        .gantt-row .label { width: 180px; min-width: 180px; padding-right: 16px; font-weight: 500; font-size: 13px; color: #1a3347; }
+        .gantt-row .timeline { flex: 1; position: relative; height: 32px; background: #f5f9ff; border-radius: 8px; margin: 4px 0; }
+        .gantt-bar { position: absolute; top: 4px; height: 24px; border-radius: 6px; opacity: 0.85; display: flex; align-items: center; justify-content: center; font-size: 11px; color: #fff; font-weight: 500; white-space: nowrap; overflow: hidden; padding: 0 6px; }
         .gantt-bar.plan { background: #3b6f9b; opacity: 0.4; top: 0; height: 14px; }
         .gantt-bar.fact { background: #0f6e4a; top: 14px; height: 14px; }
         .gantt-bar.fact.behind { background: #c9453b; }
         .gantt-bar.fact.ahead { background: #0f6e4a; }
-        .gantt-month-labels {
-            display: flex;
-            margin-left: 180px;
-            padding: 6px 0;
-            font-size: 12px;
-            color: #4a6378;
-        }
+        .gantt-month-labels { display: flex; margin-left: 180px; padding: 6px 0; font-size: 12px; color: #4a6378; }
         .gantt-month-labels div { flex: 1; text-align: center; border-right: 1px solid #e6ecf2; }
         .gantt-month-labels div:last-child { border-right: none; }
-
-        .export-group {
-            display: flex;
-            gap: 14px;
-            justify-content: flex-end;
-            margin-top: 25px;
-            padding-top: 20px;
-            border-top: 1px solid #e6ecf2;
-        }
-
-        .shift-status {
-            background: #f5f9ff;
-            padding: 16px 24px;
-            border-radius: 16px;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 20px;
-            border: 1px solid #e6ecf2;
-        }
+        .export-group { display: flex; gap: 14px; justify-content: flex-end; margin-top: 25px; padding-top: 20px; border-top: 1px solid #e6ecf2; }
+        .shift-status { background: #f5f9ff; padding: 16px 24px; border-radius: 16px; margin-bottom: 20px; display: flex; align-items: center; flex-wrap: wrap; gap: 20px; border: 1px solid #e6ecf2; }
         .shift-status .status-text { font-weight: 600; font-size: 16px; }
         .shift-status .status-text .open { color: #0f6e4a; }
-        .shift-status .status-text .closed { color: #4a6378; }
         .shift-status .status-text .none { color: #c9453b; }
-
-        .shift-action-form {
-            background: #f5f9ff;
-            padding: 16px 24px;
-            border-radius: 16px;
-            margin-bottom: 20px;
-            display: none;
-            flex-wrap: wrap;
-            gap: 12px;
-            align-items: end;
-            border: 1px solid #e6ecf2;
-        }
+        .shift-action-form { background: #f5f9ff; padding: 16px 24px; border-radius: 16px; margin-bottom: 20px; display: none; flex-wrap: wrap; gap: 12px; align-items: end; border: 1px solid #e6ecf2; }
         .shift-action-form .field { display: flex; flex-direction: column; gap: 4px; }
         .shift-action-form .field label { font-size: 13px; font-weight: 500; color: #1a3347; }
-        .shift-action-form .field input, .shift-action-form .field select {
-            padding: 8px 12px;
-            border: 1px solid #dce3eb;
-            border-radius: 8px;
-            font-size: 13px;
-            background: #fff;
-            width: 160px;
-        }
+        .shift-action-form .field input, .shift-action-form .field select { padding: 8px 12px; border: 1px solid #dce3eb; border-radius: 8px; font-size: 13px; background: #fff; width: 160px; }
         .shift-action-form .field input[type="number"] { width: 100px; }
         .shift-action-form .field input[type="file"] { padding: 6px 0; border: none; }
         .shift-action-form .field input[type="text"] { width: 180px; }
@@ -397,549 +108,83 @@
             .shift-action-form .field input, .shift-action-form .field select { width: 100%; }
             .shift-action-form .field input[type="number"], .shift-action-form .field input[type="text"] { width: 100%; }
         }
-
-        .modal-overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,20,40,0.5);
-            backdrop-filter: blur(6px);
-            display: flex; align-items: center; justify-content: center;
-            z-index: 1000;
-        }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,20,40,0.5); backdrop-filter: blur(6px); display: flex; align-items: center; justify-content: center; z-index: 1000; }
         .modal-overlay.hidden { display: none; }
-        .modal-box {
-            background: #fff;
-            padding: 40px 35px;
-            border-radius: 28px;
-            max-width: 420px;
-            width: 90%;
-            box-shadow: 0 30px 80px rgba(0,0,0,0.2);
-            text-align: center;
-        }
+        .modal-box { background: #fff; padding: 40px 35px; border-radius: 28px; max-width: 420px; width: 90%; text-align: center; }
         .modal-box h2 { margin-bottom: 10px; color: #0a1e2f; }
-        .modal-box p { color: #4a6378; margin-bottom: 20px; line-height: 1.6; }
-        .modal-box .btn-group { justify-content: center; margin: 0; }
-        .modal-box input {
-            width: 100%;
-            padding: 14px 16px;
-            border: 1px solid #dce3eb;
-            border-radius: 12px;
-            font-size: 16px;
-            margin-bottom: 16px;
-            transition: 0.2s;
-        }
-        .modal-box input:focus { border-color: #0f6e4a; outline: none; box-shadow: 0 0 0 4px rgba(15,110,74,0.12); }
+        .modal-box p { color: #4a6378; margin-bottom: 20px; }
+        .modal-box input { width: 100%; padding: 14px 16px; border: 1px solid #dce3eb; border-radius: 12px; font-size: 16px; margin-bottom: 16px; }
+        .modal-box input:focus { border-color: #0f6e4a; outline: none; }
         .modal-box .btn { width: 100%; padding: 14px; font-size: 16px; }
         .modal-box .error { color: #c9453b; font-size: 14px; margin-top: 5px; display: none; }
-
-        .file-modal-overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,20,40,0.7);
-            backdrop-filter: blur(8px);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 3000;
-        }
+        .file-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,20,40,0.7); backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; z-index: 3000; }
         .file-modal-overlay.active { display: flex; }
-        .file-modal-box {
-            background: #fff;
-            padding: 30px;
-            border-radius: 28px;
-            max-width: 90%;
-            width: 800px;
-            max-height: 90vh;
-            overflow-y: auto;
-            text-align: center;
-            position: relative;
-            box-shadow: 0 30px 80px rgba(0,0,0,0.3);
-        }
-        .file-modal-box .close-btn {
-            position: absolute;
-            top: 12px;
-            right: 20px;
-            font-size: 30px;
-            cursor: pointer;
-            color: #4a6378;
-            background: none;
-            border: none;
-            transition: 0.2s;
-        }
+        .file-modal-box { background: #fff; padding: 30px; border-radius: 28px; max-width: 90%; width: 800px; max-height: 90vh; overflow-y: auto; text-align: center; position: relative; box-shadow: 0 30px 80px rgba(0,0,0,0.3); }
+        .file-modal-box .close-btn { position: absolute; top: 12px; right: 20px; font-size: 30px; cursor: pointer; color: #4a6378; background: none; border: none; }
         .file-modal-box .close-btn:hover { color: #c9453b; transform: rotate(90deg); }
-        .file-modal-box .file-grid {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-            justify-content: center;
-            margin-top: 15px;
-        }
-        .file-modal-box .file-item {
-            max-width: 280px;
-            border: 1px solid #e6ecf2;
-            border-radius: 16px;
-            padding: 12px;
-            background: #f8faff;
-            transition: 0.2s;
-        }
-        .file-modal-box .file-item:hover { transform: scale(1.02); box-shadow: 0 8px 24px rgba(0,0,0,0.06); }
-        .file-modal-box .file-item img,
-        .file-modal-box .file-item video {
-            max-width: 100%;
-            max-height: 280px;
-            border-radius: 12px;
-        }
+        .file-modal-box .file-grid { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; margin-top: 15px; }
+        .file-modal-box .file-item { max-width: 280px; border: 1px solid #e6ecf2; border-radius: 16px; padding: 12px; background: #f8faff; }
+        .file-modal-box .file-item img, .file-modal-box .file-item video { max-width: 100%; max-height: 280px; border-radius: 12px; }
         .file-modal-box .file-item img { cursor: pointer; }
-        .file-modal-box .file-item .file-name {
-            font-size: 12px;
-            color: #4a6378;
-            margin-top: 6px;
-            word-break: break-word;
-        }
-        .modal-img.fullscreen {
-            position: fixed !important;
-            top: 50% !important;
-            left: 50% !important;
-            transform: translate(-50%, -50%) scale(1.5) !important;
-            max-width: 90vw !important;
-            max-height: 90vh !important;
-            z-index: 9999 !important;
-            object-fit: contain !important;
-            background: rgba(0,0,0,0.85) !important;
-            padding: 16px !important;
-            border-radius: 16px !important;
-            box-shadow: 0 0 60px rgba(0,0,0,0.5) !important;
-            cursor: zoom-out !important;
-        }
-        .modal-img {
-            transition: all 0.3s ease !important;
-            max-width: 100%;
-            max-height: 280px;
-        }
-        .loader {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #0f6e4a;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 20px auto;
-        }
+        .file-modal-box .file-item .file-name { font-size: 12px; color: #4a6378; margin-top: 6px; word-break: break-word; }
+        .modal-img.fullscreen { position: fixed !important; top: 50% !important; left: 50% !important; transform: translate(-50%, -50%) scale(1.5) !important; max-width: 90vw !important; max-height: 90vh !important; z-index: 9999 !important; object-fit: contain !important; background: rgba(0,0,0,0.85) !important; padding: 16px !important; border-radius: 16px !important; box-shadow: 0 0 60px rgba(0,0,0,0.5) !important; cursor: zoom-out !important; }
+        .modal-img { transition: all 0.3s ease !important; max-width: 100%; max-height: 280px; }
+        .loader { border: 4px solid #f3f3f3; border-top: 4px solid #0f6e4a; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 20px auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-        .onboarding-highlight {
-            position: relative;
-            z-index: 9999 !important;
-            box-shadow: 0 0 0 4px #0f6e4a, 0 0 0 9999px rgba(0, 20, 40, 0.75) !important;
-            border-radius: 8px;
-            transition: box-shadow 0.3s;
-            pointer-events: auto !important;
-        }
-        .onboarding-tooltip {
-            position: fixed;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #fff;
-            border-radius: 24px;
-            padding: 24px 30px;
-            max-width: 520px;
-            width: 90%;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            z-index: 10000;
-            text-align: center;
-            pointer-events: auto;
-            border: 1px solid rgba(255,255,255,0.2);
-        }
-        .onboarding-tooltip .step-counter {
-            font-size: 13px;
-            color: #4a6378;
-            margin-bottom: 4px;
-        }
-        .onboarding-tooltip h3 {
-            font-size: 20px;
-            color: #0a1e2f;
-            margin-bottom: 8px;
-        }
-        .onboarding-tooltip p {
-            font-size: 15px;
-            color: #2a4055;
-            line-height: 1.6;
-            margin-bottom: 16px;
-        }
-        .onboarding-tooltip .btn-group {
-            display: flex;
-            gap: 12px;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-        .onboarding-tooltip .btn {
-            min-width: 100px;
-            justify-content: center;
-        }
-        .onboarding-tooltip .btn-outline {
-            border-color: #bcc9d6;
-            color: #4a6378;
-            background: transparent;
-        }
-        .onboarding-tooltip .btn-outline:hover {
-            background: #eef2f6;
-            color: #0a1e2f;
-            border-color: #8a9cb0;
-        }
-
-        .onboarding-feature-box {
-            background: #f0f7ff;
-            border-radius: 12px;
-            padding: 12px 16px;
-            margin: 12px 0 16px;
-            border-left: 4px solid #0f6e4a;
-            text-align: left;
-        }
-        .onboarding-feature-box h4 {
-            font-size: 14px;
-            color: #0a1e2f;
-            margin-bottom: 4px;
-        }
-        .onboarding-feature-box ul {
-            margin: 0;
-            padding-left: 18px;
-            font-size: 13px;
-            color: #1a3347;
-        }
-        .onboarding-feature-box ul li {
-            margin-bottom: 2px;
-        }
-
-        .restart-tour-btn {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            z-index: 100;
-            background: #0f6e4a;
-            color: #fff;
-            border: none;
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            font-size: 24px;
-            cursor: pointer;
-            box-shadow: 0 4px 16px rgba(15,110,74,0.3);
-            transition: 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .restart-tour-btn:hover {
-            transform: scale(1.1);
-            background: #0a5438;
-        }
-
-        .onboarding-reminder {
-            position: fixed;
-            bottom: 90px;
-            right: 20px;
-            background: #fff;
-            border-radius: 16px;
-            padding: 16px 20px;
-            max-width: 320px;
-            box-shadow: 0 8px 30px rgba(0,0,0,0.15);
-            z-index: 50;
-            border-left: 4px solid #0f6e4a;
-            display: none;
-            animation: slideIn 0.3s ease;
-        }
-        .onboarding-reminder.active {
-            display: block;
-        }
-        .onboarding-reminder p {
-            font-size: 14px;
-            color: #1a3347;
-            margin: 0 0 8px 0;
-        }
-        .onboarding-reminder .btn {
-            padding: 4px 16px;
-            font-size: 13px;
-        }
-        @keyframes slideIn {
-            0% { opacity: 0; transform: translateY(20px); }
-            100% { opacity: 1; transform: translateY(0); }
-        }
-
-        .support-btn {
-            position: fixed;
-            bottom: 90px;
-            right: 20px;
-            z-index: 100;
-            background: #1f5a7d;
-            color: #fff;
-            border: none;
-            border-radius: 50%;
-            width: 56px;
-            height: 56px;
-            font-size: 26px;
-            cursor: pointer;
-            box-shadow: 0 4px 16px rgba(31,90,125,0.35);
-            transition: 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .support-btn:hover {
-            transform: scale(1.1);
-            background: #15405a;
-        }
-        .support-btn .badge-support {
-            position: absolute;
-            top: -4px;
-            right: -4px;
-            background: #c9453b;
-            color: #fff;
-            font-size: 12px;
-            font-weight: 700;
-            border-radius: 50%;
-            width: 24px;
-            height: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 2px 8px rgba(201,69,59,0.3);
-        }
-        .support-btn .badge-support.hidden {
-            display: none;
-        }
-
-        .support-modal-overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,20,40,0.6);
-            backdrop-filter: blur(6px);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 5000;
-        }
-        .support-modal-overlay.active {
-            display: flex;
-        }
-        .support-modal-box {
-            background: #fff;
-            border-radius: 28px;
-            max-width: 600px;
-            width: 90%;
-            max-height: 80vh;
-            display: flex;
-            flex-direction: column;
-            box-shadow: 0 30px 80px rgba(0,0,0,0.3);
-            overflow: hidden;
-        }
-        .support-modal-header {
-            padding: 16px 20px;
-            border-bottom: 1px solid #e6ecf2;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: #f7f9fc;
-            flex-shrink: 0;
-        }
-        .support-modal-header h3 {
-            font-size: 18px;
-            color: #0a1e2f;
-        }
-        .support-modal-header .close-btn {
-            font-size: 28px;
-            cursor: pointer;
-            color: #4a6378;
-            background: none;
-            border: none;
-            transition: 0.2s;
-        }
-        .support-modal-header .close-btn:hover {
-            color: #c9453b;
-            transform: rotate(90deg);
-        }
-
-        .chat-list {
-            flex: 1;
-            overflow-y: auto;
-            padding: 0;
-            margin: 0;
-            list-style: none;
-        }
-        .chat-list-item {
-            padding: 12px 20px;
-            border-bottom: 1px solid #eef2f6;
-            cursor: pointer;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            transition: 0.15s;
-        }
-        .chat-list-item:hover {
-            background: #f0f7ff;
-        }
-        .chat-list-item .chat-user {
-            font-weight: 600;
-            color: #0a1e2f;
-        }
-        .chat-list-item .chat-unread {
-            background: #c9453b;
-            color: #fff;
-            font-size: 12px;
-            font-weight: 700;
-            border-radius: 50%;
-            min-width: 22px;
-            height: 22px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0 6px;
-        }
-        .chat-list-item .chat-last-msg {
-            font-size: 13px;
-            color: #4a6378;
-            max-width: 150px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .support-messages {
-            flex: 1;
-            overflow-y: auto;
-            padding: 16px 20px;
-            min-height: 200px;
-            max-height: 50vh;
-            background: #fafcfe;
-            display: flex;
-            flex-direction: column;
-        }
-        .support-message {
-            margin-bottom: 12px;
-            padding: 10px 14px;
-            border-radius: 12px;
-            max-width: 80%;
-            word-wrap: break-word;
-            font-size: 14px;
-            line-height: 1.5;
-            align-self: flex-start;
-        }
-        .support-message.user {
-            background: #ddf0e3;
-            color: #0a1e2f;
-            align-self: flex-end;
-        }
-        .support-message.admin {
-            background: #e6ecf2;
-            color: #0a1e2f;
-            align-self: flex-start;
-        }
-        .support-message .meta {
-            font-size: 11px;
-            color: #4a6378;
-            margin-top: 4px;
-            display: flex;
-            justify-content: flex-end;
-        }
-        .support-message .sender {
-            font-weight: 600;
-            font-size: 13px;
-            color: #1f5a7d;
-            margin-bottom: 2px;
-        }
-
-        .support-empty {
-            color: #4a6378;
-            text-align: center;
-            padding: 40px 0;
-            font-size: 15px;
-        }
-
-        .support-input-area {
-            padding: 12px 16px;
-            border-top: 1px solid #e6ecf2;
-            display: flex;
-            gap: 12px;
-            background: #fff;
-            flex-shrink: 0;
-        }
-        .support-input-area textarea {
-            flex: 1;
-            padding: 10px 14px;
-            border: 1px solid #dce3eb;
-            border-radius: 12px;
-            font-size: 14px;
-            resize: vertical;
-            min-height: 44px;
-            max-height: 120px;
-            font-family: inherit;
-            transition: 0.2s;
-        }
-        .support-input-area textarea:focus {
-            border-color: #0f6e4a;
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(15,110,74,0.12);
-        }
-        .support-input-area .btn {
-            align-self: flex-end;
-            padding: 10px 20px;
-        }
-
-        @media (max-width: 768px) {
-            .support-modal-box {
-                max-width: 95%;
-                max-height: 90vh;
-            }
-            .support-messages {
-                min-height: 150px;
-                max-height: 40vh;
-            }
-            .support-message {
-                max-width: 90%;
-            }
-            .support-input-area textarea {
-                font-size: 13px;
-                padding: 8px 10px;
-            }
-            .chat-list-item .chat-last-msg {
-                max-width: 100px;
-            }
-            .support-btn {
-                bottom: 80px;
-                right: 16px;
-                width: 48px;
-                height: 48px;
-                font-size: 22px;
-            }
-        }
-
-        /* ДЕСКТОПНЫЕ УЛУЧШЕНИЯ */
-        @media (min-width: 1024px) {
-            .container { padding: 35px 50px; }
-            h1 { font-size: 32px; }
-            .dashboard { grid-template-columns: repeat(4, 1fr); padding: 20px 30px; }
-            .dashboard-item .dash-value { font-size: 28px; }
-            .tab-btn { font-size: 17px; padding: 14px 32px; }
-            .input-table th, .input-table td { padding: 14px 16px; font-size: 15px; }
-            .input-table input, .input-table select { font-size: 15px; padding: 10px 14px; }
-            .btn { font-size: 16px; padding: 12px 32px; }
-            .stat-card .value { font-size: 40px; }
-            .shift-stats { font-size: 16px; padding: 20px 30px; gap: 30px; }
-            .report-table th, .report-table td { padding: 16px 20px; font-size: 15px; }
-            .gantt-row .label { width: 220px; font-size: 15px; }
-        }
+        .restart-tour-btn { position: fixed; bottom: 20px; right: 20px; z-index: 100; background: #0f6e4a; color: #fff; border: none; border-radius: 50%; width: 50px; height: 50px; font-size: 24px; cursor: pointer; box-shadow: 0 4px 16px rgba(15,110,74,0.3); display: flex; align-items: center; justify-content: center; }
+        .restart-tour-btn:hover { transform: scale(1.1); background: #0a5438; }
+        .support-btn { position: fixed; bottom: 90px; right: 20px; z-index: 100; background: #1f5a7d; color: #fff; border: none; border-radius: 50%; width: 56px; height: 56px; font-size: 26px; cursor: pointer; box-shadow: 0 4px 16px rgba(31,90,125,0.35); display: flex; align-items: center; justify-content: center; }
+        .support-btn:hover { transform: scale(1.1); background: #15405a; }
+        .support-btn .badge-support { position: absolute; top: -4px; right: -4px; background: #c9453b; color: #fff; font-size: 12px; font-weight: 700; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; }
+        .support-btn .badge-support.hidden { display: none; }
+        .support-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,20,40,0.6); backdrop-filter: blur(6px); display: none; align-items: center; justify-content: center; z-index: 5000; }
+        .support-modal-overlay.active { display: flex; }
+        .support-modal-box { background: #fff; border-radius: 28px; max-width: 600px; width: 90%; max-height: 80vh; display: flex; flex-direction: column; box-shadow: 0 30px 80px rgba(0,0,0,0.3); overflow: hidden; }
+        .support-modal-header { padding: 16px 20px; border-bottom: 1px solid #e6ecf2; display: flex; justify-content: space-between; align-items: center; background: #f7f9fc; flex-shrink: 0; }
+        .support-modal-header h3 { font-size: 18px; color: #0a1e2f; }
+        .support-modal-header .close-btn { font-size: 28px; cursor: pointer; color: #4a6378; background: none; border: none; }
+        .support-modal-header .close-btn:hover { color: #c9453b; }
+        .support-messages { flex: 1; overflow-y: auto; padding: 16px 20px; min-height: 200px; max-height: 50vh; background: #fafcfe; display: flex; flex-direction: column; }
+        .support-message { margin-bottom: 12px; padding: 10px 14px; border-radius: 12px; max-width: 80%; word-wrap: break-word; font-size: 14px; line-height: 1.5; align-self: flex-start; }
+        .support-message.user { background: #ddf0e3; color: #0a1e2f; align-self: flex-end; }
+        .support-message.admin { background: #e6ecf2; color: #0a1e2f; align-self: flex-start; }
+        .support-message .meta { font-size: 11px; color: #4a6378; margin-top: 4px; display: flex; justify-content: flex-end; }
+        .support-message .sender { font-weight: 600; font-size: 13px; color: #1f5a7d; margin-bottom: 2px; }
+        .support-empty { color: #4a6378; text-align: center; padding: 40px 0; font-size: 15px; }
+        .support-input-area { padding: 12px 16px; border-top: 1px solid #e6ecf2; display: flex; gap: 12px; background: #fff; flex-shrink: 0; }
+        .support-input-area textarea { flex: 1; padding: 10px 14px; border: 1px solid #dce3eb; border-radius: 12px; font-size: 14px; resize: vertical; min-height: 44px; max-height: 120px; font-family: inherit; }
+        .support-input-area textarea:focus { border-color: #0f6e4a; outline: none; }
+        .support-input-area .btn { align-self: flex-end; padding: 10px 20px; }
+        .onboarding-tooltip { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #fff; border-radius: 24px; padding: 24px 30px; max-width: 520px; width: 90%; box-shadow: 0 20px 60px rgba(0,0,0,0.3); z-index: 10000; text-align: center; border: 1px solid rgba(255,255,255,0.2); display: none; }
+        .onboarding-tooltip .step-counter { font-size: 13px; color: #4a6378; margin-bottom: 4px; }
+        .onboarding-tooltip h3 { font-size: 20px; color: #0a1e2f; margin-bottom: 8px; }
+        .onboarding-tooltip p { font-size: 15px; color: #2a4055; line-height: 1.6; margin-bottom: 16px; }
+        .onboarding-tooltip .btn-group { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+        .onboarding-tooltip .btn { min-width: 100px; justify-content: center; }
+        .onboarding-tooltip .btn-outline { border-color: #bcc9d6; color: #4a6378; background: transparent; }
+        .onboarding-tooltip .btn-outline:hover { background: #eef2f6; }
+        .onboarding-highlight { position: relative; z-index: 9999 !important; box-shadow: 0 0 0 4px #0f6e4a, 0 0 0 9999px rgba(0,20,40,0.75) !important; border-radius: 8px; }
+        .onboarding-reminder { position: fixed; bottom: 90px; right: 20px; background: #fff; border-radius: 16px; padding: 16px 20px; max-width: 320px; box-shadow: 0 8px 30px rgba(0,0,0,0.15); z-index: 50; border-left: 4px solid #0f6e4a; display: none; }
+        .onboarding-reminder.active { display: block; }
+        .onboarding-reminder p { font-size: 14px; color: #1a3347; margin: 0 0 8px 0; }
+        .onboarding-reminder .btn { padding: 4px 16px; font-size: 13px; }
+        .onboarding-feature-box { background: #f0f7ff; border-radius: 12px; padding: 12px 16px; margin: 12px 0 16px; border-left: 4px solid #0f6e4a; text-align: left; display: none; }
+        .onboarding-feature-box h4 { font-size: 14px; color: #0a1e2f; margin-bottom: 4px; }
+        .onboarding-feature-box ul { margin: 0; padding-left: 18px; font-size: 13px; color: #1a3347; }
+        @media (max-width: 768px) { .support-modal-box { max-width: 95%; max-height: 90vh; } .support-messages { min-height: 150px; max-height: 40vh; } .support-message { max-width: 90%; } .support-btn { bottom: 80px; right: 16px; width: 48px; height: 48px; font-size: 22px; } }
+        @media (min-width: 1024px) { .container { padding: 35px 50px; } h1 { font-size: 32px; } .dashboard { grid-template-columns: repeat(4, 1fr); padding: 20px 30px; } .dashboard-item .dash-value { font-size: 28px; } .tab-btn { font-size: 17px; padding: 14px 32px; } .input-table th, .input-table td { padding: 14px 16px; font-size: 15px; } .input-table input, .input-table select { font-size: 15px; padding: 10px 14px; } .btn { font-size: 16px; padding: 12px 32px; } .stat-card .value { font-size: 40px; } .shift-stats { font-size: 16px; padding: 20px 30px; gap: 30px; } .report-table th, .report-table td { padding: 16px 20px; font-size: 15px; } .gantt-row .label { width: 220px; font-size: 15px; } }
     </style>
 </head>
 <body>
 
-<!-- ===== МОДАЛЬНОЕ ОКНО ВХОДА ===== -->
+<!-- МОДАЛКА ВХОДА -->
 <div class="modal-overlay" id="loginModal">
     <div class="modal-box">
         <h2>👷 Вход в систему</h2>
         <p>Введите ваше ФИО</p>
         <input type="text" id="loginName" placeholder="Иванов И.И." autofocus>
-        <div id="passwordField" style="display:none; margin-top:0;">
-            <p style="font-size:14px; color:#2e3e4e; text-align:left;">Введите пароль администратора:</p>
+        <div id="passwordField" style="display:none;">
+            <p style="font-size:14px; text-align:left;">Пароль администратора:</p>
             <input type="password" id="loginPassword" placeholder="Пароль">
             <div id="loginError" class="error">Неверный пароль</div>
         </div>
@@ -947,45 +192,32 @@
     </div>
 </div>
 
-<!-- ===== МОДАЛЬНОЕ ОКНО ПРОСМОТРА ФАЙЛОВ ===== -->
+<!-- МОДАЛКА ПРОСМОТРА ФАЙЛОВ (заглушка) -->
 <div class="file-modal-overlay" id="fileModal">
     <div class="file-modal-box">
         <button class="close-btn" id="fileModalClose">&times;</button>
         <h3 id="fileModalTitle">Файлы смены</h3>
-        <div id="fileModalLoader" class="loader" style="display:none;"></div>
-        <div class="file-grid" id="fileGrid"></div>
+        <div id="fileGrid" class="file-grid"></div>
     </div>
 </div>
 
-<!-- ===== ОСНОВНОЙ ИНТЕРФЕЙС ===== -->
+<!-- ОСНОВНОЙ ИНТЕРФЕЙС -->
 <div class="container" id="mainContainer">
     <div class="header">
-        <div>
-            <h1>🏗️ Строительный контроль</h1>
-            <div class="sub">Управление этапами, сменами и отчётность</div>
-        </div>
-        <div class="user-info" id="userInfo">
+        <div><h1>🏗️ Строительный контроль</h1><div class="sub">Локальная версия (без БД)</div></div>
+        <div class="user-info">
             <span class="name" id="displayUser">—</span>
             <button class="btn-logout" id="logoutBtn">Выйти</button>
         </div>
     </div>
 
-    <div class="dashboard" id="dashboard">
-        <div class="dashboard-item">
-            <div class="dash-label">Общая готовность</div>
-            <div class="dash-value" id="dashOverall">0%</div>
-        </div>
-        <div class="dashboard-item">
-            <div class="dash-label">Этапов</div>
-            <div class="dash-value" id="dashStages">0</div>
-        </div>
-        <div class="dashboard-item">
-            <div class="dash-label">Закрытых смен</div>
-            <div class="dash-value" id="dashShifts">0</div>
-        </div>
+    <div class="dashboard">
+        <div class="dashboard-item"><div class="dash-label">Общая готовность</div><div class="dash-value" id="dashOverall">0%</div></div>
+        <div class="dashboard-item"><div class="dash-label">Этапов</div><div class="dash-value" id="dashStages">0</div></div>
+        <div class="dashboard-item"><div class="dash-label">Закрытых смен</div><div class="dash-value" id="dashShifts">0</div></div>
     </div>
 
-    <div class="tabs" id="tabHeaders">
+    <div class="tabs">
         <button class="tab-btn active" data-tab="input">📝 Этапы <span class="badge-count" id="badgeStages">0</span></button>
         <button class="tab-btn" data-tab="shift">👷 Сменный учёт <span class="badge-count" id="badgeShifts">0</span></button>
         <button class="tab-btn" data-tab="report">📊 Отчёт</button>
@@ -994,36 +226,23 @@
 
     <!-- ВКЛАДКА ЭТАПЫ -->
     <div id="tab-input" class="tab-content active">
-        <p style="color:#5e6f7e; margin-bottom:12px;">Добавьте или отредактируйте этапы. Все изменения сохраняются автоматически.</p>
+        <p style="color:#5e6f7e; margin-bottom:12px;">Добавляйте, редактируйте и удаляйте этапы. Все изменения сохраняются в браузере.</p>
         <div style="overflow-x:auto;">
             <table class="input-table" id="inputTable">
-                <thead>
-                    <tr>
-                        <th style="width:14%">Название этапа</th>
-                        <th style="width:12%">Объект</th>
-                        <th style="width:10%">Дом/корпус</th>
-                        <th style="width:12%">План старт</th>
-                        <th style="width:12%">План финиш</th>
-                        <th style="width:12%">Факт старт</th>
-                        <th style="width:12%">Факт финиш</th>
-                        <th style="width:10%">Прогресс, %</th>
-                        <th style="width:4%"></th>
-                    </tr>
-                </thead>
+                <thead><tr><th>Название</th><th>Объект</th><th>Дом/корпус</th><th>План старт</th><th>План финиш</th><th>Факт старт</th><th>Факт финиш</th><th>Прогресс, %</th><th></th></tr></thead>
                 <tbody id="inputBody"></tbody>
             </table>
         </div>
         <div class="btn-group">
             <button class="btn btn-primary" id="addRowBtn">➕ Добавить этап</button>
-            <button class="btn btn-success" id="updateReportBtn">🔄 Обновить отчёт и график</button>
-            <button class="btn btn-outline" id="resetDataBtn">🗑 Сбросить все данные</button>
+            <button class="btn btn-success" id="updateReportBtn">🔄 Обновить отчёт</button>
+            <button class="btn btn-outline" id="resetDataBtn">🗑 Сбросить этапы</button>
         </div>
     </div>
 
-    <!-- ВКЛАДКА СМЕННЫЙ УЧЁТ -->
+    <!-- ВКЛАДКА СМЕНЫ -->
     <div id="tab-shift" class="tab-content">
         <h3 style="font-weight:500; margin-bottom:12px;">Управление сменой</h3>
-
         <div class="shift-status" id="shiftStatus">
             <span class="status-text" id="statusText">Статус: <span class="none">Смена не открыта</span></span>
             <div>
@@ -1031,42 +250,18 @@
                 <button class="btn btn-danger" id="btnCloseShift" disabled>🔴 Закрыть смену</button>
             </div>
         </div>
-
         <div class="shift-action-form" id="openShiftForm">
-            <div class="field">
-                <label>Этап</label>
-                <select id="openStage"><option value="">Выберите этап</option></select>
-            </div>
-            <div class="field">
-                <label>Номер смены</label>
-                <input type="text" id="openShiftNumber" placeholder="например, 1, 2, ночная">
-            </div>
-            <div class="field">
-                <label>СМУ</label>
-                <input type="text" id="openSMU" placeholder="например, СМУ-5">
-            </div>
-            <div class="field">
-                <label>Человек</label>
-                <input type="number" id="openPeople" value="1" min="1">
-            </div>
-            <div class="field">
-                <label>Примечание (что планируется)</label>
-                <input type="text" id="openNote" placeholder="например, заливка фундамента">
-            </div>
+            <div class="field"><label>Этап</label><select id="openStage"><option value="">Выберите этап</option></select></div>
+            <div class="field"><label>Номер смены</label><input type="text" id="openShiftNumber" placeholder="1, 2, ночная"></div>
+            <div class="field"><label>СМУ</label><input type="text" id="openSMU" placeholder="СМУ-5"></div>
+            <div class="field"><label>Человек</label><input type="number" id="openPeople" value="1" min="1"></div>
+            <div class="field"><label>Примечание</label><input type="text" id="openNote" placeholder="что планируется"></div>
             <button class="btn btn-primary" id="confirmOpenBtn">✅ Подтвердить открытие</button>
             <button class="btn btn-outline" id="cancelOpenBtn">Отмена</button>
         </div>
-
         <div class="shift-action-form" id="closeShiftForm">
-            <div class="field">
-                <label>Файлы (фото/видео) *</label>
-                <input type="file" id="closeFiles" multiple accept="image/*,video/*">
-                <div style="font-size:12px; color:#6a7b8c; margin-top:2px;">Выберите хотя бы один файл</div>
-            </div>
-            <div class="field">
-                <label>Примечание (что сделано)</label>
-                <input type="text" id="closeNote" placeholder="например, завершили заливку">
-            </div>
+            <div class="field"><label>Файлы (заглушка)</label><input type="text" id="closeFilesText" placeholder="Введите ссылку на файл (или оставьте пустым)"></div>
+            <div class="field"><label>Примечание</label><input type="text" id="closeNote" placeholder="что сделано"></div>
             <button class="btn btn-primary" id="confirmCloseBtn">✅ Подтвердить закрытие</button>
             <button class="btn btn-outline" id="cancelCloseBtn">Отмена</button>
         </div>
@@ -1074,21 +269,7 @@
         <h3 style="font-weight:500; margin:25px 0 10px;">Журнал смен</h3>
         <div style="overflow-x:auto;">
             <table class="input-table" id="shiftTable">
-                <thead>
-                    <tr>
-                        <th>Дата</th>
-                        <th>ФИО</th>
-                        <th>Этап</th>
-                        <th>Смена</th>
-                        <th>СМУ</th>
-                        <th>Человек</th>
-                        <th>Открыта</th>
-                        <th>Закрыта</th>
-                        <th>Файлы</th>
-                        <th>Примечание</th>
-                        <th></th>
-                    </tr>
-                </thead>
+                <thead><tr><th>Дата</th><th>ФИО</th><th>Этап</th><th>Смена</th><th>СМУ</th><th>Человек</th><th>Открыта</th><th>Закрыта</th><th>Файлы</th><th>Примечание</th><th></th></tr></thead>
                 <tbody id="shiftBody"></tbody>
             </table>
         </div>
@@ -1101,200 +282,93 @@
     <div id="tab-report" class="tab-content">
         <div id="reportContent">
             <div class="report-summary" id="reportSummary"></div>
-            <div style="margin: 20px 0 10px;">
-                <h3 style="font-weight:500;">👷 Сменная статистика</h3>
-                <div id="shiftStats" class="shift-stats"></div>
-            </div>
-            <div class="chart-row">
-                <div class="chart-box">
-                    <h3>Общая готовность</h3>
-                    <canvas id="pieChart"></canvas>
-                </div>
-                <div class="chart-box">
-                    <h3>План vs Факт (прогресс по этапам)</h3>
-                    <canvas id="barChart"></canvas>
-                </div>
-            </div>
-            <h3 style="margin:25px 0 10px; font-weight:500;">Детальный план-факт</h3>
-            <div style="overflow-x:auto;">
-                <table class="report-table" id="reportTable">
-                    <thead>
-                        <tr>
-                            <th>Этап</th>
-                            <th>Объект</th>
-                            <th>Дом</th>
-                            <th>План</th>
-                            <th>Факт</th>
-                            <th>Ход работ</th>
-                            <th>Статус</th>
-                        </tr>
-                    </thead>
-                    <tbody id="reportBody"></tbody>
-                </table>
-            </div>
-            <div class="export-group no-print">
-                <button class="btn btn-primary" id="exportPdfBtn">📄 Экспорт PDF</button>
-            </div>
+            <div style="margin:20px 0 10px;"><h3 style="font-weight:500;">👷 Сменная статистика</h3><div id="shiftStats" class="shift-stats"></div></div>
+            <div class="chart-row"><div class="chart-box"><h3>Общая готовность</h3><canvas id="pieChart"></canvas></div><div class="chart-box"><h3>План vs Факт</h3><canvas id="barChart"></canvas></div></div>
+            <h3 style="margin:25px 0 10px;font-weight:500;">Детальный план-факт</h3>
+            <div style="overflow-x:auto;"><table class="report-table" id="reportTable"><thead><tr><th>Этап</th><th>Объект</th><th>Дом</th><th>План</th><th>Факт</th><th>Ход работ</th><th>Статус</th></tr></thead><tbody id="reportBody"></tbody></table></div>
+            <div class="export-group"><button class="btn btn-primary" id="exportPdfBtn">📄 Экспорт PDF</button></div>
         </div>
     </div>
 
-    <!-- ВКЛАДКА ГРАФИК РАБОТ -->
+    <!-- ВКЛАДКА ГАНТ -->
     <div id="tab-gantt" class="tab-content">
-        <div style="margin: 10px 0 20px;">
-            <div class="gantt-legend">
-                <span><span class="color-box" style="background:#3b6f9b; opacity:0.5;"></span> План</span>
-                <span><span class="color-box" style="background:#0f6e4a;"></span> Факт (в графике / опережение)</span>
-                <span><span class="color-box" style="background:#c9453b;"></span> Факт (отставание)</span>
-            </div>
-        </div>
+        <div style="margin:10px 0 20px;"><div class="gantt-legend"><span><span class="color-box" style="background:#3b6f9b;opacity:0.5;"></span> План</span><span><span class="color-box" style="background:#0f6e4a;"></span> Факт</span><span><span class="color-box" style="background:#c9453b;"></span> Отставание</span></div></div>
         <div class="gantt-container" id="ganttContainer"></div>
-        <p style="color:#6a7b8c; font-size:13px; margin-top:10px;">* Полосы отображают план и факт по датам. Если фактические даты не заданы, показан только план.</p>
+        <p style="color:#6a7b8c;font-size:13px;">* Полосы отображают план и факт по датам.</p>
     </div>
 </div>
 
-<!-- ===== ОБУЧЕНИЕ ===== -->
+<!-- ОБУЧЕНИЕ (заглушка) -->
 <div class="onboarding-tooltip" id="onboardingTooltip" style="display:none;">
     <div class="step-counter" id="onboardingStepCounter">Шаг 1 из 9</div>
     <h3 id="onboardingTitle">Добро пожаловать!</h3>
-    <p id="onboardingDesc">Это система «Строительный контроль». Она поможет вам управлять этапами строительства, вести учёт смен и формировать отчёты.</p>
-    <div id="onboardingFeatureBox" class="onboarding-feature-box" style="display:none;">
-        <h4>✨ Дополнительные возможности</h4>
-        <ul id="onboardingFeatureList"></ul>
-    </div>
+    <p id="onboardingDesc">Локальная версия. Все данные хранятся в браузере.</p>
     <div class="btn-group">
         <button class="btn btn-outline" id="onboardingSkipBtn">Пропустить</button>
-        <button class="btn btn-outline" id="onboardingPrevBtn" style="display:none;">← Назад</button>
         <button class="btn btn-primary" id="onboardingNextBtn">Далее →</button>
     </div>
 </div>
+<div class="onboarding-reminder" id="onboardingReminder" style="display:none;"></div>
 
-<!-- ===== НАПОМИНАНИЕ ===== -->
-<div class="onboarding-reminder" id="onboardingReminder">
-    <p>❓ Если вам что-то непонятно, вы можете запустить обучение, нажав на кнопку с вопросительным знаком справа внизу.</p>
-    <button class="btn btn-primary" id="reminderStartBtn" style="padding: 4px 16px; font-size:13px;">Запустить обучение</button>
-</div>
-
-<!-- ===== КНОПКА ПОДДЕРЖКИ ===== -->
-<button class="support-btn" id="supportBtn" title="Поддержка">
-    💬
-    <span class="badge-support hidden" id="supportBadge">0</span>
-</button>
-
-<!-- ===== МОДАЛЬНОЕ ОКНО ПОДДЕРЖКИ ===== -->
-<div class="support-modal-overlay" id="supportModal">
-    <div class="support-modal-box">
-        <div class="support-modal-header">
-            <h3 id="supportModalTitle">💬 Поддержка</h3>
-            <button class="close-btn" id="supportModalClose">&times;</button>
-        </div>
-        <div id="supportContent" style="flex:1; overflow-y:auto; display:flex; flex-direction:column;"></div>
-        <div class="support-input-area" id="supportInputArea">
-            <textarea id="supportInput" placeholder="Введите ваше сообщение..." rows="1"></textarea>
-            <button class="btn btn-primary" id="supportSendBtn">Отправить</button>
-        </div>
-    </div>
-</div>
-
-<!-- ===== КНОПКА РУЧНОГО ЗАПУСКА ОБУЧЕНИЯ ===== -->
-<button class="restart-tour-btn" id="restartTourBtn" title="Запустить обучение">❓</button>
+<!-- КНОПКИ -->
+<button class="support-btn" id="supportBtn" style="display:none;">💬</button>
+<button class="restart-tour-btn" id="restartTourBtn" style="display:none;">❓</button>
 
 <script>
-    // ============================================================
-    //   SUPABASE
-    // ============================================================
-    const supabaseUrl = 'https://unlehvbjsoxcbdcybkbd.supabase.co';
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVubGVodmJqc294Y2JkY3lia2JkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQwODQxMTgsImV4cCI6MjA5OTY2MDExOH0.zWH5M2PcdW5WFiowvPWVhTDnmwKkBzaiN6aDlMSVyAU';
+    // ================================================================
+    //   ЛОКАЛЬНАЯ ВЕРСИЯ — БЕЗ SUPABASE, ВСЁ В localStorage
+    // ================================================================
 
-    const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
-    const BUCKET_NAME = 'shift-files';
-
-    // ============================================================
-    //   ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ
-    // ============================================================
+    // --- ПЕРЕМЕННЫЕ ---
     let currentUser = null;
     const ADMIN_NAME = 'Леухин Олег Павлович';
     const ADMIN_PASSWORD = 'OlegMolodoy()!';
 
     let stages = [];
     let shifts = [];
-    let supportMessages = [];
     let pieChartInstance = null;
     let barChartInstance = null;
-    let currentChatUser = null;
-    let isOnboardingActive = false;
-    let currentOnboardingStep = 0;
-    let previousHighlight = null;
 
-    // ============================================================
-    //   ЗАГРУЗКА / СОХРАНЕНИЕ ДАННЫХ
-    // ============================================================
-    async function loadStages() {
-        const { data, error } = await supabaseClient.from('stages').select('*').order('id', { ascending: true });
-        if (error) { console.error('Ошибка загрузки этапов:', error); return; }
-        stages = data || [];
-        renderInputTable();
-        updateStageSelect();
-        updateAll();
-    }
+    const STAGE_NAMES = ['Котлован','Фундамент','Стены подвала','Стены 1-го этажа','Перекрытия','Кровля','Инженерные сети','Отделка','Благоустройство'];
 
-    async function saveStagesToSupabase() {
-        for (let stage of stages) {
-            if (!stage.id) {
-                const { error } = await supabaseClient.from('stages').insert([stage]);
-                if (error) console.error('Ошибка создания этапа:', error);
-            } else {
-                const { error } = await supabaseClient.from('stages').update(stage).match({ id: stage.id });
-                if (error) console.error('Ошибка обновления этапа:', error);
-            }
+    // --- ЗАГРУЗКА / СОХРАНЕНИЕ В localStorage ---
+    function loadData() {
+        const savedStages = localStorage.getItem('stages');
+        if (savedStages) {
+            try { stages = JSON.parse(savedStages); } catch(e) { stages = []; }
+        } else {
+            // Начальные данные
+            stages = [
+                { name: 'Котлован', objectName: '', building: '', planStart: '2026-04-01', planEnd: '2026-04-20', factStart: '2026-04-01', factEnd: '2026-04-18', progress: 100 },
+                { name: 'Фундамент', objectName: '', building: '', planStart: '2026-04-21', planEnd: '2026-05-15', factStart: '2026-04-21', factEnd: '', progress: 75 },
+                { name: 'Стены подвала', objectName: '', building: '', planStart: '2026-05-10', planEnd: '2026-05-30', factStart: '2026-05-12', factEnd: '', progress: 30 },
+                { name: 'Стены 1-го этажа', objectName: '', building: '', planStart: '2026-05-20', planEnd: '2026-06-15', factStart: '2026-06-01', factEnd: '', progress: 10 },
+                { name: 'Перекрытия', objectName: '', building: '', planStart: '2026-06-10', planEnd: '2026-06-30', factStart: '', factEnd: '', progress: 0 },
+                { name: 'Кровля', objectName: '', building: '', planStart: '2026-07-01', planEnd: '2026-07-25', factStart: '', factEnd: '', progress: 0 },
+                { name: 'Инженерные сети', objectName: '', building: '', planStart: '2026-06-20', planEnd: '2026-08-10', factStart: '2026-06-22', factEnd: '', progress: 45 },
+                { name: 'Отделка', objectName: '', building: '', planStart: '2026-08-01', planEnd: '2026-09-30', factStart: '', factEnd: '', progress: 0 }
+            ];
+            saveStages();
         }
-        await loadStages();
-    }
 
-    async function loadShifts() {
-        const { data, error } = await supabaseClient.from('shifts').select('*').order('openTime', { ascending: false });
-        if (error) { console.error('Ошибка загрузки смен:', error); return; }
-        shifts = data || [];
-        renderShifts();
-        updateAll();
-        updateShiftUI();
-    }
-
-    async function saveShiftsToSupabase() {
-        for (let shift of shifts) {
-            if (!shift.id) {
-                const { error } = await supabaseClient.from('shifts').insert([shift]);
-                if (error) console.error('Ошибка создания смены:', error);
-            } else {
-                const { error } = await supabaseClient.from('shifts').update(shift).match({ id: shift.id });
-                if (error) console.error('Ошибка обновления смены:', error);
-            }
-        }
-        await loadShifts();
-    }
-
-    async function deleteFilesFromStorage(paths) {
-        if (!paths || paths.length === 0) return;
-        for (let path of paths) {
-            const { error } = await supabaseClient.storage.from(BUCKET_NAME).remove([path]);
-            if (error) console.error('Ошибка удаления файла:', path, error);
+        const savedShifts = localStorage.getItem('shifts');
+        if (savedShifts) {
+            try { shifts = JSON.parse(savedShifts); } catch(e) { shifts = []; }
+        } else {
+            shifts = [];
+            saveShifts();
         }
     }
 
-    async function uploadFilesToStorage(shiftId, files) {
-        const uploaded = [];
-        for (let file of files) {
-            const filePath = `${shiftId}/${Date.now()}_${file.name}`;
-            const { error } = await supabaseClient.storage.from(BUCKET_NAME).upload(filePath, file);
-            if (error) { console.error('Ошибка загрузки файла:', error); continue; }
-            const { data: publicUrlData } = supabaseClient.storage.from(BUCKET_NAME).getPublicUrl(filePath);
-            uploaded.push({ name: file.name, type: file.type, url: publicUrlData.publicUrl, path: filePath });
-        }
-        return uploaded;
+    function saveStages() {
+        localStorage.setItem('stages', JSON.stringify(stages));
     }
 
-    // ============================================================
-    //   ОБНОВЛЕНИЕ СПИСКА ЭТАПОВ В ФОРМЕ ОТКРЫТИЯ СМЕНЫ
-    // ============================================================
+    function saveShifts() {
+        localStorage.setItem('shifts', JSON.stringify(shifts));
+    }
+
+    // --- ОБНОВЛЕНИЕ СПИСКА ЭТАПОВ В ФОРМЕ ОТКРЫТИЯ СМЕНЫ ---
     function updateStageSelect() {
         const select = document.getElementById('openStage');
         const currentVal = select.value;
@@ -1310,9 +384,7 @@
         }
     }
 
-    // ============================================================
-    //   УПРАВЛЕНИЕ СМЕНАМИ
-    // ============================================================
+    // --- УПРАВЛЕНИЕ СМЕНАМИ ---
     function getCurrentOpenShift() {
         return shifts.find(sh => sh.closeTime === null);
     }
@@ -1340,16 +412,14 @@
         document.getElementById('closeShiftForm').style.display = 'none';
     }
 
-    // Открыть смену
+    // --- ОТКРЫТИЕ СМЕНЫ ---
     document.getElementById('btnOpenShift').addEventListener('click', function() {
         if (!currentUser) { alert('Вы не авторизованы.'); return; }
-        // Проверка, нет ли уже открытой смены у этого пользователя
         const userOpen = getCurrentUserOpenShift();
         if (userOpen) {
             alert('У вас уже есть открытая смена. Закройте её перед открытием новой.');
             return;
         }
-        // Обновить список этапов перед показом
         updateStageSelect();
         document.getElementById('openShiftForm').style.display = 'flex';
         document.getElementById('closeShiftForm').style.display = 'none';
@@ -1357,7 +427,6 @@
         document.getElementById('openSMU').value = '';
         document.getElementById('openPeople').value = 1;
         document.getElementById('openNote').value = '';
-        document.getElementById('confirmOpenBtn').disabled = false;
     });
 
     document.getElementById('cancelOpenBtn').addEventListener('click', function() {
@@ -1372,12 +441,11 @@
         const people = parseInt(document.getElementById('openPeople').value) || 1;
         const note = document.getElementById('openNote').value.trim() || '';
         if (!stage) { alert('Выберите этап'); return; }
-        if (people < 1) { alert('Количество человек должно быть не менее 1'); return; }
+        if (people < 1) { alert('Количество человек не менее 1'); return; }
 
-        // Ещё раз проверим, что за время заполнения формы никто не открыл смену
         const userOpen = getCurrentUserOpenShift();
         if (userOpen) {
-            alert('У вас уже есть открытая смена. Закройте её перед открытием новой.');
+            alert('У вас уже есть открытая смена.');
             document.getElementById('openShiftForm').style.display = 'none';
             return;
         }
@@ -1394,134 +462,65 @@
             note: note,
             files: []
         };
-
-        const btn = this;
-        btn.textContent = '⏳ Сохранение...';
-        btn.disabled = true;
-
-        supabaseClient
-            .from('shifts')
-            .insert([newShift])
-            .select('*')
-            .then(({ data, error }) => {
-                btn.textContent = '✅ Подтвердить открытие';
-                btn.disabled = false;
-                if (error) {
-                    console.error('Ошибка создания смены:', error);
-                    alert('Ошибка создания смены: ' + error.message);
-                    return;
-                }
-                if (data && data.length > 0) {
-                    const savedShift = data[0];
-                    shifts.push(savedShift);
-                    renderShifts();
-                    updateAll();
-                    updateShiftUI();
-                    document.getElementById('openShiftForm').style.display = 'none';
-                    alert('✅ Смена успешно открыта!');
-                } else {
-                    alert('Не удалось создать смену. Попробуйте ещё раз.');
-                }
-            })
-            .catch(err => {
-                btn.textContent = '✅ Подтвердить открытие';
-                btn.disabled = false;
-                console.error('Ошибка:', err);
-                alert('Произошла ошибка: ' + err.message);
-            });
+        shifts.push(newShift);
+        saveShifts();
+        renderShifts();
+        updateAll();
+        updateShiftUI();
+        document.getElementById('openShiftForm').style.display = 'none';
+        alert('✅ Смена открыта!');
     });
 
-    // Закрыть смену
+    // --- ЗАКРЫТИЕ СМЕНЫ ---
     document.getElementById('btnCloseShift').addEventListener('click', function() {
-        const closeShift = getCurrentСloseShift();
-        if (!closeShift) { alert('Нет открытой смены.'); return; }
+        const openShift = getCurrentOpenShift();
+        if (!openShift) { alert('Нет открытой смены.'); return; }
         document.getElementById('closeShiftForm').style.display = 'flex';
         document.getElementById('openShiftForm').style.display = 'none';
-        document.getElementById('closeFiles').value = '';
+        document.getElementById('closeFilesText').value = '';
         document.getElementById('closeNote').value = '';
-        document.getElementById('confirmCloseBtn').disabled = false;
     });
 
     document.getElementById('cancelCloseBtn').addEventListener('click', function() {
         document.getElementById('closeShiftForm').style.display = 'none';
     });
 
-    document.getElementById('confirmCloseBtn').addEventListener('click', async function() {
+    document.getElementById('confirmCloseBtn').addEventListener('click', function() {
         const openShift = getCurrentOpenShift();
         if (!openShift) {
-            alert('Нет открытой смены. Вероятно, она уже была закрыта другим пользователем.');
+            alert('Нет открытой смены. Возможно, её уже закрыли.');
             document.getElementById('closeShiftForm').style.display = 'none';
             updateShiftUI();
             return;
         }
 
-        const filesInput = document.getElementById('closeFiles');
-        if (filesInput.files.length === 0) {
-            alert('❌ Выберите хотя бы один файл (фото или видео) для закрытия смены.');
+        const fileText = document.getElementById('closeFilesText').value.trim();
+        const note = document.getElementById('closeNote').value.trim() || '';
+
+        // Обновляем смену
+        const shiftIndex = shifts.findIndex(sh => sh.id === openShift.id);
+        if (shiftIndex === -1) {
+            alert('Ошибка: смена не найдена.');
             return;
         }
 
-        const btn = this;
-        btn.textContent = '⏳ Закрытие...';
-        btn.disabled = true;
-
-        try {
-            let uploadedFiles = await uploadFilesToStorage(openShift.id, filesInput.files);
-            if (uploadedFiles.length === 0) {
-                alert('Не удалось загрузить файлы. Попробуйте ещё раз.');
-                btn.textContent = '✅ Подтвердить закрытие';
-                btn.disabled = false;
-                return;
-            }
-
-            const note = document.getElementById('closeNote').value.trim() || '';
-
-            // Обновляем запись в БД (закрываем смену)
-            const { error } = await supabaseClient
-                .from('shifts')
-                .update({
-                    closeTime: new Date().toISOString(),
-                    files: uploadedFiles,
-                    note: note
-                })
-                .match({ id: openShift.id, closeTime: null });
-
-            if (error) {
-                if (error.code === 'PGRST116' || error.message?.includes('not found')) {
-                    alert('⚠️ Смена уже была закрыта другим пользователем.');
-                } else {
-                    alert('Ошибка закрытия смены: ' + error.message);
-                }
-                btn.textContent = '✅ Подтвердить закрытие';
-                btn.disabled = false;
-                return;
-            }
-
-            // Перезагружаем смены и обновляем интерфейс
-            await loadShifts();
-            renderShifts();
-            updateAll();
-            updateShiftUI();
-            document.getElementById('closeShiftForm').style.display = 'none';
-            alert('✅ Смена успешно закрыта! Файлы сохранены в облаке.');
-            btn.textContent = '✅ Подтвердить закрытие';
-            btn.disabled = false;
-        } catch (err) {
-            console.error('Ошибка:', err);
-            alert('Произошла непредвиденная ошибка: ' + err.message);
-            btn.textContent = '✅ Подтвердить закрытие';
-            btn.disabled = false;
+        shifts[shiftIndex].closeTime = new Date().toISOString();
+        if (fileText) {
+            shifts[shiftIndex].files = [{ name: fileText, type: 'text', url: fileText }];
+        } else {
+            shifts[shiftIndex].files = [];
         }
+        if (note) shifts[shiftIndex].note = note;
+
+        saveShifts();
+        renderShifts();
+        updateAll();
+        updateShiftUI();
+        document.getElementById('closeShiftForm').style.display = 'none';
+        alert('✅ Смена закрыта!');
     });
 
-    // ============================================================
-    //   РЕНДЕРИНГ ТАБЛИЦЫ ЭТАПОВ
-    // ============================================================
-    const STAGE_NAMES = [
-        'Котлован', 'Фундамент', 'Стены подвала', 'Стены 1-го этажа',
-        'Перекрытия', 'Кровля', 'Инженерные сети', 'Отделка', 'Благоустройство'
-    ];
-
+    // --- РЕНДЕРИНГ ЭТАПОВ ---
     function renderInputTable() {
         const tbody = document.getElementById('inputBody');
         tbody.innerHTML = '';
@@ -1530,22 +529,20 @@
             const datalistId = 'stageNames_' + index;
             let optionsHtml = STAGE_NAMES.map(name => `<option value="${name}">`).join('');
             tr.innerHTML = `
-                <td>
-                    <input type="text" class="inp-name" value="${st.name}" data-idx="${index}" list="${datalistId}">
-                    <datalist id="${datalistId}">${optionsHtml}</datalist>
-                </td>
-                <td><input type="text" class="inp-objectName" value="${st.objectName || ''}" data-idx="${index}" placeholder="Объект"></td>
-                <td><input type="text" class="inp-building" value="${st.building || ''}" data-idx="${index}" placeholder="Дом/корпус"></td>
-                <td><input type="date" class="inp-planStart" value="${st.planStart || ''}" data-idx="${index}"></td>
-                <td><input type="date" class="inp-planEnd" value="${st.planEnd || ''}" data-idx="${index}"></td>
-                <td><input type="date" class="inp-factStart" value="${st.factStart || ''}" data-idx="${index}"></td>
-                <td><input type="date" class="inp-factEnd" value="${st.factEnd || ''}" data-idx="${index}"></td>
+                <td><input type="text" class="inp-name" value="${st.name}" data-idx="${index}" list="${datalistId}"><datalist id="${datalistId}">${optionsHtml}</datalist></td>
+                <td><input type="text" class="inp-objectName" value="${st.objectName||''}" data-idx="${index}" placeholder="Объект"></td>
+                <td><input type="text" class="inp-building" value="${st.building||''}" data-idx="${index}" placeholder="Дом/корпус"></td>
+                <td><input type="date" class="inp-planStart" value="${st.planStart||''}" data-idx="${index}"></td>
+                <td><input type="date" class="inp-planEnd" value="${st.planEnd||''}" data-idx="${index}"></td>
+                <td><input type="date" class="inp-factStart" value="${st.factStart||''}" data-idx="${index}"></td>
+                <td><input type="date" class="inp-factEnd" value="${st.factEnd||''}" data-idx="${index}"></td>
                 <td><input type="number" class="inp-progress" value="${st.progress}" min="0" max="100" data-idx="${index}"></td>
                 <td><button class="del-btn" data-idx="${index}">✕</button></td>
             `;
             tbody.appendChild(tr);
         });
 
+        // Сохранение изменений при вводе
         document.querySelectorAll('#inputBody input').forEach(inp => {
             inp.addEventListener('input', function() {
                 const idx = parseInt(this.dataset.idx);
@@ -1553,17 +550,20 @@
                 let value = this.value;
                 if (field === 'progress') value = parseFloat(value) || 0;
                 stages[idx][field] = value;
-                saveStagesToSupabase();
+                saveStages();
                 updateDashboard();
                 updateTabBadges();
+                updateAll();
             });
         });
 
+        // Удаление этапа
         document.querySelectorAll('#inputBody .del-btn').forEach(btn => {
             btn.addEventListener('click', function() {
                 const idx = parseInt(this.dataset.idx);
+                if (!confirm(`Удалить этап "${stages[idx].name}"?`)) return;
                 stages.splice(idx, 1);
-                saveStagesToSupabase();
+                saveStages();
                 renderInputTable();
                 updateStageSelect();
                 updateAll();
@@ -1573,9 +573,7 @@
         });
     }
 
-    // ============================================================
-    //   РЕНДЕРИНГ ЖУРНАЛА СМЕН
-    // ============================================================
+    // --- РЕНДЕРИНГ СМЕН ---
     function renderShifts() {
         const filtered = getFilteredShifts();
         const tbody = document.getElementById('shiftBody');
@@ -1587,26 +585,26 @@
             const closeStr = sh.closeTime ? new Date(sh.closeTime).toLocaleString('ru-RU') : '—';
             const filesStr = sh.files && sh.files.length ? sh.files.map(f => f.name).join(', ') : '—';
             const hasFiles = sh.files && sh.files.length > 0;
-
             tr.innerHTML = `
-                <td>${sh.date || '—'}</td>
-                <td>${sh.fio || sh.user || ''}</td>
-                <td>${sh.stage || '—'}</td>
-                <td>${sh.shiftNumber || '—'}</td>
-                <td>${sh.smu || '—'}</td>
-                <td>${sh.people || ''}</td>
+                <td>${sh.date||'—'}</td>
+                <td>${sh.user||''}</td>
+                <td>${sh.stage||'—'}</td>
+                <td>${sh.shiftNumber||'—'}</td>
+                <td>${sh.smu||'—'}</td>
+                <td>${sh.people||''}</td>
                 <td>${openStr}</td>
                 <td>${closeStr}</td>
-                <td><span class="file-list">${filesStr}</span></td>
-                <td>${sh.note || ''}</td>
+                <td>${filesStr}</td>
+                <td>${sh.note||''}</td>
                 <td>
-                    ${hasFiles ? `<button class="view-btn" data-idx="${realIdx}" title="Просмотр файлов">👁️</button>` : ''}
+                    ${hasFiles ? `<button class="view-btn" data-idx="${realIdx}">👁️</button>` : ''}
                     <button class="del-btn" data-idx="${realIdx}">✕</button>
                 </td>
             `;
             tbody.appendChild(tr);
         });
 
+        // Просмотр файлов (заглушка)
         document.querySelectorAll('#shiftBody .view-btn').forEach(btn => {
             btn.addEventListener('click', function() {
                 const idx = parseInt(this.dataset.idx);
@@ -1616,28 +614,30 @@
                     alert('Вы можете просматривать только свои файлы.');
                     return;
                 }
-                openFileModal(shift.files);
+                if (shift.files && shift.files.length) {
+                    const fileModal = document.getElementById('fileModal');
+                    const grid = document.getElementById('fileGrid');
+                    grid.innerHTML = shift.files.map(f => `<div class="file-item"><div>${f.name}</div><div style="font-size:12px;color:#4a6378;">${f.url}</div></div>`).join('');
+                    document.getElementById('fileModalTitle').textContent = 'Файлы смены';
+                    fileModal.classList.add('active');
+                } else {
+                    alert('Нет файлов.');
+                }
             });
         });
 
+        // Удаление смены
         document.querySelectorAll('#shiftBody .del-btn').forEach(btn => {
-            btn.addEventListener('click', async function() {
+            btn.addEventListener('click', function() {
                 const idx = parseInt(this.dataset.idx);
                 const shift = shifts[idx];
                 if (currentUser !== ADMIN_NAME && shift.user !== currentUser) {
                     alert('Вы можете удалять только свои записи.');
                     return;
                 }
-                if (!confirm('Удалить запись о смене? Это также удалит загруженные файлы.')) return;
-                if (shift.files && shift.files.length) {
-                    await deleteFilesFromStorage(shift.files.map(f => f.path));
-                }
-                const { error } = await supabaseClient.from('shifts').delete().match({ id: shift.id });
-                if (error) {
-                    alert('Ошибка удаления: ' + error.message);
-                    return;
-                }
+                if (!confirm('Удалить запись о смене?')) return;
                 shifts.splice(idx, 1);
+                saveShifts();
                 renderShifts();
                 updateAll();
                 updateShiftUI();
@@ -1653,84 +653,7 @@
         return shifts.filter(sh => sh.user === currentUser);
     }
 
-    // ============================================================
-    //   МОДАЛЬНОЕ ОКНО ПРОСМОТРА ФАЙЛОВ
-    // ============================================================
-    const fileModal = document.getElementById('fileModal');
-    const fileGrid = document.getElementById('fileGrid');
-    const fileModalTitle = document.getElementById('fileModalTitle');
-    const fileLoader = document.getElementById('fileModalLoader');
-
-    async function openFileModal(files) {
-        if (!files || files.length === 0) {
-            alert('Нет файлов для этой смены.');
-            return;
-        }
-        fileModal.classList.add('active');
-        fileModalTitle.textContent = 'Файлы смены';
-        fileGrid.innerHTML = '';
-        fileLoader.style.display = 'block';
-
-        try {
-            fileLoader.style.display = 'none';
-            fileGrid.innerHTML = '';
-            files.forEach(f => {
-                const item = document.createElement('div');
-                item.className = 'file-item';
-                let content = '';
-                if (f.type && f.type.startsWith('image/')) {
-                    content = `<img src="${f.url}" alt="${f.name}" loading="lazy" 
-                               class="modal-img" 
-                               onclick="this.classList.toggle('fullscreen')" 
-                               style="cursor:pointer; transition: transform 0.3s; max-width:100%; max-height:280px;"
-                               title="Кликните для увеличения">`;
-                } else if (f.type && f.type.startsWith('video/')) {
-                    content = `<video controls src="${f.url}" preload="metadata" style="max-width:100%; max-height:280px;"></video>`;
-                } else {
-                    content = `<div>Невозможно отобразить файл</div>`;
-                }
-                item.innerHTML = `
-                    ${content}
-                    <div class="file-name">${f.name}</div>
-                `;
-                fileGrid.appendChild(item);
-            });
-        } catch(e) {
-            fileLoader.style.display = 'none';
-            fileGrid.innerHTML = `<p style="color:#c9453b;">Ошибка загрузки файлов: ${e.message}</p>`;
-            console.error('Ошибка при открытии модального окна:', e);
-        }
-    }
-
-    document.getElementById('fileModalClose').addEventListener('click', function() {
-        fileModal.classList.remove('active');
-    });
-    fileModal.addEventListener('click', function(e) {
-        if (e.target === this) fileModal.classList.remove('active');
-    });
-
-    // ============================================================
-    //   ДАШБОРД
-    // ============================================================
-    function updateDashboard() {
-        const overall = stages.length ? Math.round(stages.reduce((s, st) => s + st.progress, 0) / stages.length) : 0;
-        document.getElementById('dashOverall').innerHTML = overall + '%';
-        document.getElementById('dashStages').textContent = stages.length;
-        const filtered = getFilteredShifts();
-        const closed = filtered.filter(sh => sh.closeTime !== null);
-        document.getElementById('dashShifts').textContent = closed.length;
-    }
-
-    function updateTabBadges() {
-        document.getElementById('badgeStages').textContent = stages.length;
-        const filtered = getFilteredShifts();
-        const closed = filtered.filter(sh => sh.closeTime !== null);
-        document.getElementById('badgeShifts').textContent = closed.length;
-    }
-
-    // ============================================================
-    //   ОТЧЁТ И ГРАФИКИ
-    // ============================================================
+    // --- ОТЧЁТ ---
     function updateReport() {
         const overall = stages.length ? Math.round(stages.reduce((s, st) => s + st.progress, 0) / stages.length) : 0;
         const totalFact = stages.filter(s => s.factStart && s.factEnd).length;
@@ -1832,16 +755,29 @@
 
     function updateAll() { updateReport(); renderGantt(); updateShiftStats(); updateDashboard(); updateTabBadges(); }
 
-    // ============================================================
-    //   ЭКСПОРТ PDF (УЛУЧШЕННЫЙ)
-    // ============================================================
+    // --- ДАШБОРД ---
+    function updateDashboard() {
+        const overall = stages.length ? Math.round(stages.reduce((s, st) => s + st.progress, 0) / stages.length) : 0;
+        document.getElementById('dashOverall').innerHTML = overall + '%';
+        document.getElementById('dashStages').textContent = stages.length;
+        const filtered = getFilteredShifts();
+        const closed = filtered.filter(sh => sh.closeTime !== null);
+        document.getElementById('dashShifts').textContent = closed.length;
+    }
+
+    function updateTabBadges() {
+        document.getElementById('badgeStages').textContent = stages.length;
+        const filtered = getFilteredShifts();
+        const closed = filtered.filter(sh => sh.closeTime !== null);
+        document.getElementById('badgeShifts').textContent = closed.length;
+    }
+
+    // --- PDF ---
     document.getElementById('exportPdfBtn').addEventListener('click', function() {
         if (!stages.length) { alert('Нет данных для экспорта.'); return; }
-
         const overall = stages.length ? Math.round(stages.reduce((s, st) => s + st.progress, 0) / stages.length) : 0;
         const totalFact = stages.filter(s => s.factStart && s.factEnd).length;
         const onTrack = stages.filter(s => { if (!s.planEnd || !s.factEnd) return false; return new Date(s.factEnd) <= new Date(s.planEnd); }).length;
-
         const tableBody = stages.map(st => {
             const planStart = st.planStart ? new Date(st.planStart).toLocaleDateString('ru-RU') : '—';
             const planEnd = st.planEnd ? new Date(st.planEnd).toLocaleDateString('ru-RU') : '—';
@@ -1852,7 +788,6 @@
             else if (st.progress > 0) status = 'В работе';
             return [st.name, st.objectName||'—', st.building||'—', `${planStart} – ${planEnd}`, `${factStart} – ${factEnd}`, `${st.progress}%`, status];
         });
-
         const doc = {
             pageSize: 'A4',
             pageOrientation: 'landscape',
@@ -1928,9 +863,7 @@
         alert('✅ PDF начал скачивание.');
     });
 
-    // ============================================================
-    //   ВКЛАДКИ
-    // ============================================================
+    // --- ВКЛАДКИ ---
     document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.addEventListener('click', function() {
             const tabId = this.dataset.tab;
@@ -1940,336 +873,16 @@
             this.classList.add('active');
             if (tabId === 'report') updateReport();
             if (tabId === 'gantt') renderGantt();
-            if (tabId === 'shift') {
-                renderShifts();
-                updateShiftStats();
-                updateShiftUI();
-            }
+            if (tabId === 'shift') { renderShifts(); updateShiftStats(); updateShiftUI(); }
             updateDashboard();
             updateTabBadges();
         });
     });
 
-    // ============================================================
-    //   ПОДДЕРЖКА (ЧАТ)
-    // ============================================================
-    async function loadSupportMessages() {
-        const { data, error } = await supabaseClient.from('support_messages').select('*').order('timestamp', { ascending: true });
-        if (error) { console.error('Ошибка загрузки сообщений:', error); return; }
-        supportMessages = data || [];
-        if (document.getElementById('supportModal').classList.contains('active')) renderSupportUI();
-        updateSupportBadge();
-    }
-
-    async function saveSupportMessagesToSupabase() {
-        for (let msg of supportMessages) {
-            if (!msg.id) {
-                const { error } = await supabaseClient.from('support_messages').insert([msg]);
-                if (error) console.error('Ошибка создания сообщения:', error);
-            } else {
-                const { error } = await supabaseClient.from('support_messages').update(msg).match({ id: msg.id });
-                if (error) console.error('Ошибка обновления сообщения:', error);
-            }
-        }
-        await loadSupportMessages();
-    }
-
-    function updateSupportBadge() {
-        const badge = document.getElementById('supportBadge');
-        if (!currentUser) { badge.classList.add('hidden'); return; }
-        let count = 0;
-        if (currentUser === ADMIN_NAME) {
-            count = supportMessages.filter(msg => msg.to === ADMIN_NAME && !msg.isRead).length;
-        } else {
-            count = supportMessages.filter(msg => msg.to === currentUser && !msg.isRead).length;
-        }
-        if (count > 0) {
-            badge.textContent = count;
-            badge.classList.remove('hidden');
-        } else {
-            badge.classList.add('hidden');
-        }
-    }
-
-    function getChatUsersForAdmin() {
-        const users = new Set();
-        supportMessages.forEach(msg => {
-            if (msg.from === ADMIN_NAME) users.add(msg.to);
-            else if (msg.to === ADMIN_NAME) users.add(msg.from);
-        });
-        users.delete(ADMIN_NAME);
-        return Array.from(users);
-    }
-
-    function getChatMessages(u1, u2) {
-        return supportMessages.filter(msg =>
-            (msg.from === u1 && msg.to === u2) ||
-            (msg.from === u2 && msg.to === u1)
-        );
-    }
-
-    function renderChatList() {
-        const container = document.getElementById('supportContent');
-        const users = getChatUsersForAdmin();
-        if (!users.length) { container.innerHTML = '<div class="support-empty">Нет чатов с пользователями.</div>'; return; }
-        let html = '<ul class="chat-list">';
-        users.forEach(user => {
-            const messages = getChatMessages(ADMIN_NAME, user);
-            const lastMsg = messages.length ? messages[messages.length-1] : null;
-            const lastText = lastMsg ? lastMsg.text.substring(0,50) : '';
-            const unread = messages.filter(m => m.from === user && !m.isRead).length;
-            html += `
-                <li class="chat-list-item" data-user="${user}">
-                    <div>
-                        <div class="chat-user">${user}</div>
-                        <div class="chat-last-msg">${lastText ? lastText : 'Нет сообщений'}</div>
-                    </div>
-                    ${unread > 0 ? `<span class="chat-unread">${unread}</span>` : ''}
-                </li>
-            `;
-        });
-        html += '</ul>';
-        container.innerHTML = html;
-        container.querySelectorAll('.chat-list-item').forEach(item => {
-            item.addEventListener('click', function() {
-                openChatWithUser(this.dataset.user);
-            });
-        });
-    }
-
-    function openChatWithUser(user) {
-        currentChatUser = user;
-        document.getElementById('supportModalTitle').textContent = '💬 Чат с ' + user;
-        renderChatMessages(ADMIN_NAME, user);
-        document.getElementById('supportInputArea').style.display = 'flex';
-        document.getElementById('supportInput').focus();
-        const messages = getChatMessages(ADMIN_NAME, user);
-        messages.forEach(msg => {
-            if (msg.from === user && !msg.isRead) {
-                msg.isRead = true;
-                saveSupportMessagesToSupabase();
-            }
-        });
-        updateSupportBadge();
-    }
-
-    function renderChatMessages(u1, u2) {
-        const container = document.getElementById('supportContent');
-        const messages = getChatMessages(u1, u2);
-        if (!messages.length) { container.innerHTML = '<div class="support-empty">Нет сообщений. Напишите что-нибудь.</div>'; return; }
-        const sorted = [...messages].sort((a,b) => new Date(a.timestamp) - new Date(b.timestamp));
-        let html = '<div class="support-messages" id="supportMessagesContainer">';
-        sorted.forEach(msg => {
-            const isUser = msg.from === currentUser;
-            const senderName = msg.from === ADMIN_NAME ? 'Администратор' : msg.from;
-            html += `
-                <div class="support-message ${isUser ? 'user' : 'admin'}">
-                    ${currentUser === ADMIN_NAME ? `<div class="sender">${senderName}</div>` : ''}
-                    <div>${msg.text}</div>
-                    <div class="meta">${new Date(msg.timestamp).toLocaleString('ru-RU')}</div>
-                </div>
-            `;
-        });
-        html += '</div>';
-        container.innerHTML = html;
-        const msgsContainer = document.getElementById('supportMessagesContainer');
-        if (msgsContainer) msgsContainer.scrollTop = msgsContainer.scrollHeight;
-    }
-
-    function renderUserChat() {
-        const container = document.getElementById('supportContent');
-        const messages = getChatMessages(currentUser, ADMIN_NAME);
-        if (!messages.length) { container.innerHTML = '<div class="support-empty">Нет сообщений. Напишите что-нибудь.</div>'; return; }
-        const sorted = [...messages].sort((a,b) => new Date(a.timestamp) - new Date(b.timestamp));
-        let html = '<div class="support-messages" id="supportMessagesContainer">';
-        sorted.forEach(msg => {
-            const isUser = msg.from === currentUser;
-            html += `
-                <div class="support-message ${isUser ? 'user' : 'admin'}">
-                    <div>${msg.text}</div>
-                    <div class="meta">${new Date(msg.timestamp).toLocaleString('ru-RU')}</div>
-                </div>
-            `;
-        });
-        html += '</div>';
-        container.innerHTML = html;
-        const msgsContainer = document.getElementById('supportMessagesContainer');
-        if (msgsContainer) msgsContainer.scrollTop = msgsContainer.scrollHeight;
-        document.getElementById('supportInputArea').style.display = 'flex';
-        document.getElementById('supportInput').focus();
-        document.getElementById('supportModalTitle').textContent = '💬 Поддержка';
-    }
-
-    function renderSupportUI() {
-        if (!currentUser) return;
-        if (currentUser === ADMIN_NAME) {
-            renderChatList();
-            document.getElementById('supportInputArea').style.display = 'none';
-            document.getElementById('supportModalTitle').textContent = '💬 Список чатов';
-            currentChatUser = null;
-        } else {
-            renderUserChat();
-            document.getElementById('supportInputArea').style.display = 'flex';
-            document.getElementById('supportModalTitle').textContent = '💬 Поддержка';
-        }
-        updateSupportBadge();
-    }
-
-    document.getElementById('supportBtn').addEventListener('click', function() {
-        if (!currentUser) { alert('Сначала войдите в систему.'); return; }
-        document.getElementById('supportModal').classList.add('active');
-        renderSupportUI();
-    });
-    document.getElementById('supportModalClose').addEventListener('click', function() {
-        document.getElementById('supportModal').classList.remove('active');
-        currentChatUser = null;
-        document.getElementById('supportInputArea').style.display = 'flex';
-    });
-    document.getElementById('supportModal').addEventListener('click', function(e) {
-        if (e.target === this) {
-            document.getElementById('supportModal').classList.remove('active');
-            currentChatUser = null;
-            document.getElementById('supportInputArea').style.display = 'flex';
-        }
-    });
-    document.getElementById('supportSendBtn').addEventListener('click', async function() {
-        const input = document.getElementById('supportInput');
-        const text = input.value.trim();
-        if (!text) return;
-        if (!currentUser) { alert('Сначала войдите в систему.'); return; }
-
-        let toUser = ADMIN_NAME;
-        if (currentUser === ADMIN_NAME) {
-            if (!currentChatUser) { alert('Выберите чат с пользователем из списка.'); return; }
-            toUser = currentChatUser;
-        }
-
-        const newMsg = { from: currentUser, to: toUser, text: text, timestamp: new Date().toISOString(), isRead: false };
-        supportMessages.push(newMsg);
-        await saveSupportMessagesToSupabase();
-        input.value = '';
-        renderSupportUI();
-        updateSupportBadge();
-    });
-    document.getElementById('supportInput').addEventListener('keydown', function(e) {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            document.getElementById('supportSendBtn').click();
-        }
-    });
-
-    // ============================================================
-    //   ОБУЧЕНИЕ (ТУР)
-    // ============================================================
-    const onboardingSteps = [
-        { title: '👋 Добро пожаловать!', desc: 'Это система «Строительный контроль». Она поможет вам управлять этапами строительства, вести учёт смен и формировать отчёты.', element: null },
-        { title: '📊 Сводная панель', desc: 'Здесь вы видите ключевые показатели: общую готовность, количество этапов и закрытых смен.', element: '.dashboard' },
-        { title: '📝 Вкладка «Этапы»', desc: 'Здесь создаются и редактируются этапы. Вы можете добавлять новые, указывать даты и прогресс.', element: '.tab-btn[data-tab="input"]', tab: 'input' },
-        { title: '📋 Таблица этапов', desc: 'В таблице вы видите все этапы. Изменения сохраняются автоматически.', element: '#inputTable', tab: 'input' },
-        { title: '👷 Вкладка «Сменный учёт»', desc: 'Управляйте сменами: открывайте и закрывайте их, прикрепляйте файлы.', element: '.tab-btn[data-tab="shift"]', tab: 'shift' },
-        { title: '🟢 Управление сменой', desc: 'Нажмите «Открыть смену», выберите этап, укажите данные и подтвердите. Затем закройте смену с файлами.', element: '#shiftStatus', tab: 'shift' },
-        { title: '📊 Вкладка «Отчёт»', desc: 'Сводка по готовности, план-факт, диаграммы и детальная таблица.', element: '.tab-btn[data-tab="report"]', tab: 'report' },
-        { title: '📄 Экспорт PDF', desc: 'Скачайте полный отчёт в красивом PDF-формате с таблицами и статистикой.', element: '#exportPdfBtn', tab: 'report' },
-        { title: '📅 Вкладка «График работ»', desc: 'Гант-диаграмма по этапам. План и факт отображаются в виде полос.', element: '.tab-btn[data-tab="gantt"]', tab: 'gantt' }
-    ];
-
-    function startOnboarding() {
-        if (isOnboardingActive || localStorage.getItem('onboardingDone_'+currentUser)) return;
-        isOnboardingActive = true;
-        currentOnboardingStep = 0;
-        document.getElementById('onboardingTooltip').style.display = 'block';
-        showOnboardingStep();
-    }
-
-    function showOnboardingStep() {
-        const step = onboardingSteps[currentOnboardingStep];
-        document.getElementById('onboardingStepCounter').textContent = `Шаг ${currentOnboardingStep+1} из ${onboardingSteps.length}`;
-        document.getElementById('onboardingTitle').textContent = step.title;
-        document.getElementById('onboardingDesc').textContent = step.desc;
-        document.getElementById('onboardingFeatureBox').style.display = 'none';
-
-        document.getElementById('onboardingPrevBtn').style.display = currentOnboardingStep === 0 ? 'none' : 'inline-flex';
-        const nextBtn = document.getElementById('onboardingNextBtn');
-        nextBtn.textContent = currentOnboardingStep === onboardingSteps.length-1 ? '✅ Завершить' : 'Далее →';
-
-        clearHighlight();
-        if (step.element) {
-            const el = document.querySelector(step.element);
-            if (el) {
-                el.classList.add('onboarding-highlight');
-                previousHighlight = el;
-                el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                if (step.tab) {
-                    const tabBtn = document.querySelector(`.tab-btn[data-tab="${step.tab}"]`);
-                    if (tabBtn) tabBtn.click();
-                }
-            }
-        }
-    }
-
-    function clearHighlight() {
-        if (previousHighlight) {
-            previousHighlight.classList.remove('onboarding-highlight');
-            previousHighlight = null;
-        }
-    }
-
-    function nextOnboardingStep() {
-        if (currentOnboardingStep < onboardingSteps.length-1) {
-            currentOnboardingStep++;
-            showOnboardingStep();
-        } else {
-            finishOnboarding();
-        }
-    }
-
-    function prevOnboardingStep() {
-        if (currentOnboardingStep > 0) {
-            currentOnboardingStep--;
-            showOnboardingStep();
-        }
-    }
-
-    function finishOnboarding() {
-        document.getElementById('onboardingTooltip').style.display = 'none';
-        clearHighlight();
-        localStorage.setItem('onboardingDone_'+currentUser, 'true');
-        isOnboardingActive = false;
-        document.getElementById('onboardingReminder').classList.remove('active');
-    }
-
-    document.getElementById('onboardingNextBtn').addEventListener('click', nextOnboardingStep);
-    document.getElementById('onboardingPrevBtn').addEventListener('click', prevOnboardingStep);
-    document.getElementById('onboardingSkipBtn').addEventListener('click', finishOnboarding);
-
-    document.getElementById('restartTourBtn').addEventListener('click', function() {
-        if (currentUser) {
-            localStorage.removeItem('onboardingDone_'+currentUser);
-            if (isOnboardingActive) finishOnboarding();
-            document.getElementById('onboardingReminder').classList.remove('active');
-            setTimeout(startOnboarding, 300);
-        } else {
-            alert('Сначала войдите в систему.');
-        }
-    });
-
-    document.getElementById('reminderStartBtn').addEventListener('click', function() {
-        if (currentUser) {
-            localStorage.removeItem('onboardingDone_'+currentUser);
-            if (isOnboardingActive) finishOnboarding();
-            document.getElementById('onboardingReminder').classList.remove('active');
-            setTimeout(startOnboarding, 300);
-        } else {
-            alert('Сначала войдите в систему.');
-        }
-    });
-
-    // ============================================================
-    //   КНОПКИ
-    // ============================================================
+    // --- КНОПКИ ---
     document.getElementById('addRowBtn').addEventListener('click', function() {
         stages.push({ name: '', objectName: '', building: '', planStart: '', planEnd: '', factStart: '', factEnd: '', progress: 0 });
-        saveStagesToSupabase();
+        saveStages();
         renderInputTable();
         updateStageSelect();
         updateAll();
@@ -2278,78 +891,71 @@
     });
 
     document.getElementById('resetDataBtn').addEventListener('click', function() {
-        if (currentUser !== ADMIN_NAME) { alert('Только администратор может сбросить данные.'); return; }
-        if (confirm('Сбросить все этапы к начальным данным?')) {
-            stages = [
-                { name: 'Котлован', objectName: '', building: '', planStart: '2026-04-01', planEnd: '2026-04-20', factStart: '2026-04-01', factEnd: '2026-04-18', progress: 100 },
-                { name: 'Фундамент', objectName: '', building: '', planStart: '2026-04-21', planEnd: '2026-05-15', factStart: '2026-04-21', factEnd: '', progress: 75 },
-                { name: 'Стены подвала', objectName: '', building: '', planStart: '2026-05-10', planEnd: '2026-05-30', factStart: '2026-05-12', factEnd: '', progress: 30 },
-                { name: 'Стены 1-го этажа', objectName: '', building: '', planStart: '2026-05-20', planEnd: '2026-06-15', factStart: '2026-06-01', factEnd: '', progress: 10 },
-                { name: 'Перекрытия', objectName: '', building: '', planStart: '2026-06-10', planEnd: '2026-06-30', factStart: '', factEnd: '', progress: 0 },
-                { name: 'Кровля', objectName: '', building: '', planStart: '2026-07-01', planEnd: '2026-07-25', factStart: '', factEnd: '', progress: 0 },
-                { name: 'Инженерные сети', objectName: '', building: '', planStart: '2026-06-20', planEnd: '2026-08-10', factStart: '2026-06-22', factEnd: '', progress: 45 },
-                { name: 'Отделка', objectName: '', building: '', planStart: '2026-08-01', planEnd: '2026-09-30', factStart: '', factEnd: '', progress: 0 }
-            ];
-            saveStagesToSupabase();
-            renderInputTable();
-            updateStageSelect();
-            updateAll();
-            updateDashboard();
-            updateTabBadges();
-        }
+        if (currentUser !== ADMIN_NAME) { alert('Только администратор может сбросить этапы.'); return; }
+        if (!confirm('Сбросить все этапы к начальным данным? (текущие будут удалены)')) return;
+        stages = [
+            { name: 'Котлован', objectName: '', building: '', planStart: '2026-04-01', planEnd: '2026-04-20', factStart: '2026-04-01', factEnd: '2026-04-18', progress: 100 },
+            { name: 'Фундамент', objectName: '', building: '', planStart: '2026-04-21', planEnd: '2026-05-15', factStart: '2026-04-21', factEnd: '', progress: 75 },
+            { name: 'Стены подвала', objectName: '', building: '', planStart: '2026-05-10', planEnd: '2026-05-30', factStart: '2026-05-12', factEnd: '', progress: 30 },
+            { name: 'Стены 1-го этажа', objectName: '', building: '', planStart: '2026-05-20', planEnd: '2026-06-15', factStart: '2026-06-01', factEnd: '', progress: 10 },
+            { name: 'Перекрытия', objectName: '', building: '', planStart: '2026-06-10', planEnd: '2026-06-30', factStart: '', factEnd: '', progress: 0 },
+            { name: 'Кровля', objectName: '', building: '', planStart: '2026-07-01', planEnd: '2026-07-25', factStart: '', factEnd: '', progress: 0 },
+            { name: 'Инженерные сети', objectName: '', building: '', planStart: '2026-06-20', planEnd: '2026-08-10', factStart: '2026-06-22', factEnd: '', progress: 45 },
+            { name: 'Отделка', objectName: '', building: '', planStart: '2026-08-01', planEnd: '2026-09-30', factStart: '', factEnd: '', progress: 0 }
+        ];
+        saveStages();
+        renderInputTable();
+        updateStageSelect();
+        updateAll();
+        updateDashboard();
+        updateTabBadges();
+        alert('Этапы сброшены.');
     });
 
     document.getElementById('updateReportBtn').addEventListener('click', function() {
         updateAll();
-        alert('✅ Отчёт и график обновлены.');
+        alert('✅ Отчёт обновлён.');
     });
 
-    document.getElementById('clearShiftsBtn').addEventListener('click', async function() {
+    document.getElementById('clearShiftsBtn').addEventListener('click', function() {
         if (currentUser !== ADMIN_NAME) { alert('Только администратор может очистить все смены.'); return; }
-        if (confirm('Удалить ВСЕ записи о сменах и файлы всех пользователей?')) {
-            for (let shift of shifts) {
-                if (shift.files && shift.files.length) {
-                    await deleteFilesFromStorage(shift.files.map(f => f.path));
-                }
-            }
-            const { error } = await supabaseClient.from('shifts').delete().neq('id', 0);
-            if (error) { alert('Ошибка очистки: ' + error.message); return; }
-            shifts = [];
-            renderShifts();
-            updateAll();
-            updateShiftUI();
-            updateDashboard();
-            updateTabBadges();
-            alert('Все смены удалены.');
-        }
+        if (!confirm('Удалить ВСЕ записи о сменах?')) return;
+        shifts = [];
+        saveShifts();
+        renderShifts();
+        updateAll();
+        updateShiftUI();
+        updateDashboard();
+        updateTabBadges();
+        alert('Все смены удалены.');
     });
 
-    // ============================================================
-    //   ВХОД / ВЫХОД
-    // ============================================================
+    // --- МОДАЛКА ФАЙЛОВ ---
+    document.getElementById('fileModalClose').addEventListener('click', function() {
+        document.getElementById('fileModal').classList.remove('active');
+    });
+    document.getElementById('fileModal').addEventListener('click', function(e) {
+        if (e.target === this) this.classList.remove('active');
+    });
+
+    // --- ВХОД / ВЫХОД ---
     function setUser(name) {
         currentUser = name.trim();
         sessionStorage.setItem('currentUser', currentUser);
         document.getElementById('displayUser').textContent = currentUser;
         document.getElementById('loginModal').classList.add('hidden');
-        Promise.all([loadStages(), loadShifts(), loadSupportMessages()]).then(() => {
-            renderInputTable();
-            updateStageSelect();
-            renderShifts();
-            updateAll();
-            updateShiftUI();
-            updateDashboard();
-            updateTabBadges();
-            updateSupportBadge();
-            if (!localStorage.getItem('onboardingDone_'+currentUser)) {
-                setTimeout(() => { if (!isOnboardingActive) startOnboarding(); }, 600);
-                setTimeout(() => {
-                    if (!isOnboardingActive && !localStorage.getItem('onboardingDone_'+currentUser)) {
-                        document.getElementById('onboardingReminder').classList.add('active');
-                    }
-                }, 5000);
-            }
-        });
+        loadData();
+        renderInputTable();
+        updateStageSelect();
+        renderShifts();
+        updateAll();
+        updateShiftUI();
+        updateDashboard();
+        updateTabBadges();
+        // Обучение (короткое)
+        if (!localStorage.getItem('onboardingDone_'+currentUser)) {
+            setTimeout(() => { document.getElementById('onboardingTooltip').style.display = 'block'; }, 500);
+        }
     }
 
     function logout() {
@@ -2361,7 +967,6 @@
         document.getElementById('passwordField').style.display = 'none';
         document.getElementById('loginBtn').textContent = 'Войти';
         document.getElementById('loginError').style.display = 'none';
-        document.getElementById('loginName').focus();
         document.getElementById('displayUser').textContent = '—';
         document.getElementById('shiftBody').innerHTML = '';
         document.getElementById('shiftStats').innerHTML = '<p style="color:#6a7b8c;">Нет записей о сменах.</p>';
@@ -2369,13 +974,11 @@
         document.getElementById('closeShiftForm').style.display = 'none';
         updateDashboard();
         updateTabBadges();
-        updateSupportBadge();
+        document.getElementById('onboardingTooltip').style.display = 'none';
         document.getElementById('onboardingReminder').classList.remove('active');
-        if (isOnboardingActive) finishOnboarding();
-        document.getElementById('supportModal').classList.remove('active');
     }
 
-    // --- Логин ---
+    // Логин
     const loginNameInput = document.getElementById('loginName');
     const loginPasswordInput = document.getElementById('loginPassword');
     const loginBtn = document.getElementById('loginBtn');
@@ -2383,8 +986,7 @@
     const loginError = document.getElementById('loginError');
 
     loginNameInput.addEventListener('input', function() {
-        const name = this.value.trim();
-        if (name === ADMIN_NAME) {
+        if (this.value.trim() === ADMIN_NAME) {
             passwordField.style.display = 'block';
             loginBtn.textContent = 'Подтвердить';
             loginError.style.display = 'none';
@@ -2398,19 +1000,11 @@
 
     function handleLogin() {
         const name = loginNameInput.value.trim();
-        if (!name) { alert('Введите ваше ФИО'); return; }
+        if (!name) { alert('Введите ФИО'); return; }
         if (name === ADMIN_NAME) {
-            const password = loginPasswordInput.value;
-            if (password === ADMIN_PASSWORD) {
-                setUser(name);
-            } else {
-                loginError.style.display = 'block';
-                loginPasswordInput.value = '';
-                loginPasswordInput.focus();
-            }
-        } else {
-            setUser(name);
-        }
+            if (loginPasswordInput.value === ADMIN_PASSWORD) { setUser(name); }
+            else { loginError.style.display = 'block'; loginPasswordInput.value = ''; loginPasswordInput.focus(); }
+        } else { setUser(name); }
     }
 
     loginBtn.addEventListener('click', handleLogin);
@@ -2420,9 +1014,7 @@
             if (this.value.trim() === ADMIN_NAME) {
                 if (passwordField.style.display !== 'none') loginPasswordInput.focus();
                 else handleLogin();
-            } else {
-                handleLogin();
-            }
+            } else { handleLogin(); }
         }
     });
     loginPasswordInput.addEventListener('keydown', function(e) {
@@ -2431,31 +1023,17 @@
 
     document.getElementById('logoutBtn').addEventListener('click', logout);
 
-    // ============================================================
-    //   ПОДПИСКИ НА ИЗМЕНЕНИЯ (REALTIME)
-    // ============================================================
-    function subscribeToChanges() {
-        supabaseClient
-            .channel('stages_changes')
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'stages' }, () => { loadStages(); })
-            .subscribe();
+    // --- ОБУЧЕНИЕ (короткое) ---
+    document.getElementById('onboardingSkipBtn').addEventListener('click', function() {
+        document.getElementById('onboardingTooltip').style.display = 'none';
+        localStorage.setItem('onboardingDone_'+currentUser, 'true');
+    });
+    document.getElementById('onboardingNextBtn').addEventListener('click', function() {
+        document.getElementById('onboardingTooltip').style.display = 'none';
+        localStorage.setItem('onboardingDone_'+currentUser, 'true');
+    });
 
-        supabaseClient
-            .channel('shifts_changes')
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'shifts' }, () => { loadShifts(); })
-            .subscribe();
-
-        supabaseClient
-            .channel('support_messages_changes')
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'support_messages' }, () => { loadSupportMessages(); })
-            .subscribe();
-    }
-
-    subscribeToChanges();
-
-    // ============================================================
-    //   ИНИЦИАЛИЗАЦИЯ
-    // ============================================================
+    // --- ИНИЦИАЛИЗАЦИЯ ---
     window.addEventListener('DOMContentLoaded', function() {
         const savedUser = sessionStorage.getItem('currentUser');
         if (savedUser) {
@@ -2466,7 +1044,7 @@
             document.getElementById('loginModal').classList.remove('hidden');
             document.getElementById('loginName').focus();
         }
-        console.log('✅ Приложение готово.');
+        console.log('✅ Локальная версия загружена.');
     });
 </script>
 </body>
