@@ -9,7 +9,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        /* ===== ВСЕ СТИЛИ (без изменений) ===== */
+        /* ===== ВСЕ СТИЛИ (полный набор) ===== */
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
         body { background: #e8edf5; min-height: 100vh; padding: 20px; }
         .container { max-width: 1400px; margin: 0 auto; background: rgba(255,255,255,0.85); backdrop-filter: blur(10px); border-radius: 32px; box-shadow: 0 20px 60px rgba(0,0,0,0.1); padding: 25px 30px 35px; }
@@ -402,7 +402,7 @@
     }
 
     // ================================================================
-    //   СОХРАНЕНИЕ ДАННЫХ
+    //   СОХРАНЕНИЕ ДАННЫХ (С ОЧИСТКОЙ ПУСТЫХ ДАТ)
     // ================================================================
     async function saveStagesToSupabase() {
         for (let stage of stages) {
@@ -424,6 +424,9 @@
         await loadStages();
     }
 
+    // ================================================================
+    //   УДАЛЕНИЕ ФАЙЛОВ
+    // ================================================================
     async function deleteFilesFromStorage(paths) {
         if (!paths || paths.length === 0) return;
         for (let path of paths) {
@@ -991,260 +994,212 @@
     });
 
     // ================================================================
-//   УЛУЧШЕННЫЙ PDF С ФУТУРИСТИЧЕСКИМ ДИЗАЙНОМ
-// ================================================================
-document.getElementById('exportPdfBtn').addEventListener('click', function() {
-    if (!stages.length) {
-        alert('Нет данных для экспорта.');
-        return;
-    }
+    //   ФУТУРИСТИЧЕСКИЙ PDF С СОВРЕМЕННЫМ ДИЗАЙНОМ
+    // ================================================================
+    document.getElementById('exportPdfBtn').addEventListener('click', function() {
+        if (!stages.length) {
+            alert('Нет данных для экспорта.');
+            return;
+        }
 
-    // Получаем изображения диаграмм
-    const pieCanvas = document.getElementById('pieChart');
-    const barCanvas = document.getElementById('barChart');
-    let pieImage = null;
-    let barImage = null;
-    if (pieCanvas) {
-        pieImage = pieCanvas.toDataURL('image/png');
-    }
-    if (barCanvas) {
-        barImage = barCanvas.toDataURL('image/png');
-    }
+        // Получаем изображения диаграмм
+        const pieCanvas = document.getElementById('pieChart');
+        const barCanvas = document.getElementById('barChart');
+        let pieImage = null;
+        let barImage = null;
+        if (pieCanvas) {
+            pieImage = pieCanvas.toDataURL('image/png');
+        }
+        if (barCanvas) {
+            barImage = barCanvas.toDataURL('image/png');
+        }
 
-    // Общая статистика
-    const overall = stages.length ? Math.round(stages.reduce((s, st) => s + st.progress, 0) / stages.length) : 0;
-    const totalFact = stages.filter(s => s.factStart && s.factEnd).length;
-    const onTrack = stages.filter(s => { if (!s.planEnd || !s.factEnd) return false; return new Date(s.factEnd) <= new Date(s.planEnd); }).length;
+        // Общая статистика
+        const overall = stages.length ? Math.round(stages.reduce((s, st) => s + st.progress, 0) / stages.length) : 0;
+        const totalFact = stages.filter(s => s.factStart && s.factEnd).length;
+        const onTrack = stages.filter(s => { if (!s.planEnd || !s.factEnd) return false; return new Date(s.factEnd) <= new Date(s.planEnd); }).length;
 
-    // Функция для создания прогресс-бара в виде таблицы
-    function createProgressBar(percent) {
-        const p = Math.min(percent, 100);
-        return {
-            table: {
-                widths: ['*'],
-                body: [
-                    [
+        // Функция для создания прогресс-бара через canvas
+        function createProgressBar(percent) {
+            const p = Math.min(percent, 100);
+            const color = p >= 100 ? '#0f6e4a' : (p > 50 ? '#2d8b5a' : '#f3b33d');
+            return {
+                stack: [
+                    {
+                        canvas: [
+                            { type: 'rect', x: 0, y: 0, w: 100, h: 14, r: 7, color: '#eef2f6' },
+                            { type: 'rect', x: 0, y: 0, w: p, h: 14, r: 7, color: color }
+                        ],
+                        width: 100,
+                        height: 14,
+                        alignment: 'center'
+                    },
+                    { text: p + '%', fontSize: 9, alignment: 'center', margin: [0, -14, 0, 0], color: p > 40 ? '#fff' : '#0a1e2f' }
+                ],
+                alignment: 'center',
+                margin: [0, 2, 0, 2]
+            };
+        }
+
+        // Формируем строки таблицы
+        const tableBody = stages.map(st => {
+            const progress = st.progress || 0;
+            let status = 'Не начат';
+            let statusColor = '#eef2f6';
+            let statusTextColor = '#2a4055';
+            let icon = '⏹️';
+            if (progress === 100) { status = 'Завершён'; statusColor = '#0f6e4a'; statusTextColor = '#fff'; icon = '✅'; }
+            else if (progress > 0) { status = 'В работе'; statusColor = '#f3b33d'; statusTextColor = '#1a3347'; icon = '⏳'; }
+            else { status = 'Не начат'; statusColor = '#eef2f6'; statusTextColor = '#2a4055'; icon = '❌'; }
+
+            return [
+                { text: st.name, bold: true, fontSize: 11, color: '#0a1e2f' },
+                { text: st.objectName || '—', fontSize: 10, color: '#2a4055' },
+                { text: st.building || '—', fontSize: 10, color: '#2a4055' },
+                { 
+                    stack: [
+                        { text: (st.planStart ? new Date(st.planStart).toLocaleDateString('ru-RU') : '—'), fontSize: 9, color: '#4a6378' },
+                        { text: '→', fontSize: 8, color: '#8a9cb0', alignment: 'center' },
+                        { text: (st.planEnd ? new Date(st.planEnd).toLocaleDateString('ru-RU') : '—'), fontSize: 9, color: '#4a6378' }
+                    ],
+                    alignment: 'center',
+                    margin: [0, 2, 0, 2]
+                },
+                { 
+                    stack: [
+                        { text: (st.factStart ? new Date(st.factStart).toLocaleDateString('ru-RU') : '—'), fontSize: 9, color: '#4a6378' },
+                        { text: '→', fontSize: 8, color: '#8a9cb0', alignment: 'center' },
+                        { text: (st.factEnd ? new Date(st.factEnd).toLocaleDateString('ru-RU') : '—'), fontSize: 9, color: '#4a6378' }
+                    ],
+                    alignment: 'center',
+                    margin: [0, 2, 0, 2]
+                },
+                createProgressBar(progress),
+                { 
+                    text: icon + ' ' + status,
+                    alignment: 'center',
+                    background: statusColor,
+                    color: statusTextColor,
+                    padding: [4, 2, 4, 2],
+                    borderRadius: 16,
+                    fontSize: 10,
+                    bold: true,
+                    margin: [2, 0, 2, 0]
+                }
+            ];
+        });
+
+        // Стили PDF (футуристический стиль)
+        const styles = {
+            header: { fontSize: 24, bold: true, alignment: 'center', margin: [0, 0, 0, 10], color: '#0f6e4a', decoration: 'underline' },
+            subheader: { fontSize: 14, alignment: 'center', margin: [0, 0, 0, 15], color: '#4a6378' },
+            section: { fontSize: 16, bold: true, margin: [0, 15, 0, 8], color: '#0f6e4a' },
+            tableHeader: { bold: true, fontSize: 11, fillColor: '#0a1e2f', color: 'white', alignment: 'center', padding: [6, 4, 6, 4] },
+            tableRow: { fontSize: 10 },
+            statLabel: { fontSize: 12, bold: true, color: '#4a6378' },
+            statValue: { fontSize: 22, bold: true, color: '#0a1e2f' },
+            footer: { fontSize: 10, alignment: 'center', color: '#8a9cb0', margin: [0, 20, 0, 0] }
+        };
+
+        // Содержимое PDF
+        const content = [];
+
+        // ТИТУЛЬНЫЙ ЛИСТ
+        content.push(
+            { text: '🚀 Отчёт по строительному контролю', style: 'header' },
+            { text: `Дата формирования: ${new Date().toLocaleString('ru-RU')}`, style: 'subheader' },
+            { text: '📊 Общая статистика', style: 'section' },
+            {
+                layout: 'noBorders',
+                table: {
+                    widths: ['*', '*', '*', '*'],
+                    body: [
+                        [
+                            { text: 'Общая готовность', style: 'statLabel' },
+                            { text: `${overall}%`, style: 'statValue' },
+                            { text: 'Этапов всего', style: 'statLabel' },
+                            { text: stages.length, style: 'statValue' }
+                        ],
+                        [
+                            { text: 'Завершено этапов', style: 'statLabel' },
+                            { text: totalFact, style: 'statValue' },
+                            { text: 'В графике', style: 'statLabel' },
+                            { text: `${onTrack} / ${totalFact} (${totalFact ? Math.round(onTrack/totalFact*100) : 0}%)`, style: 'statValue' }
+                        ]
+                    ]
+                }
+            }
+        );
+
+        // ДИАГРАММЫ
+        if (pieImage && barImage) {
+            content.push(
+                { text: '📈 Визуализация данных', style: 'section' },
+                {
+                    columns: [
                         {
                             stack: [
-                                {
-                                    canvas: [
-                                        { type: 'rect', x: 0, y: 0, w: 100, h: 14, r: 7, color: '#eef2f6' },
-                                        { type: 'rect', x: 0, y: 0, w: p, h: 14, r: 7, color: p >= 100 ? '#0f6e4a' : (p > 50 ? '#2d8b5a' : '#f3b33d') }
-                                    ],
-                                    width: 100,
-                                    height: 14,
-                                    alignment: 'center'
-                                },
-                                { text: p + '%', fontSize: 9, alignment: 'center', margin: [0, -14, 0, 0], color: p > 40 ? '#fff' : '#0a1e2f' }
-                            ],
-                            alignment: 'center',
-                            margin: [0, 2, 0, 2]
+                                { text: 'Общая готовность', alignment: 'center', fontSize: 12, bold: true },
+                                { image: pieImage, width: 250, alignment: 'center' }
+                            ]
+                        },
+                        {
+                            stack: [
+                                { text: 'План vs Факт', alignment: 'center', fontSize: 12, bold: true },
+                                { image: barImage, width: 250, alignment: 'center' }
+                            ]
                         }
-                    ]
-                ]
-            },
-            layout: 'noBorders',
-            width: 100
-        };
-    }
-
-    // Формируем строки таблицы с футуристическим дизайном
-    const tableBody = stages.map(st => {
-        const progress = st.progress || 0;
-        let status = 'Не начат';
-        let statusColor = '#eef2f6';
-        let statusTextColor = '#2a4055';
-        let icon = '⏹️';
-        if (progress === 100) { status = 'Завершён'; statusColor = '#0f6e4a'; statusTextColor = '#fff'; icon = '✅'; }
-        else if (progress > 0) { status = 'В работе'; statusColor = '#f3b33d'; statusTextColor = '#1a3347'; icon = '⏳'; }
-        else { status = 'Не начат'; statusColor = '#eef2f6'; statusTextColor = '#2a4055'; icon = '❌'; }
-
-        return [
-            { text: st.name, bold: true, fontSize: 11, color: '#0a1e2f' },
-            { text: st.objectName || '—', fontSize: 10, color: '#2a4055' },
-            { text: st.building || '—', fontSize: 10, color: '#2a4055' },
-            { 
-                stack: [
-                    { text: (st.planStart ? new Date(st.planStart).toLocaleDateString('ru-RU') : '—'), fontSize: 9, color: '#4a6378' },
-                    { text: '→', fontSize: 8, color: '#8a9cb0', alignment: 'center' },
-                    { text: (st.planEnd ? new Date(st.planEnd).toLocaleDateString('ru-RU') : '—'), fontSize: 9, color: '#4a6378' }
-                ],
-                alignment: 'center',
-                margin: [0, 2, 0, 2]
-            },
-            { 
-                stack: [
-                    { text: (st.factStart ? new Date(st.factStart).toLocaleDateString('ru-RU') : '—'), fontSize: 9, color: '#4a6378' },
-                    { text: '→', fontSize: 8, color: '#8a9cb0', alignment: 'center' },
-                    { text: (st.factEnd ? new Date(st.factEnd).toLocaleDateString('ru-RU') : '—'), fontSize: 9, color: '#4a6378' }
-                ],
-                alignment: 'center',
-                margin: [0, 2, 0, 2]
-            },
-            createProgressBar(progress),
-            { 
-                text: icon + ' ' + status,
-                alignment: 'center',
-                background: statusColor,
-                color: statusTextColor,
-                padding: [4, 2, 4, 2],
-                borderRadius: 16,
-                fontSize: 10,
-                bold: true,
-                margin: [2, 0, 2, 0]
-            }
-        ];
-    });
-
-    // Стили для PDF (футуристический стиль)
-    const styles = {
-        header: { fontSize: 24, bold: true, alignment: 'center', margin: [0, 0, 0, 10], color: '#0f6e4a', decoration: 'underline' },
-        subheader: { fontSize: 14, alignment: 'center', margin: [0, 0, 0, 15], color: '#4a6378' },
-        section: { fontSize: 16, bold: true, margin: [0, 15, 0, 8], color: '#0f6e4a' },
-        tableHeader: { bold: true, fontSize: 11, fillColor: '#0a1e2f', color: 'white', alignment: 'center', padding: [6, 4, 6, 4] },
-        tableRow: { fontSize: 10 },
-        statLabel: { fontSize: 12, bold: true, color: '#4a6378' },
-        statValue: { fontSize: 22, bold: true, color: '#0a1e2f' },
-        footer: { fontSize: 10, alignment: 'center', color: '#8a9cb0', margin: [0, 20, 0, 0] }
-    };
-
-    // Содержимое PDF
-    const content = [];
-
-    // ТИТУЛЬНЫЙ ЛИСТ
-    content.push(
-        { text: '🚀 Отчёт по строительному контролю', style: 'header' },
-        { text: `Дата формирования: ${new Date().toLocaleString('ru-RU')}`, style: 'subheader' },
-        { text: '📊 Общая статистика', style: 'section' },
-        {
-            layout: 'noBorders',
-            table: {
-                widths: ['*', '*', '*', '*'],
-                body: [
-                    [
-                        { text: 'Общая готовность', style: 'statLabel' },
-                        { text: `${overall}%`, style: 'statValue' },
-                        { text: 'Этапов всего', style: 'statLabel' },
-                        { text: stages.length, style: 'statValue' }
                     ],
-                    [
-                        { text: 'Завершено этапов', style: 'statLabel' },
-                        { text: totalFact, style: 'statValue' },
-                        { text: 'В графике', style: 'statLabel' },
-                        { text: `${onTrack} / ${totalFact} (${totalFact ? Math.round(onTrack/totalFact*100) : 0}%)`, style: 'statValue' }
-                    ]
-                ]
-            }
+                    columnGap: 20,
+                    margin: [0, 10, 0, 20]
+                }
+            );
         }
-    );
 
-    // ДИАГРАММЫ
-    if (pieImage && barImage) {
+        // ФУТУРИСТИЧЕСКАЯ ТАБЛИЦА
         content.push(
-            { text: '📈 Визуализация данных', style: 'section' },
+            { text: '📋 Детальный план-факт', style: 'section' },
             {
-                columns: [
-                    {
-                        stack: [
-                            { text: 'Общая готовность', alignment: 'center', fontSize: 12, bold: true },
-                            { image: pieImage, width: 250, alignment: 'center' }
-                        ]
+                table: {
+                    headerRows: 1,
+                    widths: ['auto', 'auto', 'auto', 'auto', 'auto', 'auto', 'auto'],
+                    body: [
+                        [
+                            { text: 'Этап', style: 'tableHeader' },
+                            { text: 'Объект', style: 'tableHeader' },
+                            { text: 'Дом', style: 'tableHeader' },
+                            { text: 'План', style: 'tableHeader' },
+                            { text: 'Факт', style: 'tableHeader' },
+                            { text: 'Прогресс', style: 'tableHeader' },
+                            { text: 'Статус', style: 'tableHeader' }
+                        ],
+                        ...tableBody
+                    ]
+                },
+                layout: {
+                    fillColor: function(rowIndex) {
+                        return rowIndex % 2 === 0 ? '#f8faff' : null;
                     },
-                    {
-                        stack: [
-                            { text: 'План vs Факт', alignment: 'center', fontSize: 12, bold: true },
-                            { image: barImage, width: 250, alignment: 'center' }
-                        ]
-                    }
-                ],
-                columnGap: 20,
-                margin: [0, 10, 0, 20]
+                    hLineWidth: function(i) {
+                        return (i === 0 || i === 1) ? 2 : 0.5;
+                    },
+                    vLineWidth: function(i) {
+                        return 0.5;
+                    },
+                    hLineColor: function(i) {
+                        return (i === 0 || i === 1) ? '#0a1e2f' : '#dce3eb';
+                    },
+                    vLineColor: function(i) {
+                        return '#dce3eb';
+                    },
+                    paddingLeft: function(i) { return 4; },
+                    paddingRight: function(i) { return 4; },
+                    paddingTop: function(i) { return 4; },
+                    paddingBottom: function(i) { return 4; }
+                },
+                margin: [0, 0, 0, 20]
             }
         );
-    }
-
-    // ФУТУРИСТИЧЕСКАЯ ТАБЛИЦА
-    content.push(
-        { text: '📋 Детальный план-факт', style: 'section' },
-        {
-            table: {
-                headerRows: 1,
-                widths: ['auto', 'auto', 'auto', 'auto', 'auto', 'auto', 'auto'],
-                body: [
-                    [
-                        { text: 'Этап', style: 'tableHeader' },
-                        { text: 'Объект', style: 'tableHeader' },
-                        { text: 'Дом', style: 'tableHeader' },
-                        { text: 'План', style: 'tableHeader' },
-                        { text: 'Факт', style: 'tableHeader' },
-                        { text: 'Прогресс', style: 'tableHeader' },
-                        { text: 'Статус', style: 'tableHeader' }
-                    ],
-                    ...tableBody
-                ]
-            },
-            layout: {
-                fillColor: function(rowIndex) {
-                    return rowIndex % 2 === 0 ? '#f8faff' : null;
-                },
-                hLineWidth: function(i) {
-                    return (i === 0 || i === 1) ? 2 : 0.5;
-                },
-                vLineWidth: function(i) {
-                    return 0.5;
-                },
-                hLineColor: function(i) {
-                    return (i === 0 || i === 1) ? '#0a1e2f' : '#dce3eb';
-                },
-                vLineColor: function(i) {
-                    return '#dce3eb';
-                },
-                paddingLeft: function(i) { return 4; },
-                paddingRight: function(i) { return 4; },
-                paddingTop: function(i) { return 4; },
-                paddingBottom: function(i) { return 4; }
-            },
-            margin: [0, 0, 0, 20]
-        }
-    );
-
-    // СТАТИСТИКА ПО СМЕНАМ
-    const filteredShifts = getFilteredShifts();
-    if (filteredShifts.length > 0) {
-        const totalShifts = filteredShifts.length;
-        const openShifts = filteredShifts.filter(s => s.closeTime === null).length;
-        const closedShifts = totalShifts - openShifts;
-        content.push(
-            { text: '👷 Сменная статистика', style: 'section' },
-            {
-                columns: [
-                    { text: `Всего смен: ${totalShifts}`, width: 'auto' },
-                    { text: `🟢 Открыто: ${openShifts}`, width: 'auto' },
-                    { text: `🔒 Закрыто: ${closedShifts}`, width: 'auto' }
-                ],
-                columnGap: 20,
-                margin: [0, 0, 0, 10]
-            }
-        );
-    }
-
-    // ПОДВАЛ
-    content.push(
-        { text: '🤖 Отчёт сгенерирован автоматически', style: 'footer' }
-    );
-
-    // Создаём PDF
-    const doc = {
-        pageSize: 'A4',
-        pageOrientation: 'landscape',
-        styles: styles,
-        content: content,
-        defaultStyle: { fontSize: 10 }
-    };
-
-    pdfMake.createPdf(doc).download('Отчёт_строительный_контроль.pdf');
-    alert('✅ PDF-отчёт с футуристическим дизайном сформирован и начал скачивание.');
-});
 
         // СТАТИСТИКА ПО СМЕНАМ
         const filteredShifts = getFilteredShifts();
@@ -1253,12 +1208,12 @@ document.getElementById('exportPdfBtn').addEventListener('click', function() {
             const openShifts = filteredShifts.filter(s => s.closeTime === null).length;
             const closedShifts = totalShifts - openShifts;
             content.push(
-                { text: 'Сменная статистика', style: 'section' },
+                { text: '👷 Сменная статистика', style: 'section' },
                 {
                     columns: [
                         { text: `Всего смен: ${totalShifts}`, width: 'auto' },
-                        { text: `Открыто: ${openShifts}`, width: 'auto' },
-                        { text: `Закрыто: ${closedShifts}`, width: 'auto' }
+                        { text: `🟢 Открыто: ${openShifts}`, width: 'auto' },
+                        { text: `🔒 Закрыто: ${closedShifts}`, width: 'auto' }
                     ],
                     columnGap: 20,
                     margin: [0, 0, 0, 10]
@@ -1267,7 +1222,9 @@ document.getElementById('exportPdfBtn').addEventListener('click', function() {
         }
 
         // ПОДВАЛ
-        content.push({ text: 'Отчёт сгенерирован автоматически', style: 'footer' });
+        content.push(
+            { text: '🤖 Отчёт сгенерирован автоматически', style: 'footer' }
+        );
 
         // Создаём PDF
         const doc = {
@@ -1279,7 +1236,7 @@ document.getElementById('exportPdfBtn').addEventListener('click', function() {
         };
 
         pdfMake.createPdf(doc).download('Отчёт_строительный_контроль.pdf');
-        alert('✅ PDF-отчёт сформирован и начал скачивание.');
+        alert('✅ PDF-отчёт с футуристическим дизайном сформирован и начал скачивание.');
     });
 
     // ================================================================
