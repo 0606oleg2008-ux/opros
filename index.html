@@ -1,14 +1,14 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Строительный контроль (локальная версия)</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Строительный контроль (множественные смены)</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
     <style>
-        /* ===== ВСЕ СТИЛИ (полная версия, включая поддержку и обучение) ===== */
+        /* ===== СТИЛИ (полный набор) ===== */
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
         body { background: #e8edf5; min-height: 100vh; padding: 20px; }
         .container { max-width: 1400px; margin: 0 auto; background: rgba(255,255,255,0.85); backdrop-filter: blur(10px); border-radius: 32px; box-shadow: 0 20px 60px rgba(0,0,0,0.1); padding: 25px 30px 35px; }
@@ -131,8 +131,6 @@
         .modal-img { transition: all 0.3s ease !important; max-width: 100%; max-height: 280px; }
         .loader { border: 4px solid #f3f3f3; border-top: 4px solid #0f6e4a; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 20px auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        
-        /* ===== СТИЛИ ДЛЯ ПОДДЕРЖКИ ===== */
         .support-btn { position: fixed; bottom: 90px; right: 20px; z-index: 100; background: #1f5a7d; color: #fff; border: none; border-radius: 50%; width: 56px; height: 56px; font-size: 26px; cursor: pointer; box-shadow: 0 4px 16px rgba(31,90,125,0.35); display: flex; align-items: center; justify-content: center; transition: 0.2s; }
         .support-btn:hover { transform: scale(1.1); background: #15405a; }
         .support-btn .badge-support { position: absolute; top: -4px; right: -4px; background: #c9453b; color: #fff; font-size: 12px; font-weight: 700; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; }
@@ -161,8 +159,6 @@
         .chat-list-item .chat-user { font-weight: 600; color: #0a1e2f; }
         .chat-list-item .chat-unread { background: #c9453b; color: #fff; font-size: 12px; font-weight: 700; border-radius: 50%; min-width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; padding: 0 6px; }
         .chat-list-item .chat-last-msg { font-size: 13px; color: #4a6378; max-width: 150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
-        /* ===== СТИЛИ ДЛЯ ОБУЧЕНИЯ ===== */
         .onboarding-tooltip { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #fff; border-radius: 24px; padding: 24px 30px; max-width: 520px; width: 90%; box-shadow: 0 20px 60px rgba(0,0,0,0.3); z-index: 10000; text-align: center; border: 1px solid rgba(255,255,255,0.2); display: none; }
         .onboarding-tooltip .step-counter { font-size: 13px; color: #4a6378; margin-bottom: 4px; }
         .onboarding-tooltip h3 { font-size: 20px; color: #0a1e2f; margin-bottom: 8px; }
@@ -181,7 +177,6 @@
         .onboarding-feature-box ul { margin: 0; padding-left: 18px; font-size: 13px; color: #1a3347; }
         .restart-tour-btn { position: fixed; bottom: 20px; right: 20px; z-index: 100; background: #0f6e4a; color: #fff; border: none; border-radius: 50%; width: 50px; height: 50px; font-size: 24px; cursor: pointer; box-shadow: 0 4px 16px rgba(15,110,74,0.3); display: flex; align-items: center; justify-content: center; transition: 0.2s; }
         .restart-tour-btn:hover { transform: scale(1.1); background: #0a5438; }
-
         @media (max-width: 768px) { .support-modal-box { max-width: 95%; max-height: 90vh; } .support-messages { min-height: 150px; max-height: 40vh; } .support-message { max-width: 90%; } .support-btn { bottom: 80px; right: 16px; width: 48px; height: 48px; font-size: 22px; } }
         @media (min-width: 1024px) { .container { padding: 35px 50px; } h1 { font-size: 32px; } .dashboard { grid-template-columns: repeat(4, 1fr); padding: 20px 30px; } .dashboard-item .dash-value { font-size: 28px; } .tab-btn { font-size: 17px; padding: 14px 32px; } .input-table th, .input-table td { padding: 14px 16px; font-size: 15px; } .input-table input, .input-table select { font-size: 15px; padding: 10px 14px; } .btn { font-size: 16px; padding: 12px 32px; } .stat-card .value { font-size: 40px; } .shift-stats { font-size: 16px; padding: 20px 30px; gap: 30px; } .report-table th, .report-table td { padding: 16px 20px; font-size: 15px; } .gantt-row .label { width: 220px; font-size: 15px; } }
     </style>
@@ -230,7 +225,7 @@
 <!-- ОСНОВНОЙ ИНТЕРФЕЙС -->
 <div class="container" id="mainContainer">
     <div class="header">
-        <div><h1>🏗️ Строительный контроль</h1><div class="sub">Локальная версия с файлами, поддержкой и обучением</div></div>
+        <div><h1>🏗️ Строительный контроль</h1><div class="sub">Множественные смены с файлами, поддержка, обучение</div></div>
         <div class="user-info">
             <span class="name" id="displayUser">—</span>
             <button class="btn-logout" id="logoutBtn">Выйти</button>
@@ -252,7 +247,7 @@
 
     <!-- ВКЛАДКА ЭТАПЫ -->
     <div id="tab-input" class="tab-content active">
-        <p style="color:#5e6f7e; margin-bottom:12px;">Добавляйте, редактируйте и удаляйте этапы. Все изменения сохраняются в браузере.</p>
+        <p style="color:#5e6f7e; margin-bottom:12px;">Добавляйте, редактируйте и удаляйте этапы.</p>
         <div style="overflow-x:auto;">
             <table class="input-table" id="inputTable">
                 <thead><tr><th>Название</th><th>Объект</th><th>Дом/корпус</th><th>План старт</th><th>План финиш</th><th>Факт старт</th><th>Факт финиш</th><th>Прогресс, %</th><th></th></tr></thead>
@@ -268,9 +263,9 @@
 
     <!-- ВКЛАДКА СМЕНЫ -->
     <div id="tab-shift" class="tab-content">
-        <h3 style="font-weight:500; margin-bottom:12px;">Управление сменой</h3>
+        <h3 style="font-weight:500; margin-bottom:12px;">Управление сменами</h3>
         <div class="shift-status" id="shiftStatus">
-            <span class="status-text" id="statusText">Статус: <span class="none">Смена не открыта</span></span>
+            <span class="status-text" id="statusText">Статус: <span class="none">Нет открытых смен</span></span>
             <div>
                 <button class="btn btn-success" id="btnOpenShift">🟢 Открыть смену</button>
                 <button class="btn btn-danger" id="btnCloseShift" disabled>🔴 Закрыть смену</button>
@@ -286,6 +281,10 @@
             <button class="btn btn-outline" id="cancelOpenBtn">Отмена</button>
         </div>
         <div class="shift-action-form" id="closeShiftForm">
+            <div class="field">
+                <label>Выберите смену для закрытия</label>
+                <select id="closeShiftSelect"><option value="">—</option></select>
+            </div>
             <div class="field">
                 <label>Файлы (фото/видео)</label>
                 <input type="file" id="closeFiles" multiple accept="image/*,video/*">
@@ -320,7 +319,7 @@
         </div>
     </div>
 
-    <!-- ВКЛАДКА ГАНТ -->
+    <!-- ВКЛАДКА ГАНТТ -->
     <div id="tab-gantt" class="tab-content">
         <div style="margin:10px 0 20px;"><div class="gantt-legend"><span><span class="color-box" style="background:#3b6f9b;opacity:0.5;"></span> План</span><span><span class="color-box" style="background:#0f6e4a;"></span> Факт</span><span><span class="color-box" style="background:#c9453b;"></span> Отставание</span></div></div>
         <div class="gantt-container" id="ganttContainer"></div>
@@ -329,10 +328,10 @@
 </div>
 
 <!-- ОБУЧЕНИЕ (ТУР) -->
-<div class="onboarding-tooltip" id="onboardingTooltip">
+<div class="onboarding-tooltip" id="onboardingTooltip" style="display:none;">
     <div class="step-counter" id="onboardingStepCounter">Шаг 1 из 9</div>
     <h3 id="onboardingTitle">Добро пожаловать!</h3>
-    <p id="onboardingDesc">Это локальная версия «Строительного контроля».</p>
+    <p id="onboardingDesc">Локальная версия с множественными сменами, загрузкой файлов, поддержкой и обучением.</p>
     <div id="onboardingFeatureBox" class="onboarding-feature-box"><h4>✨ Дополнительные возможности</h4><ul id="onboardingFeatureList"></ul></div>
     <div class="btn-group">
         <button class="btn btn-outline" id="onboardingSkipBtn">Пропустить</button>
@@ -342,23 +341,20 @@
 </div>
 
 <!-- НАПОМИНАНИЕ ОБ ОБУЧЕНИИ -->
-<div class="onboarding-reminder" id="onboardingReminder">
+<div class="onboarding-reminder" id="onboardingReminder" style="display:none;">
     <p>❓ Запустите обучение, нажав на кнопку с вопросительным знаком справа внизу.</p>
     <button class="btn btn-primary" id="reminderStartBtn" style="padding:4px 16px;font-size:13px;">Запустить обучение</button>
 </div>
 
 <!-- КНОПКА ПОДДЕРЖКИ -->
-<button class="support-btn" id="supportBtn">
-    💬
-    <span class="badge-support hidden" id="supportBadge">0</span>
-</button>
+<button class="support-btn" id="supportBtn">💬<span class="badge-support hidden" id="supportBadge">0</span></button>
 
 <!-- КНОПКА ПЕРЕЗАПУСКА ОБУЧЕНИЯ -->
 <button class="restart-tour-btn" id="restartTourBtn">❓</button>
 
 <script>
 // ================================================================
-//   ЛОКАЛЬНАЯ ВЕРСИЯ С ПОДДЕРЖКОЙ И ОБУЧЕНИЕМ
+//   ЛОКАЛЬНАЯ ВЕРСИЯ С МНОЖЕСТВЕННЫМИ СМЕНАМИ, ПОДДЕРЖКОЙ И ОБУЧЕНИЕМ
 // ================================================================
 
 // --- ПЕРЕМЕННЫЕ ---
@@ -371,13 +367,12 @@ let shifts = [];
 let supportMessages = [];
 let pieChartInstance = null;
 let barChartInstance = null;
-let currentChatUser = null; // для админа
+let currentChatUser = null;
 
 const STAGE_NAMES = ['Котлован','Фундамент','Стены подвала','Стены 1-го этажа','Перекрытия','Кровля','Инженерные сети','Отделка','Благоустройство'];
 
 // --- ЗАГРУЗКА / СОХРАНЕНИЕ ДАННЫХ ---
 function loadData() {
-    // Этапы
     const savedStages = localStorage.getItem('stages');
     if (savedStages) {
         try { stages = JSON.parse(savedStages); } catch(e) { stages = []; }
@@ -394,7 +389,6 @@ function loadData() {
         ];
         saveStages();
     }
-    // Смены
     const savedShifts = localStorage.getItem('shifts');
     if (savedShifts) {
         try { shifts = JSON.parse(savedShifts); } catch(e) { shifts = []; }
@@ -402,7 +396,6 @@ function loadData() {
         shifts = [];
         saveShifts();
     }
-    // Сообщения поддержки
     const savedSupport = localStorage.getItem('supportMessages');
     if (savedSupport) {
         try { supportMessages = JSON.parse(savedSupport); } catch(e) { supportMessages = []; }
@@ -416,7 +409,7 @@ function saveStages() { localStorage.setItem('stages', JSON.stringify(stages)); 
 function saveShifts() { localStorage.setItem('shifts', JSON.stringify(shifts)); }
 function saveSupportMessages() { localStorage.setItem('supportMessages', JSON.stringify(supportMessages)); }
 
-// --- ОБНОВЛЕНИЕ СПИСКА ЭТАПОВ В ФОРМЕ ОТКРЫТИЯ СМЕНЫ ---
+// --- ОБНОВЛЕНИЕ СПИСКА ЭТАПОВ ---
 function updateStageSelect() {
     const select = document.getElementById('openStage');
     const currentVal = select.value;
@@ -432,21 +425,29 @@ function updateStageSelect() {
     }
 }
 
-// --- УПРАВЛЕНИЕ СМЕНАМИ ---
-function getCurrentOpenShift() { return shifts.find(sh => sh.closeTime === null); }
-function getCurrentUserOpenShift() { return shifts.find(sh => sh.user === currentUser && sh.closeTime === null); }
+// --- УПРАВЛЕНИЕ СМЕНАМИ (множественные) ---
+function getOpenShifts() {
+    return shifts.filter(sh => sh.closeTime === null);
+}
+
+function getMyOpenShifts() {
+    if (!currentUser) return [];
+    return shifts.filter(sh => sh.user === currentUser && sh.closeTime === null);
+}
 
 function updateShiftUI() {
-    const openShift = getCurrentOpenShift();
+    const openShifts = getOpenShifts();
     const statusText = document.getElementById('statusText');
     const btnOpen = document.getElementById('btnOpenShift');
     const btnClose = document.getElementById('btnCloseShift');
-    if (openShift) {
-        statusText.innerHTML = `Статус: <span class="open">Смена открыта ${new Date(openShift.openTime).toLocaleString('ru-RU')}</span>`;
-        btnOpen.disabled = true;
+    if (openShifts.length > 0) {
+        const count = openShifts.length;
+        const names = openShifts.map(s => s.stage).join(', ');
+        statusText.innerHTML = `Статус: <span class="open">Открыто смен: ${count} (${names})</span>`;
+        btnOpen.disabled = false;
         btnClose.disabled = false;
     } else {
-        statusText.innerHTML = `Статус: <span class="none">Смена не открыта</span>`;
+        statusText.innerHTML = `Статус: <span class="none">Нет открытых смен</span>`;
         btnOpen.disabled = false;
         btnClose.disabled = true;
     }
@@ -454,13 +455,9 @@ function updateShiftUI() {
     document.getElementById('closeShiftForm').style.display = 'none';
 }
 
-// --- ОТКРЫТИЕ СМЕНЫ ---
+// --- ОТКРЫТИЕ СМЕНЫ (без ограничений) ---
 document.getElementById('btnOpenShift').addEventListener('click', function() {
     if (!currentUser) { alert('Вы не авторизованы.'); return; }
-    if (getCurrentUserOpenShift()) {
-        alert('У вас уже есть открытая смена. Закройте её перед открытием новой.');
-        return;
-    }
     updateStageSelect();
     document.getElementById('openShiftForm').style.display = 'flex';
     document.getElementById('closeShiftForm').style.display = 'none';
@@ -481,12 +478,9 @@ document.getElementById('confirmOpenBtn').addEventListener('click', function() {
     const note = document.getElementById('openNote').value.trim() || '';
     if (!stage) { alert('Выберите этап'); return; }
     if (people < 1) { alert('Количество человек не менее 1'); return; }
-    if (getCurrentUserOpenShift()) {
-        alert('У вас уже есть открытая смена.');
-        document.getElementById('openShiftForm').style.display = 'none';
-        return;
-    }
+
     const newShift = {
+        id: Date.now() + Math.random().toString(36).substr(2, 6),
         user: currentUser,
         date: new Date().toISOString().slice(0,10),
         openTime: new Date().toISOString(),
@@ -507,14 +501,27 @@ document.getElementById('confirmOpenBtn').addEventListener('click', function() {
     alert('✅ Смена открыта!');
 });
 
-// --- ЗАКРЫТИЕ СМЕНЫ С ЗАГРУЗКОЙ ФАЙЛОВ ---
+// --- ЗАКРЫТИЕ СМЕНЫ (выбор конкретной) ---
 document.getElementById('btnCloseShift').addEventListener('click', function() {
-    if (!getCurrentOpenShift()) { alert('Нет открытой смены.'); return; }
+    const myOpen = getMyOpenShifts();
+    if (myOpen.length === 0) {
+        alert('У вас нет открытых смен.');
+        return;
+    }
+    const select = document.getElementById('closeShiftSelect');
+    select.innerHTML = '';
+    myOpen.forEach((sh, idx) => {
+        const opt = document.createElement('option');
+        opt.value = sh.id;
+        opt.textContent = `№${sh.shiftNumber || '—'} — ${sh.stage} (открыта ${new Date(sh.openTime).toLocaleString('ru-RU')})`;
+        select.appendChild(opt);
+    });
     document.getElementById('closeShiftForm').style.display = 'flex';
     document.getElementById('openShiftForm').style.display = 'none';
     document.getElementById('closeFiles').value = '';
     document.getElementById('closeNote').value = '';
 });
+
 document.getElementById('cancelCloseBtn').addEventListener('click', function() {
     document.getElementById('closeShiftForm').style.display = 'none';
 });
@@ -538,18 +545,29 @@ function readFiles(files) {
 }
 
 document.getElementById('confirmCloseBtn').addEventListener('click', async function() {
-    const openShift = getCurrentOpenShift();
-    if (!openShift) {
-        alert('Нет открытой смены. Возможно, её уже закрыли.');
+    const selectedId = document.getElementById('closeShiftSelect').value;
+    if (!selectedId) {
+        alert('Выберите смену для закрытия.');
+        return;
+    }
+    const shiftIndex = shifts.findIndex(sh => sh.id === selectedId);
+    if (shiftIndex === -1) {
+        alert('Смена не найдена. Возможно, она уже закрыта.');
         document.getElementById('closeShiftForm').style.display = 'none';
         updateShiftUI();
         return;
     }
+    const shift = shifts[shiftIndex];
+    if (shift.closeTime !== null) {
+        alert('Эта смена уже закрыта.');
+        document.getElementById('closeShiftForm').style.display = 'none';
+        updateShiftUI();
+        return;
+    }
+
     const fileInput = document.getElementById('closeFiles');
     const files = fileInput.files;
     const note = document.getElementById('closeNote').value.trim() || '';
-    const shiftIndex = shifts.findIndex(sh => sh.id === openShift.id);
-    if (shiftIndex === -1) { alert('Ошибка: смена не найдена.'); return; }
 
     const btn = this;
     btn.textContent = '⏳ Закрытие...';
@@ -1174,14 +1192,14 @@ let currentOnboardingStep = 0;
 let previousHighlight = null;
 
 const onboardingSteps = [
-    { title: '👋 Добро пожаловать!', desc: 'Это локальная версия «Строительного контроля». Пройдите обучение, чтобы узнать основные возможности.', element: null },
-    { title: '📊 Сводная панель', desc: 'Здесь вы видите ключевые показатели: общую готовность, количество этапов и закрытых смен.', element: '.dashboard' },
-    { title: '📝 Вкладка «Этапы»', desc: 'Здесь создаются и редактируются этапы. Вы можете добавлять новые, указывать даты и прогресс.', element: '.tab-btn[data-tab="input"]', tab: 'input' },
-    { title: '📋 Таблица этапов', desc: 'В таблице вы видите все этапы. Изменения сохраняются автоматически.', element: '#inputTable', tab: 'input' },
-    { title: '👷 Вкладка «Сменный учёт»', desc: 'Управляйте сменами: открывайте и закрывайте их, прикрепляйте файлы.', element: '.tab-btn[data-tab="shift"]', tab: 'shift' },
-    { title: '🟢 Управление сменой', desc: 'Нажмите «Открыть смену», выберите этап, укажите данные и подтвердите. Затем закройте смену с файлами.', element: '#shiftStatus', tab: 'shift' },
+    { title: '👋 Добро пожаловать!', desc: 'Это локальная версия «Строительного контроля».', element: null },
+    { title: '📊 Сводная панель', desc: 'Ключевые показатели: общая готовность, количество этапов и закрытых смен.', element: '.dashboard' },
+    { title: '📝 Вкладка «Этапы»', desc: 'Создание и редактирование этапов. Изменения сохраняются автоматически.', element: '.tab-btn[data-tab="input"]', tab: 'input' },
+    { title: '📋 Таблица этапов', desc: 'Все этапы с датами и прогрессом. Можно удалять.', element: '#inputTable', tab: 'input' },
+    { title: '👷 Вкладка «Сменный учёт»', desc: 'Открывайте и закрывайте смены. Можно открыть несколько одновременно.', element: '.tab-btn[data-tab="shift"]', tab: 'shift' },
+    { title: '🟢 Управление сменами', desc: 'Нажмите «Открыть смену», заполните данные. При закрытии выберите конкретную смену из списка.', element: '#shiftStatus', tab: 'shift' },
     { title: '📊 Вкладка «Отчёт»', desc: 'Сводка по готовности, план-факт, диаграммы и детальная таблица.', element: '.tab-btn[data-tab="report"]', tab: 'report' },
-    { title: '📄 Экспорт PDF', desc: 'Скачайте полный отчёт в красивом PDF-формате с таблицами и статистикой.', element: '#exportPdfBtn', tab: 'report' },
+    { title: '📄 Экспорт PDF', desc: 'Скачайте полный отчёт с таблицами и статистикой.', element: '#exportPdfBtn', tab: 'report' },
     { title: '📅 Вкладка «График работ»', desc: 'Гант-диаграмма по этапам. План и факт отображаются в виде полос.', element: '.tab-btn[data-tab="gantt"]', tab: 'gantt' }
 ];
 
@@ -1379,7 +1397,7 @@ window.addEventListener('DOMContentLoaded', function() {
         document.getElementById('loginModal').classList.remove('hidden');
         document.getElementById('loginName').focus();
     }
-    console.log('✅ Локальная версия с поддержкой и обучением загружена.');
+    console.log('✅ Локальная версия с множественными сменами загружена.');
 });
 </script>
 </body>
